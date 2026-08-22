@@ -1,0 +1,49 @@
+name: TomBlock
+version: 1.0
+main: org.tomdang.TomBlock
+author: TomDang
+api-version: 26.2
+
+depend:
+  - Citizens
+commands:
+  setmininglvl:
+    description: set the mining level of a player
+    aliases:
+      mlvl
+  getmininglvl:
+    description: get the mining level of a player
+    aliases:
+      mining
+  setminingxp:
+    description: set the mining xp of a player
+    aliases:
+      miningxp
+  giveminingtool:
+    description: give the sender a custom mining tool
+  giveweapon:
+    description: give the sender a custom weapon
+  spawncustommob:
+    description: spawn a custom mob at the sender's location
+  stats:
+    description: returns a customGUI of the sender's stats
+  setdefense:
+    description: sets the sender's defense stat to the desired double amount
+  givecustomarmor:
+    description: gives the sender a custom armor from the registry
+    aliases:
+      givearmor
+  heal:
+    description: heal the sender for a specified amount
+  useenergy:
+    description: spends a specified amount of the spender's energy
+  recoverenergy:
+    description: recovers a specified amount of the spender's energy
+  forge:
+    description: opens a custom crafting gui
+  dialoguechoice:
+    description: This is technically available as a player command, but it is intended primarily as the internal target used by clickable messages.
+  spawnnpc:
+    description: spawns a temporary Citizens NPC at the senders location
+  spawnnmsnpc:
+    description: spawn a custom NMS NPC!z
