@@ -55,6 +55,8 @@ public class ActorBootStrap {
 	private final ActorPresentationTypeRegistry actorPresentationTypeRegistry;
 	@Getter
 	private final ActorAudienceResolver actorAudienceResolver;
+	@Getter
+	private final BukkitActorCollisionService bukkitActorCollisionService;
 
 	public ActorBootStrap(NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
 						  NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
@@ -73,7 +75,7 @@ public class ActorBootStrap {
 		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 		if (scoreboardManager == null) throw new IllegalStateException("ScoreBoard Manager cannot be null");
 		Scoreboard mainScoreboard = scoreboardManager.getMainScoreboard();
-		BukkitActorCollisionService bukkitActorCollisionService = new BukkitActorCollisionService(mainScoreboard);
+		bukkitActorCollisionService = new BukkitActorCollisionService(mainScoreboard);
 
 		activeActorPresentationRegistry = new ActiveActorPresentationRegistry();
 		actorPresentationTypeRegistry = new ActorPresentationTypeRegistry();

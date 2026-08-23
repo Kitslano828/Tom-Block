@@ -52,4 +52,21 @@ public class BukkitActorCollisionService {
 		passThroughTeam.removeEntity(entity);
 	}
 
+	public void applyCollisionPolicyToEntry(String scoreboardEntry, ActorCollisionPolicy collisionPolicy) {
+		if (scoreboardEntry == null) throw new IllegalArgumentException("scoreboardEntry cannot be null");
+		if (scoreboardEntry.isBlank()) throw new IllegalArgumentException("scoreboardEntry cannot be blank");
+		if (collisionPolicy == null) throw new IllegalArgumentException("collisionPolicy cannot be null");
+
+		switch (collisionPolicy) {
+			case PASS_THROUGH -> passThroughTeam.addEntry(scoreboardEntry);
+			case SOLID -> passThroughTeam.removeEntry(scoreboardEntry);
+		}
+	}
+
+	public void removeCollisionEntry(String scoreboardEntry) {
+		if (scoreboardEntry == null) throw new IllegalArgumentException("scoreboardEntry cannot be null");
+		if (scoreboardEntry.isBlank()) throw new IllegalArgumentException("scoreboardEntry cannot be blank");
+		passThroughTeam.removeEntry(scoreboardEntry);
+	}
+
 }

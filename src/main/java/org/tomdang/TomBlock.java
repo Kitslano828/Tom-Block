@@ -206,7 +206,7 @@ public class TomBlock extends JavaPlugin {
 				nmsPlayerNpcViewer,
 				nmsPlayerNpcFactory
 		);
-		PlayerNpcActorPresentation playerNpcActorPresentation = new PlayerNpcActorPresentation(playerNpcLifecycleService, actorBootStrap.getActorAudienceResolver());
+		PlayerNpcActorPresentation playerNpcActorPresentation = new PlayerNpcActorPresentation(playerNpcLifecycleService, actorBootStrap.getActorAudienceResolver(), actorBootStrap.getBukkitActorCollisionService());
 		actorBootStrap.getActorPresentationTypeRegistry().registerPresentation("PLAYER_NPC", playerNpcActorPresentation);
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());

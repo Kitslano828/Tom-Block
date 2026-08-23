@@ -78,6 +78,26 @@ public class BlacksmithContent {
 		);
 		actorRegistry.registerActor(blacksmithActor);
 
+		ActorDefinition packetSmith = new ActorDefinition(
+				"PACKET_SMITH",
+				"Packet Smith",
+				ActorAudienceScope.GLOBAL,
+				"PLAYER_NPC",
+				null,
+				ActorDamagePolicy.PROTECTED,
+				ActorCollisionPolicy.PASS_THROUGH
+		);
+		actorRegistry.registerActor(packetSmith);
+
+		Location packetSmithSpawnLocation = new Location(Bukkit.getWorld("world"), 93.5, 76, 187.5);
+		ActorSpawnPoint packetSmithSpawnPoint = new ActorSpawnPoint(
+				"PACKET_SMITH_TEST",
+				"PACKET_SMITH",
+				ActorAudienceKey.global(),
+				packetSmithSpawnLocation
+		);
+		actorSpawnPointRegistry.registerSpawnPoint(packetSmithSpawnPoint);
+
 		Location forgeSpawnLocation = new Location(Bukkit.getWorld("world"), 95.5, 76, 187.5);
 		ActorSpawnPoint forgeSpawnPoint = new ActorSpawnPoint(
 				"TOWN_BLACKSMITH",

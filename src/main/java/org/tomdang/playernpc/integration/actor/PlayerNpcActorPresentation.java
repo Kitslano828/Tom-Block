@@ -4,9 +4,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
 import org.tomdang.actorframework.audience.ActorAudienceResolver;
+import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.presentation.ActorPresentation;
 import org.tomdang.actorframework.presentation.ActorPresentationHandle;
+import org.tomdang.actorframework.presentation.bukkit.BukkitActorCollisionService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.runtime.PlayerNPC;
 
@@ -17,13 +19,16 @@ public class PlayerNpcActorPresentation implements ActorPresentation {
 
 	private final PlayerNpcLifecycleService playerNpcLifecycleService;
 	private final ActorAudienceResolver actorAudienceResolver;
+	private final BukkitActorCollisionService bukkitActorCollisionService;
 
-	public PlayerNpcActorPresentation(PlayerNpcLifecycleService playerNpcLifecycleService, ActorAudienceResolver actorAudienceResolver) {
+	public PlayerNpcActorPresentation(PlayerNpcLifecycleService playerNpcLifecycleService, ActorAudienceResolver actorAudienceResolver, BukkitActorCollisionService bukkitActorCollisionService) {
 		if (playerNpcLifecycleService == null) throw new IllegalArgumentException("playerNpcLifecycleService cannot be null");
 		if (actorAudienceResolver == null) throw new IllegalArgumentException("actorAudienceResolver cannot be null");
+		if (bukkitActorCollisionService == null) throw new IllegalArgumentException("bukkitActorCollisionService cannot be null");
 
 		this.playerNpcLifecycleService = playerNpcLifecycleService;
 		this.actorAudienceResolver = actorAudienceResolver;
+		this.bukkitActorCollisionService = bukkitActorCollisionService;
 	}
 
 	@Override
@@ -36,13 +41,23 @@ public class PlayerNpcActorPresentation implements ActorPresentation {
 
 		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, instance.getActorDefinition().getActorID());
 		UUID npcUUID = playerNPC.getProfileUUID();
+		String profileName = playerNPC.getProfileName();
+		ActorCollisionPolicy collisionPolicy = instance.getActorDefinition().getActorCollisionPolicy();
+
 		try {
+			bukkitActorCollisionService.applyCollisionPolicyToEntry(profileName, collisionPolicy);
 			for (Player player : players) {
 				playerNpcLifecycleService.showToViewer(player, npcUUID);
 			}
 		} catch (RuntimeException spawnException) {
 			try {
 				playerNpcLifecycleService.removeNpc(npcUUID);
+			} catch (RuntimeException cleanupException) {
+				spawnException.addSuppressed(cleanupException);
+			}
+
+			try {
+				bukkitActorCollisionService.removeCollisionEntry(profileName);
 			} catch (RuntimeException cleanupException) {
 				spawnException.addSuppressed(cleanupException);
 			}
@@ -57,6 +72,8 @@ public class PlayerNpcActorPresentation implements ActorPresentation {
 	public void removePresentationHandle(ActorPresentationHandle presentationHandle) {
 		if (presentationHandle == null) throw new IllegalArgumentException("presentationHandle cannot be null");
 		UUID npcProfileID = presentationHandle.presentationID();
-		playerNpcLifecycleService.removeNpc(npcProfileID);
+		PlayerNPC removedNpc = playerNpcLifecycleService.removeNpc(npcProfileID);
+		if (removedNpc == null) return;
+		bukkitActorCollisionService.removeCollisionEntry(removedNpc.getProfileName());
 	}
 }

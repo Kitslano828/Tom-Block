@@ -2,7 +2,6 @@ package org.tomdang.playernpc.runtime;
 
 import lombok.Getter;
 import net.minecraft.server.level.ServerPlayer;
-
 import java.util.UUID;
 
 public class PlayerNPC {
@@ -22,6 +21,10 @@ public class PlayerNPC {
 
 	public int getEntityID() {
 		return this.serverPlayer.getId();
+	}
+
+	public String getProfileName () {
+		return this.serverPlayer.gameProfile.name();
 	}
 
 }
