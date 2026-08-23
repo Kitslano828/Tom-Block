@@ -31,12 +31,18 @@ public class PlayerNpcActorResolver {
 		if (playerNPC == null) return null;
 
 		UUID playerNPCUUID = playerNPC.getProfileUUID();
-		ActorPresentationHandle presentationHandle = activeActorPresentationRegistry.getByPresentationID(playerNPCUUID);
-		if (presentationHandle == null) return null;
+		return resolveByProfileID(playerNPCUUID);
+	}
 
-		UUID instanceID = presentationHandle.actorInstanceID();
-		ActorInstance instance = actorInstanceRegistry.getInstance(instanceID);
-		if (instance == null) throw new IllegalStateException("A registered presentation handle pointing at a nonexistent actor instance is corrupted framework state");
+	public ActorInstance resolveByProfileID(UUID profileID) {
+		if (profileID == null) throw new IllegalArgumentException("Profile ID cannot be null");
+
+		if (!playerNpcRegistry.contains(profileID)) return null;
+		ActorPresentationHandle handle = activeActorPresentationRegistry.getByPresentationID(profileID);
+		if (handle == null) return null;
+		UUID actorUUID = handle.actorInstanceID();
+		ActorInstance instance = actorInstanceRegistry.getInstance(actorUUID);
+		if (instance == null) throw new IllegalStateException("Instance cannot be null");
 
 		return instance;
 	}

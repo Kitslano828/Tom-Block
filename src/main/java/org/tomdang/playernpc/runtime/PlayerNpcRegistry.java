@@ -1,8 +1,6 @@
 package org.tomdang.playernpc.runtime;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerNpcRegistry {
 
@@ -35,6 +33,10 @@ public class PlayerNpcRegistry {
 	public PlayerNPC remove(UUID npcUUID) {
 		if (npcUUID == null) throw new IllegalArgumentException("UUID cannot be null");
 		return playerNPCs.remove(npcUUID);
+	}
+
+	public Collection<PlayerNPC> getRegisteredNpcs() {
+		return List.copyOf(playerNPCs.values());
 	}
 
 }
