@@ -80,10 +80,10 @@ public class BlacksmithContent {
 
 		ActorDefinition packetSmith = new ActorDefinition(
 				"PACKET_SMITH",
-				"Packet Smith",
+				"Mayo Gay",
 				ActorAudienceScope.GLOBAL,
 				"PLAYER_NPC",
-				null,
+				"BLACKSMITH_INTERACTION",
 				ActorDamagePolicy.PROTECTED,
 				ActorCollisionPolicy.PASS_THROUGH
 		);

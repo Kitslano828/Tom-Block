@@ -3,7 +3,9 @@ package org.tomdang;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.MemoryNPCDataStore;
 import net.citizensnpcs.api.npc.NPCRegistry;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.tomdang.actorframework.combat.ActorDamageService;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.ActorInteractionService;
@@ -49,6 +51,7 @@ import org.tomdang.playernpc.integration.actor.PlayerNpcActorResolver;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.nms.NmsPlayerNpcFactory;
+import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
 import org.tomdang.playernpc.nms.NmsPlayerNpcViewer;
 import org.tomdang.playernpc.runtime.PlayerNpcRegistry;
 import org.tomdang.playernpc.runtime.PlayerNpcVisibilityRegistry;
@@ -60,6 +63,8 @@ public class TomBlock extends JavaPlugin {
 
 
 	private PlayerBootStrap playerBootStrap;
+	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
+
 
 	@Override
 	public void onEnable() {
@@ -212,6 +217,7 @@ public class TomBlock extends JavaPlugin {
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());
 		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);
+		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService);
 		new CommandRegistrar(
 				this,
@@ -247,7 +253,8 @@ public class TomBlock extends JavaPlugin {
 				dialogueAdvanceService,
 				dialogueController,
 				playerNpcLifecycleService,
-				playerNpcActorVisibilityService
+				playerNpcActorVisibilityService,
+				nmsPlayerNpcInteractionInterceptor
 				);
 
 		playerBootStrap.start();
@@ -258,6 +265,12 @@ public class TomBlock extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		if (nmsPlayerNpcInteractionInterceptor != null) {
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				nmsPlayerNpcInteractionInterceptor.remove(player);
+			}
+		}
+
 		if (playerBootStrap != null) {
 			playerBootStrap.shutDown();
 		}

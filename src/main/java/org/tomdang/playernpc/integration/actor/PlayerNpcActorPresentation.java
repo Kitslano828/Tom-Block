@@ -39,7 +39,7 @@ public class PlayerNpcActorPresentation implements ActorPresentation {
 		ActorAudienceKey key = instance.getAudienceKey();
 		Collection<Player> players = actorAudienceResolver.resolvePlayers(key);
 
-		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, instance.getActorDefinition().getActorID());
+		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, instance.getActorDefinition().getDisplayName());
 		UUID npcUUID = playerNPC.getProfileUUID();
 		String profileName = playerNPC.getProfileName();
 		ActorCollisionPolicy collisionPolicy = instance.getActorDefinition().getActorCollisionPolicy();

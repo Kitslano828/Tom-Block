@@ -34,6 +34,7 @@ import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
+import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
 
 public class ListenerRegistrar {
 
@@ -43,7 +44,7 @@ public class ListenerRegistrar {
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
-							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService
+							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor
 	){
 		PlayerConnectionListener playerConnectionListener = new PlayerConnectionListener(
 				playerProfileService,
@@ -66,7 +67,7 @@ public class ListenerRegistrar {
 		ActorInteractListener actorInteractListener = new ActorInteractListener(actorResolver, actorInteractionService);
 		ActorDamageListener actorDamageListener = new ActorDamageListener(actorDamageService);
 		DialogueSneakListener dialogueSneakListener = new DialogueSneakListener(dialogueSessionService, dialogueAdvanceService);
-		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService, playerNpcActorVisibilityService);
+		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService, playerNpcActorVisibilityService, nmsPlayerNpcInteractionInterceptor);
 
 
 		instance.getServer().getPluginManager().registerEvents(playerInteractListener, instance);
