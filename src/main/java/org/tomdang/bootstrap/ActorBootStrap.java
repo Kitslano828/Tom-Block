@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
+import org.tomdang.actorframework.audience.ActorAudienceResolver;
 import org.tomdang.actorframework.combat.ActorDamageService;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.instance.ActorInstanceService;
@@ -50,6 +51,10 @@ public class ActorBootStrap {
 	private final ActorReconciliationService actorReconciliationService;
 	@Getter
 	private final ActiveActorPresentationRegistry activeActorPresentationRegistry;
+	@Getter
+	private final ActorPresentationTypeRegistry actorPresentationTypeRegistry;
+	@Getter
+	private final ActorAudienceResolver actorAudienceResolver;
 
 	public ActorBootStrap(NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
 						  NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
@@ -63,13 +68,15 @@ public class ActorBootStrap {
 
 		actorRegistry = new ActorRegistry();
 
+		actorAudienceResolver = new ActorAudienceResolver(Bukkit.getServer());
+
 		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 		if (scoreboardManager == null) throw new IllegalStateException("ScoreBoard Manager cannot be null");
 		Scoreboard mainScoreboard = scoreboardManager.getMainScoreboard();
 		BukkitActorCollisionService bukkitActorCollisionService = new BukkitActorCollisionService(mainScoreboard);
 
 		activeActorPresentationRegistry = new ActiveActorPresentationRegistry();
-		ActorPresentationTypeRegistry actorPresentationTypeRegistry = new ActorPresentationTypeRegistry();
+		actorPresentationTypeRegistry = new ActorPresentationTypeRegistry();
 
 		BukkitVillagerPresentation bukkitVillagerPresentation = new BukkitVillagerPresentation(
 				actorInstanceIDKey,
