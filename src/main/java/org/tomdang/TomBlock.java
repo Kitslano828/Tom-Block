@@ -43,6 +43,7 @@ import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerdata.PlayerProfileStorage;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
+import org.tomdang.playernpc.integration.actor.PlayerNpcActorInteractionService;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorPresentation;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorResolver;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
@@ -210,6 +211,7 @@ public class TomBlock extends JavaPlugin {
 		actorBootStrap.getActorPresentationTypeRegistry().registerPresentation("PLAYER_NPC", playerNpcActorPresentation);
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());
+		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService);
 		new CommandRegistrar(
 				this,
