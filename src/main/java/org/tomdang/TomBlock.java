@@ -45,6 +45,7 @@ import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorPresentation;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorResolver;
+import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.nms.NmsPlayerNpcFactory;
 import org.tomdang.playernpc.nms.NmsPlayerNpcViewer;
@@ -209,6 +210,7 @@ public class TomBlock extends JavaPlugin {
 		actorBootStrap.getActorPresentationTypeRegistry().registerPresentation("PLAYER_NPC", playerNpcActorPresentation);
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());
+		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService);
 		new CommandRegistrar(
 				this,
 				playerProfileService,
@@ -242,7 +244,8 @@ public class TomBlock extends JavaPlugin {
 				dialogueSessionService,
 				dialogueAdvanceService,
 				dialogueController,
-				playerNpcLifecycleService
+				playerNpcLifecycleService,
+				playerNpcActorVisibilityService
 				);
 
 		playerBootStrap.start();

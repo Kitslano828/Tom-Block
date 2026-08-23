@@ -31,6 +31,7 @@ import org.tomdang.player.listener.PlayerConnectionListener;
 import org.tomdang.player.listener.PlayerRegainHealthListener;
 import org.tomdang.player.playerdata.PlayerProfileStorage;
 import org.tomdang.player.playerresource.PlayerResourceService;
+import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
 
@@ -42,7 +43,7 @@ public class ListenerRegistrar {
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
-							 PlayerNpcLifecycleService playerNpcLifecycleService
+							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService
 	){
 		PlayerConnectionListener playerConnectionListener = new PlayerConnectionListener(
 				playerProfileService,
@@ -65,7 +66,7 @@ public class ListenerRegistrar {
 		ActorInteractListener actorInteractListener = new ActorInteractListener(actorResolver, actorInteractionService);
 		ActorDamageListener actorDamageListener = new ActorDamageListener(actorDamageService);
 		DialogueSneakListener dialogueSneakListener = new DialogueSneakListener(dialogueSessionService, dialogueAdvanceService);
-		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService);
+		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService, playerNpcActorVisibilityService);
 
 
 		instance.getServer().getPluginManager().registerEvents(playerInteractListener, instance);
