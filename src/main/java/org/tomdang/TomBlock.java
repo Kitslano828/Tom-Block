@@ -232,7 +232,9 @@ public class TomBlock extends JavaPlugin {
 				dialogueSessionService,
 				dialogueController,
 				npcRegistry,
-				playerNpcLifecycleService
+				playerNpcLifecycleService,
+				actorBootStrap.getActorInstanceRegistry(),
+				actorBootStrap.getActorPresentationService()
 		);
 
 		new ListenerRegistrar(

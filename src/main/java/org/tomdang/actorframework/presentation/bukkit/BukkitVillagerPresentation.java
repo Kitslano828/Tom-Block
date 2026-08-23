@@ -15,11 +15,12 @@ import org.tomdang.actorframework.combat.ActorDamagePolicy;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.presentation.ActorPresentation;
 import org.tomdang.actorframework.presentation.ActorPresentationHandle;
+import org.tomdang.actorframework.presentation.MovableActorPresentation;
 import org.tomdang.actorframework.presentation.RestorableActorPresentation;
 
 import java.util.UUID;
 
-public class BukkitVillagerPresentation implements RestorableActorPresentation {
+public class BukkitVillagerPresentation implements RestorableActorPresentation, MovableActorPresentation {
 
 	private final NamespacedKey actorInstanceIDKey;
 	private final NamespacedKey actorDefinitionIDKey;
@@ -152,6 +153,49 @@ public class BukkitVillagerPresentation implements RestorableActorPresentation {
 
 		return new ActorPresentationHandle(villager.getUniqueId(), instance.getInstanceID());
 
+	}
+
+	@Override
+	public void movePresentationHandle(ActorPresentationHandle handle, Location location) {
+		if (handle == null) throw new IllegalArgumentException("Handle cannot be null");
+		if (location == null) throw new IllegalArgumentException("location cannot be null");
+		if (location.getWorld() == null) throw new IllegalArgumentException("world cannot be null");
+
+		UUID presentationEntityID = handle.presentationID();
+		Entity entity = Bukkit.getEntity(presentationEntityID);
+
+		if (entity == null || !entity.isValid()) {
+			throw new IllegalStateException("Entity with ID " + presentationEntityID + " no longer exists or is invalid");
+		}
+
+		if (!(entity instanceof Villager villager)) {
+			throw new IllegalArgumentException("Entity with ID " + presentationEntityID + " is not a Villager");
+		}
+
+		// 5. Read the stored string using the actor-instance key
+		PersistentDataContainer pdc = entity.getPersistentDataContainer();
+		String storedInstanceID = pdc.get(actorInstanceIDKey, PersistentDataType.STRING);
+		String storedDefinitionID = pdc.get(actorDefinitionIDKey, PersistentDataType.STRING);
+
+
+		// 6. DANGEROUS CONDITION CRASH: Entity exists but is completely missing its tracking tag.
+		if (storedInstanceID == null) {
+			throw new IllegalStateException("Corrupt Entity State: The Villager entity exists at "
+					+ entity.getLocation().toVector() + " but is completely missing its actor-instance tag!");
+		}
+
+		if (storedDefinitionID == null) {
+			throw new IllegalStateException("Corrupt Entity State: The Villager entity exists at "
+					+ entity.getLocation().toVector() + " but is completely missing its actor-definition tag!");
+		}
+
+		String handleInstanceID = handle.actorInstanceID().toString();
+		if (!storedInstanceID.equalsIgnoreCase(handleInstanceID)) {
+			throw new IllegalStateException("Security Abort: Presentation handle instance ID (" + handleInstanceID
+					+ ") does not match the persistent data token found on the entity (" + storedInstanceID + ")!");
+		}
+
+		if (!entity.teleport(location)) throw new IllegalStateException("Entity was not teleported");
 	}
 
 	private void configureVillager(Villager villager, ActorInstance instance) {

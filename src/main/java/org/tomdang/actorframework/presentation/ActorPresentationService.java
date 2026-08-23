@@ -83,5 +83,31 @@ public class ActorPresentationService {
 		return presentationHandle;
 	}
 
+	public void movePresentation(ActorInstance instance, Location location) {
+		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
+		if (location == null) throw new IllegalArgumentException("location cannot be null");
+
+		UUID instanceUUID = instance.getInstanceID();
+		if (!activeActorPresentationRegistry.hasPresentation(instanceUUID)) throw new IllegalStateException("instance does not exists");
+
+		ActorPresentationHandle handle = activeActorPresentationRegistry.getPresentation(instanceUUID);
+		if (handle == null) throw new IllegalStateException("Handle should not be null");
+
+		String presentationType = instance.getActorDefinition().getPresentationTypeID();
+		if (!actorPresentationTypeRegistry.isRegistered(presentationType)) throw new IllegalStateException(presentationType + " is not registered!");
+
+		ActorPresentation presentation = actorPresentationTypeRegistry.lookupPresentation(presentationType);
+		if (presentation == null) throw new IllegalStateException("Presentation shouldn't be null");
+
+		if (!(presentation instanceof MovableActorPresentation movableActorPresentation)) {
+			throw new IllegalStateException(
+					"Presentation type " + presentationType + " does not support movement"
+			);
+		}
+
+		movableActorPresentation.movePresentationHandle(handle, location);
+
+	}
+
 
 }

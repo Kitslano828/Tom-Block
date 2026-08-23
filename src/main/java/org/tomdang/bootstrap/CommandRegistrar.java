@@ -2,6 +2,9 @@ package org.tomdang.bootstrap;
 
 import net.citizensnpcs.api.npc.NPCRegistry;
 import org.tomdang.TomBlock;
+import org.tomdang.actorframework.command.MoveActorTestCommand;
+import org.tomdang.actorframework.instance.ActorInstanceRegistry;
+import org.tomdang.actorframework.presentation.ActorPresentationService;
 import org.tomdang.citizensintegration.command.CitizensNpcTestCommand;
 import org.tomdang.combat.command.GetWeapon;
 import org.tomdang.combat.command.SetDefense;
@@ -35,7 +38,8 @@ public class CommandRegistrar {
 	public CommandRegistrar(TomBlock instance, PlayerProfileService playerProfileService, WeaponRegistry weaponRegistry, CustomMobRegistry customMobRegistry,
 	                        CustomArmorService customArmorService, PlayerStatsService playerStatsService, CustomArmorRegistry customArmorRegistry,
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
-							DialogueController dialogueController, NPCRegistry npcRegistry, PlayerNpcLifecycleService playerNpcLifecycleService
+							DialogueController dialogueController, NPCRegistry npcRegistry, PlayerNpcLifecycleService playerNpcLifecycleService,
+							ActorInstanceRegistry actorInstanceRegistry, ActorPresentationService actorPresentationService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -91,6 +95,9 @@ public class CommandRegistrar {
 
 		NmsPlayerNpcTestCommand nmsPlayerNpcTestCommand = new NmsPlayerNpcTestCommand(playerNpcLifecycleService);
 		instance.getCommand("spawnnmsnpc").setExecutor(nmsPlayerNpcTestCommand);
+
+		MoveActorTestCommand moveActorTestCommand = new MoveActorTestCommand(actorInstanceRegistry, actorPresentationService);
+		instance.getCommand("moveactortest").setExecutor(moveActorTestCommand);
 	}
 	
 }

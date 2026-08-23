@@ -46,4 +46,6 @@ commands:
   spawnnpc:
     description: spawns a temporary Citizens NPC at the senders location
   spawnnmsnpc:
-    description: spawn a custom NMS NPC!z
+    description: spawn a custom NMS NPC!
+  moveactortest:
+    description: a test command to move an actor instance
