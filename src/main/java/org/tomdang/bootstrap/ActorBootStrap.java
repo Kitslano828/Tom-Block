@@ -3,6 +3,7 @@ package org.tomdang.bootstrap;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.tomdang.actorframework.audience.ActorAudienceResolver;
@@ -12,6 +13,9 @@ import org.tomdang.actorframework.instance.ActorInstanceService;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.ActorInteractionService;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
+import org.tomdang.actorframework.movement.ActorMovementTaskRegistry;
+import org.tomdang.actorframework.movement.LinearActorMovementService;
+import org.tomdang.actorframework.movement.LinearMovementStepCalculator;
 import org.tomdang.actorframework.presentation.ActiveActorPresentationRegistry;
 import org.tomdang.actorframework.presentation.ActorPresentationService;
 import org.tomdang.actorframework.presentation.ActorPresentationTypeRegistry;
@@ -57,11 +61,18 @@ public class ActorBootStrap {
 	private final ActorAudienceResolver actorAudienceResolver;
 	@Getter
 	private final BukkitActorCollisionService bukkitActorCollisionService;
+	@Getter
+	private final LinearMovementStepCalculator linearMovementStepCalculator;
+	@Getter
+	private final ActorMovementTaskRegistry actorMovementTaskRegistry;
+	@Getter
+	private final LinearActorMovementService linearActorMovementService;
 
-	public ActorBootStrap(NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
-						  NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
-						  NamespacedKey actorSpawnPointIDKey
+	public ActorBootStrap(Plugin plugin, NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
+	                      NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
+	                      NamespacedKey actorSpawnPointIDKey
 	) {
+		if (plugin == null) throw new IllegalArgumentException("plugin cannot be null");
 		if (actorInstanceIDKey == null) throw new IllegalArgumentException("Actor instance ID Key cannot be null");
 		if (actorDefinitionIDKey == null) throw new IllegalArgumentException("Actor definition ID Key cannot be null");
 		if (actorAudienceIDKey == null) throw new IllegalArgumentException("Actor audience ID Key cannot be null");
@@ -92,6 +103,12 @@ public class ActorBootStrap {
 		actorPresentationTypeRegistry.registerPresentation("VILLAGER", bukkitVillagerPresentation);
 
 		actorPresentationService = new ActorPresentationService(activeActorPresentationRegistry, actorPresentationTypeRegistry);
+
+		linearMovementStepCalculator = new LinearMovementStepCalculator();
+		actorMovementTaskRegistry = new ActorMovementTaskRegistry();
+
+		linearActorMovementService = new LinearActorMovementService(plugin, actorPresentationService, linearMovementStepCalculator, actorMovementTaskRegistry);
+
 		actorInteractionRegistry = new ActorInteractionRegistry();
 
 		actorInteractionService = new ActorInteractionService(actorInteractionRegistry);
@@ -111,7 +128,7 @@ public class ActorBootStrap {
 
 		actorDamageService = new ActorDamageService(actorResolver);
 
-		actorLifecycleService = new ActorLifecycleService(actorInstanceService, actorPresentationService);
+		actorLifecycleService = new ActorLifecycleService(actorInstanceService, actorPresentationService, actorMovementTaskRegistry);
 
 		actorSpawnPointRegistry = new ActorSpawnPointRegistry();
 
@@ -125,6 +142,10 @@ public class ActorBootStrap {
 				actorSpawnPointRegistry,
 				actorSpawnPointService
 		);
+	}
+
+	public void shutDown() {
+		actorMovementTaskRegistry.cancelAll();
 	}
 
 }

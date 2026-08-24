@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.instance.ActorInstanceService;
+import org.tomdang.actorframework.movement.ActorMovementTaskRegistry;
 import org.tomdang.actorframework.presentation.ActorPresentationService;
 
 import java.util.UUID;
@@ -12,13 +13,16 @@ public class ActorLifecycleService {
 
 	private final ActorInstanceService actorInstanceService;
 	private final ActorPresentationService actorPresentationService;
+	private final ActorMovementTaskRegistry actorMovementTaskRegistry;
 
-	public ActorLifecycleService(ActorInstanceService actorInstanceService, ActorPresentationService actorPresentationService) {
+	public ActorLifecycleService(ActorInstanceService actorInstanceService, ActorPresentationService actorPresentationService, ActorMovementTaskRegistry actorMovementTaskRegistry) {
 		if (actorInstanceService == null) throw new IllegalArgumentException("Actor instance service cannot be null");
 		if (actorPresentationService == null) throw new IllegalArgumentException("Actor presentation service cannot be null");
+		if (actorMovementTaskRegistry == null) throw new IllegalArgumentException("actorMovementTaskRegistry cannot be null");
 
 		this.actorInstanceService = actorInstanceService;
 		this.actorPresentationService = actorPresentationService;
+		this.actorMovementTaskRegistry = actorMovementTaskRegistry;
 	}
 
 	public ActorInstance createAndSpawnActor(String actorID, ActorAudienceKey audienceKey, Location location, String spawnPointID) {
@@ -50,6 +54,9 @@ public class ActorLifecycleService {
 
 	public ActorInstance removeActor(ActorInstance instance) {
 		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
+
+		UUID instanceID = instance.getInstanceID();
+		actorMovementTaskRegistry.cancelMovement(instanceID);
 
 		actorPresentationService.removePresentation(instance);
 		return actorInstanceService.removeInstance(instance.getInstanceID());

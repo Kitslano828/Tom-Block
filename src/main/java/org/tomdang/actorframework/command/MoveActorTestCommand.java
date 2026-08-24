@@ -9,19 +9,23 @@ import org.jetbrains.annotations.NotNull;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
-import org.tomdang.actorframework.presentation.ActorPresentationService;
+import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
+import org.tomdang.actorframework.movement.LinearActorMovementService;
 
 public class MoveActorTestCommand implements CommandExecutor {
 
 	private final ActorInstanceRegistry actorInstanceRegistry;
-	private final ActorPresentationService actorPresentationService;
+	private final LinearActorMovementService linearActorMovementService;
+	private final ActorLifecycleService actorLifecycleService;
 
-	public MoveActorTestCommand(ActorInstanceRegistry actorInstanceRegistry, ActorPresentationService actorPresentationService) {
+	public MoveActorTestCommand(ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService) {
 		if (actorInstanceRegistry == null) throw new IllegalArgumentException("actorInstanceRegistry cannot be null");
-		if (actorPresentationService == null) throw new IllegalArgumentException("actorPresentationService cannot be null");
+		if (linearActorMovementService == null) throw new IllegalArgumentException("linearActorMovementService cannot be null");
+		if (actorLifecycleService == null) throw new IllegalArgumentException("actorLifecycleService cannot be null");
 
 		this.actorInstanceRegistry = actorInstanceRegistry;
-		this.actorPresentationService = actorPresentationService;
+		this.linearActorMovementService = linearActorMovementService;
+		this.actorLifecycleService = actorLifecycleService;
 	}
 
 	@Override
@@ -30,22 +34,29 @@ public class MoveActorTestCommand implements CommandExecutor {
 		if (!(sender instanceof Player player)) return true;
 
 		ActorInstance instance = actorInstanceRegistry.getInstanceForPlacement("PACKET_SMITH", ActorAudienceKey.global(), "PACKET_SMITH_TEST");
+
+		if (args.length > 0) {
+			if (args[0].equalsIgnoreCase("remove")) {
+				if (instance == null) {
+					player.sendMessage("Actor has no active instance");
+					return true;
+				}
+				actorLifecycleService.removeActor(instance);
+				player.sendMessage("Removed " + instance.getActorDefinition().getDisplayName());
+				return true;
+			}
+		}
+
 		if (instance == null) {
 			player.sendMessage("Actor has no active instance");
 			return true;
 		}
 
-		Location location = actorPresentationService.getPresentationLocation(instance);
-
-		player.sendMessage("Previous NPC Location: " + location);
-
 		Location destination = player.getLocation();
 
-		actorPresentationService.movePresentation(instance, destination);
+		linearActorMovementService.moveTo(instance, destination, 0.2);
 
-		Location actorLocation = actorPresentationService.getPresentationLocation(instance);
-
-		player.sendMessage("Actor moved to " + actorLocation);
+		player.sendMessage("Actor moved to " + destination);
 
 		return true;
 	}

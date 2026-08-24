@@ -64,6 +64,7 @@ public class TomBlock extends JavaPlugin {
 
 	private PlayerBootStrap playerBootStrap;
 	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
+	private ActorBootStrap actorBootStrap;
 
 
 	@Override
@@ -117,7 +118,8 @@ public class TomBlock extends JavaPlugin {
 		ActiveAbilityService activeAbilityService = abilityBootStrap.getActiveAbilityService();
 		CustomAbilityService customAbilityService = abilityBootStrap.getCustomAbilityService();
 
-		ActorBootStrap actorBootStrap = new ActorBootStrap(
+		actorBootStrap = new ActorBootStrap(
+				this,
 				actorInstanceIDKey,
 				actorDefinitionKey,
 				actorAudienceScopeKey,
@@ -234,7 +236,8 @@ public class TomBlock extends JavaPlugin {
 				npcRegistry,
 				playerNpcLifecycleService,
 				actorBootStrap.getActorInstanceRegistry(),
-				actorBootStrap.getActorPresentationService()
+				actorBootStrap.getLinearActorMovementService(),
+				actorBootStrap.getActorLifecycleService()
 		);
 
 		new ListenerRegistrar(
@@ -273,8 +276,14 @@ public class TomBlock extends JavaPlugin {
 			}
 		}
 
+		if (actorBootStrap != null) {
+			actorBootStrap.shutDown();
+		}
+
 		if (playerBootStrap != null) {
 			playerBootStrap.shutDown();
 		}
+
+
 	}
 }
