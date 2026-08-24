@@ -29,7 +29,7 @@ public class MoveActorTestCommand implements CommandExecutor {
 
 		if (!(sender instanceof Player player)) return true;
 
-		ActorInstance instance = actorInstanceRegistry.getInstanceForPlacement("BLACKSMITH", ActorAudienceKey.global(), "TOWN_BLACKSMITH");
+		ActorInstance instance = actorInstanceRegistry.getInstanceForPlacement("PACKET_SMITH", ActorAudienceKey.global(), "PACKET_SMITH_TEST");
 		if (instance == null) {
 			player.sendMessage("Actor has no active instance");
 			return true;

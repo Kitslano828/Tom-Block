@@ -1,18 +1,17 @@
 package org.tomdang.playernpc.nms;
 
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
-import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.level.GameType;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import org.tomdang.playernpc.runtime.PlayerNPC;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class NmsPlayerNpcViewer {
 
@@ -46,6 +45,22 @@ public class NmsPlayerNpcViewer {
 		gamePacketListener.send(removeEntitiesPacket);
 		ClientboundPlayerInfoRemovePacket clientboundPlayerInfoRemovePacket = new ClientboundPlayerInfoRemovePacket(List.of(playerNPC.getProfileUUID()));
 		gamePacketListener.send(clientboundPlayerInfoRemovePacket);
+	}
+
+	public void teleport(Player viewer, PlayerNPC playerNPC) {
+		if (viewer == null) throw new IllegalArgumentException("Player cannot be null");
+		if (playerNPC == null) throw new IllegalArgumentException("playerNPC cannot be null");
+
+		ServerPlayer serverPlayer = playerNPC.getServerPlayer();
+		ServerGamePacketListenerImpl gamePacketListener = getConnection(viewer);
+
+		ClientboundTeleportEntityPacket clientboundTeleportEntityPacket = new ClientboundTeleportEntityPacket(
+				playerNPC.getEntityID(),
+				PositionMoveRotation.of(serverPlayer),
+				Set.of(),
+				serverPlayer.onGround
+				);
+		gamePacketListener.send(clientboundTeleportEntityPacket);
 	}
 
 	private ServerGamePacketListenerImpl getConnection(Player player) {

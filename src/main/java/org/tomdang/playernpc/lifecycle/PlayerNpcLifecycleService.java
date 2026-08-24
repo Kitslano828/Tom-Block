@@ -1,7 +1,10 @@
 package org.tomdang.playernpc.lifecycle;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.tomdang.playernpc.nms.NmsPlayerNpcFactory;
 import org.tomdang.playernpc.nms.NmsPlayerNpcViewer;
@@ -86,6 +89,30 @@ public class PlayerNpcLifecycleService {
 		}
 		playerNpcVisibilityRegistry.clearNpc(npcUUID);
 		return playerNpcRegistry.remove(npcUUID); 
+	}
+
+	public void moveNpc(UUID profileUUID, Location location) {
+		if (profileUUID == null) throw new IllegalArgumentException("ProfileUUID cannot be null");
+		if (location == null) throw new IllegalArgumentException("location cannot be null");
+		if (location.getWorld() == null) throw new IllegalArgumentException("world cannot be null");
+
+		PlayerNPC playerNPC = playerNpcRegistry.get(profileUUID);
+		if (playerNPC == null) throw new IllegalStateException("NPC does not exist");
+
+		ServerPlayer serverPlayer = playerNPC.getServerPlayer();
+		ServerLevel serverLevel = serverPlayer.level();
+		CraftWorld craftWorld = serverLevel.getWorld();
+
+		if (!location.getWorld().equals(craftWorld)) throw new IllegalStateException("Cross world travelling has yet to be implementated");
+
+		serverPlayer.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+
+		for (UUID playerUUID : playerNpcVisibilityRegistry.getViewers(profileUUID)) {
+			Player player = Bukkit.getPlayer(playerUUID);
+			if (player == null || !player.isOnline()) continue;
+			nmsPlayerNpcViewer.teleport(player, playerNPC);
+		}
+
 	}
 
 	public void clearViewerVisibility(UUID viewerUUID) {
