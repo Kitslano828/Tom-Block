@@ -57,7 +57,7 @@ public class MiningSpreadAbility extends CustomMiningAbility implements MiningBl
 		int localCounter = 0;
 
 		for (BlockFace face : faces) {
-			if (localCounter == 2) {
+			if (localCounter == 3) {
 				break;
 			}
 

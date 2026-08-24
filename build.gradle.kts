@@ -43,7 +43,7 @@ val copyPluginToServer by tasks.registering(Copy::class) {
     group = "build"
     description = "Copies TomBlock.jar into the local Paper server plugins directory."
     from(tasks.jar.flatMap { it.archiveFile })
-    into("C:/Users/tomda/OneDrive/Desktop/26.2/plugins")
+    into("C:/Users/tomda/Desktop/26.2/plugins")
 }
 
 tasks.build {

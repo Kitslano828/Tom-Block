@@ -35,11 +35,17 @@ public class MoveActorTestCommand implements CommandExecutor {
 			return true;
 		}
 
-		Location moveLocation = player.getLocation().clone();
+		Location location = actorPresentationService.getPresentationLocation(instance);
 
-		actorPresentationService.movePresentation(instance, moveLocation);
-		player.sendMessage("Successfully moved actor");
+		player.sendMessage("Previous NPC Location: " + location);
 
+		Location destination = player.getLocation();
+
+		actorPresentationService.movePresentation(instance, destination);
+
+		Location actorLocation = actorPresentationService.getPresentationLocation(instance);
+
+		player.sendMessage("Actor moved to " + actorLocation);
 
 		return true;
 	}

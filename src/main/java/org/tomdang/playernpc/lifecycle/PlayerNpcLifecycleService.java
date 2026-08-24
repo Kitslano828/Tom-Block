@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.tomdang.playernpc.nms.NmsPlayerNpcFactory;
@@ -112,6 +113,19 @@ public class PlayerNpcLifecycleService {
 			if (player == null || !player.isOnline()) continue;
 			nmsPlayerNpcViewer.teleport(player, playerNPC);
 		}
+	}
+
+	public Location getNpcLocation(UUID profileUUID) {
+		if (profileUUID == null) throw new IllegalArgumentException("Profile UUID should not be null");
+
+		PlayerNPC playerNPC = playerNpcRegistry.get(profileUUID);
+		if (playerNPC == null) throw new IllegalStateException("Player NPC does not exist");
+
+		ServerPlayer serverPlayer = playerNPC.getServerPlayer();
+		ServerLevel serverLevel = serverPlayer.level();
+		World world = serverLevel.getWorld();
+
+		return new Location(world,  serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), serverPlayer.getYRot(), serverPlayer.getXRot());
 
 	}
 

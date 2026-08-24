@@ -8,6 +8,7 @@ import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.presentation.ActorPresentation;
 import org.tomdang.actorframework.presentation.ActorPresentationHandle;
+import org.tomdang.actorframework.presentation.LocatableActorPresentation;
 import org.tomdang.actorframework.presentation.MovableActorPresentation;
 import org.tomdang.actorframework.presentation.bukkit.BukkitActorCollisionService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
@@ -16,7 +17,7 @@ import org.tomdang.playernpc.runtime.PlayerNPC;
 import java.util.Collection;
 import java.util.UUID;
 
-public class PlayerNpcActorPresentation implements ActorPresentation, MovableActorPresentation {
+public class PlayerNpcActorPresentation implements ActorPresentation, MovableActorPresentation, LocatableActorPresentation {
 
 	private final PlayerNpcLifecycleService playerNpcLifecycleService;
 	private final ActorAudienceResolver actorAudienceResolver;
@@ -86,5 +87,12 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 
 		UUID presentationID = handle.presentationID();
 		playerNpcLifecycleService.moveNpc(presentationID, location);
+	}
+
+	@Override
+	public Location getPresentationLocation(ActorPresentationHandle handle) {
+		if (handle == null) throw new IllegalArgumentException("Handle cannot be null");
+		UUID presentationID = handle.presentationID();
+		return playerNpcLifecycleService.getNpcLocation(presentationID);
 	}
 }

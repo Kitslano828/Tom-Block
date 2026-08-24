@@ -80,7 +80,7 @@ public class BlacksmithContent {
 
 		ActorDefinition packetSmith = new ActorDefinition(
 				"PACKET_SMITH",
-				"Mayo Gay",
+				"Gay JimmyBot",
 				ActorAudienceScope.GLOBAL,
 				"PLAYER_NPC",
 				"BLACKSMITH_INTERACTION",
