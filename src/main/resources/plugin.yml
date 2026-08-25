@@ -47,3 +47,5 @@ commands:
     description: a test command to move an actor instance
   followtest:
     description: a test command to make an actor instance follow the sender
+  actorlook:
+    description: tells a npc to look at the command sender

@@ -2,10 +2,12 @@ package org.tomdang.bootstrap;
 
 import org.tomdang.TomBlock;
 import org.tomdang.actorframework.command.FollowTestCommand;
+import org.tomdang.actorframework.command.LookActorTestCommand;
 import org.tomdang.actorframework.command.MoveActorTestCommand;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
 import org.tomdang.actorframework.movement.ActorFollowService;
+import org.tomdang.actorframework.movement.ActorLookService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
 import org.tomdang.combat.command.GetWeapon;
 import org.tomdang.combat.command.SetDefense;
@@ -41,7 +43,7 @@ public class CommandRegistrar {
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
 	                        DialogueController dialogueController, PlayerNpcLifecycleService playerNpcLifecycleService,
 	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
-	                        ActorFollowService actorFollowService
+	                        ActorFollowService actorFollowService, ActorLookService actorLookService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -100,6 +102,9 @@ public class CommandRegistrar {
 
 		FollowTestCommand followTestCommand = new FollowTestCommand(actorFollowService, actorInstanceRegistry);
 		instance.getCommand("followtest").setExecutor(followTestCommand);
+
+		LookActorTestCommand lookActorTestCommand = new LookActorTestCommand(actorInstanceRegistry, actorLookService);
+		instance.getCommand("actorlook").setExecutor(lookActorTestCommand);
 	}
 	
 }

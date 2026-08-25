@@ -68,6 +68,8 @@ public class ActorBootStrap {
 	private final ActorMovementTaskService actorMovementTaskService;
 	@Getter
 	private final ActorFollowService actorFollowService;
+	@Getter
+	private final ActorLookService actorLookService;
 
 	public ActorBootStrap(Plugin plugin, NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
 	                      NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
@@ -109,6 +111,7 @@ public class ActorBootStrap {
 		actorMovementTaskRegistry = new ActorMovementTaskRegistry();
 		actorMovementTaskService = new ActorMovementTaskService(plugin, actorMovementTaskRegistry);
 		HorizontalFacingCalculator horizontalFacingCalculator = new HorizontalFacingCalculator();
+		actorLookService = new ActorLookService(actorPresentationService, horizontalFacingCalculator);
 
 		actorFollowService = new ActorFollowService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService, horizontalFacingCalculator);
 

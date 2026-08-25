@@ -233,7 +233,8 @@ public class TomBlock extends JavaPlugin {
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
 				actorBootStrap.getActorLifecycleService(),
-				actorBootStrap.getActorFollowService()
+				actorBootStrap.getActorFollowService(),
+				actorBootStrap.getActorLookService()
 		);
 
 		new ListenerRegistrar(
