@@ -237,7 +237,8 @@ public class TomBlock extends JavaPlugin {
 				playerNpcLifecycleService,
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
-				actorBootStrap.getActorLifecycleService()
+				actorBootStrap.getActorLifecycleService(),
+				actorBootStrap.getActorFollowService()
 		);
 
 		new ListenerRegistrar(

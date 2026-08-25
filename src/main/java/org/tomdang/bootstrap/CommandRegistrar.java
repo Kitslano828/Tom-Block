@@ -2,9 +2,11 @@ package org.tomdang.bootstrap;
 
 import net.citizensnpcs.api.npc.NPCRegistry;
 import org.tomdang.TomBlock;
+import org.tomdang.actorframework.command.FollowTestCommand;
 import org.tomdang.actorframework.command.MoveActorTestCommand;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
+import org.tomdang.actorframework.movement.ActorFollowService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
 import org.tomdang.actorframework.presentation.ActorPresentationService;
 import org.tomdang.citizensintegration.command.CitizensNpcTestCommand;
@@ -41,7 +43,8 @@ public class CommandRegistrar {
 	                        CustomArmorService customArmorService, PlayerStatsService playerStatsService, CustomArmorRegistry customArmorRegistry,
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
 							DialogueController dialogueController, NPCRegistry npcRegistry, PlayerNpcLifecycleService playerNpcLifecycleService,
-							ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService
+							ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
+							ActorFollowService actorFollowService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -100,6 +103,9 @@ public class CommandRegistrar {
 
 		MoveActorTestCommand moveActorTestCommand = new MoveActorTestCommand(actorInstanceRegistry, linearActorMovementService, actorLifecycleService);
 		instance.getCommand("moveactortest").setExecutor(moveActorTestCommand);
+
+		FollowTestCommand followTestCommand = new FollowTestCommand(actorFollowService, actorInstanceRegistry);
+		instance.getCommand("followtest").setExecutor(followTestCommand);
 	}
 	
 }

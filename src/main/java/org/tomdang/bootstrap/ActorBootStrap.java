@@ -13,10 +13,7 @@ import org.tomdang.actorframework.instance.ActorInstanceService;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.ActorInteractionService;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
-import org.tomdang.actorframework.movement.ActorMovementTaskRegistry;
-import org.tomdang.actorframework.movement.ActorMovementTaskService;
-import org.tomdang.actorframework.movement.LinearActorMovementService;
-import org.tomdang.actorframework.movement.LinearMovementStepCalculator;
+import org.tomdang.actorframework.movement.*;
 import org.tomdang.actorframework.presentation.ActiveActorPresentationRegistry;
 import org.tomdang.actorframework.presentation.ActorPresentationService;
 import org.tomdang.actorframework.presentation.ActorPresentationTypeRegistry;
@@ -69,6 +66,8 @@ public class ActorBootStrap {
 	private final LinearActorMovementService linearActorMovementService;
 	@Getter
 	private final ActorMovementTaskService actorMovementTaskService;
+	@Getter
+	private final ActorFollowService actorFollowService;
 
 	public ActorBootStrap(Plugin plugin, NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
 	                      NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
@@ -109,6 +108,8 @@ public class ActorBootStrap {
 		linearMovementStepCalculator = new LinearMovementStepCalculator();
 		actorMovementTaskRegistry = new ActorMovementTaskRegistry();
 		actorMovementTaskService = new ActorMovementTaskService(plugin, actorMovementTaskRegistry);
+
+		actorFollowService = new ActorFollowService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService);
 
 		linearActorMovementService = new LinearActorMovementService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService);
 
