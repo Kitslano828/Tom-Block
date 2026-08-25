@@ -8,15 +8,18 @@ public class PlayerResource {
 	@Getter
 	private double maximum = 100;
 
-	public void addCurrent(double amount, double suppliedMaximum) {
-		if (this.current + amount > suppliedMaximum) {
-			this.current = suppliedMaximum;
+	public void addCurrent(double amount, double effectiveMaximum) {
+		if (amount < 0) throw new IllegalArgumentException("Amount needs to be a positive number");
+		if (effectiveMaximum < 0) throw new IllegalArgumentException("EffectiveMaximum needs to be a positive number");
+		if (this.current + amount > effectiveMaximum) {
+			this.current = effectiveMaximum;
 		} else {
 			this.current += amount;
 		}
 	}
 
 	public void removeCurrent(double amount) {
+		if (amount < 0) throw new IllegalArgumentException("Amount needs to be a positive number");
 		if (this.current - amount < 0) {
 			this.current = 0;
 		} else {
@@ -24,11 +27,13 @@ public class PlayerResource {
 		}
 	}
 
-	public void restoreFull(double suppliedMaximum) {
-		this.current = suppliedMaximum;
+	public void restoreFull(double effectiveMaximum) {
+		if (effectiveMaximum < 0 ) throw new IllegalArgumentException("Effective Maximum needs to be positive");
+		this.current = effectiveMaximum;
 	}
 
 	public void setMaximum(double amount) {
+		if (amount < 0) throw new IllegalArgumentException("amount cannot be negative");
 		this.maximum = amount;
 		if (this.current > amount) {
 			this.current = amount;

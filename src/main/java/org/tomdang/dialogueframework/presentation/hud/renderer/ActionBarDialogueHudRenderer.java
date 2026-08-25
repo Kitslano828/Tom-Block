@@ -1,5 +1,6 @@
 package org.tomdang.dialogueframework.presentation.hud.renderer;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
@@ -8,6 +9,7 @@ import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 
 public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
+
 	@Override
 	public void render(Player player, DialogueThemeDefinition definition, DialogueHudSkin hudSkin, DialogueNode node, int revealedCharacterCount) {
 		if (player == null) throw new IllegalArgumentException("player cannot be null");
@@ -33,6 +35,27 @@ public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
 		player.sendActionBar(dialogueComponent);
 
 	}
+
+	/*
+	// Test implementation for custom texture pack!
+	@Override
+	public void render(
+			Player player,
+			DialogueThemeDefinition definition,
+			DialogueHudSkin hudSkin,
+			DialogueNode node,
+			int revealedCharacterCount
+	) {
+		if (player == null) {
+			throw new IllegalArgumentException("player cannot be null");
+		}
+
+		Component dialogueComponent = Component.text("\uE001")
+				.font(Key.key("tomblock", "dialogue"));
+
+		player.sendActionBar(dialogueComponent);
+	}
+	 */
 
 	@Override
 	public void clear(Player player) {
