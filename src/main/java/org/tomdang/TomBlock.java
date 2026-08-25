@@ -148,7 +148,8 @@ public class TomBlock extends JavaPlugin {
 				dialogueAdvanceService,
 				actorInteractionRegistry,
 				actorRegistry,
-				actorSpawnPointRegistry
+				actorSpawnPointRegistry,
+				actorBootStrap.getActorLookService()
 		);
 		blacksmithContent.register();
 
@@ -233,8 +234,7 @@ public class TomBlock extends JavaPlugin {
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
 				actorBootStrap.getActorLifecycleService(),
-				actorBootStrap.getActorFollowService(),
-				actorBootStrap.getActorLookService()
+				actorBootStrap.getActorFollowService()
 		);
 
 		new ListenerRegistrar(

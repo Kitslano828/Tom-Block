@@ -8,6 +8,8 @@ import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.combat.ActorDamagePolicy;
 import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
+import org.tomdang.actorframework.interaction.LookAtPlayerInteraction;
+import org.tomdang.actorframework.movement.ActorLookService;
 import org.tomdang.actorframework.registry.ActorRegistry;
 import org.tomdang.actorframework.spawn.ActorSpawnPoint;
 import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
@@ -37,10 +39,12 @@ public class BlacksmithContent {
 	private final ActorInteractionRegistry actorInteractionRegistry;
 	private final ActorRegistry actorRegistry;
 	private final ActorSpawnPointRegistry actorSpawnPointRegistry;
+	private final ActorLookService actorLookService;
 
 	public BlacksmithContent(DialogueThemeRegistry dialogueThemeRegistry, DialogueHudSkinRegistry dialogueHudSkinRegistry, DialogueRegistry dialogueRegistry,
 	                         DialogueController dialogueController, DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService,
-	                         ActorInteractionRegistry actorInteractionRegistry, ActorRegistry actorRegistry, ActorSpawnPointRegistry actorSpawnPointRegistry
+	                         ActorInteractionRegistry actorInteractionRegistry, ActorRegistry actorRegistry, ActorSpawnPointRegistry actorSpawnPointRegistry,
+							 ActorLookService actorLookService
 	) {
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("dialogueThemeRegistry cannot be null");
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
@@ -51,6 +55,7 @@ public class BlacksmithContent {
 		if (actorInteractionRegistry == null) throw new IllegalArgumentException("actorInteractionRegistry cannot be null");
 		if (actorRegistry == null) throw new IllegalArgumentException("actorRegistry cannot be null");
 		if (actorSpawnPointRegistry == null) throw new IllegalArgumentException("actorSpawnPointRegistry cannot be null");
+		if (actorLookService == null) throw new IllegalArgumentException("actorLookService cannot be null");
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
@@ -61,6 +66,7 @@ public class BlacksmithContent {
 		this.actorInteractionRegistry = actorInteractionRegistry;
 		this.actorRegistry = actorRegistry;
 		this.actorSpawnPointRegistry = actorSpawnPointRegistry;
+		this.actorLookService = actorLookService;
 	}
 
 	public void register() {
@@ -124,7 +130,9 @@ public class BlacksmithContent {
 		dialogueRegistry.registerDialogue(definition);
 
 		ActorDialogueInteraction interaction = new ActorDialogueInteraction("BLACKSMITH_TEST_DIALOGUE", dialogueController, dialogueSessionService, dialogueAdvanceService);
-		actorInteractionRegistry.registerInteraction("BLACKSMITH_DIALOGUE_INTERACTION", interaction);
+
+		LookAtPlayerInteraction lookInteraction = new LookAtPlayerInteraction(actorLookService, interaction);
+		actorInteractionRegistry.registerInteraction("BLACKSMITH_DIALOGUE_INTERACTION", lookInteraction);
 
 		ActorDefinition actorDefinition = new ActorDefinition("TALKING_BLACKSMITH", "Talking Blacksmith", ActorAudienceScope.GLOBAL,
 				"VILLAGER", "BLACKSMITH_DIALOGUE_INTERACTION", ActorDamagePolicy.PROTECTED, ActorCollisionPolicy.PASS_THROUGH);
