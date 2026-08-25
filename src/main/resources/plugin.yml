@@ -4,8 +4,6 @@ main: org.tomdang.TomBlock
 author: TomDang
 api-version: 26.2
 
-depend:
-  - Citizens
 commands:
   setmininglvl:
     description: set the mining level of a player
@@ -43,8 +41,6 @@ commands:
     description: opens a custom crafting gui
   dialoguechoice:
     description: This is technically available as a player command, but it is intended primarily as the internal target used by clickable messages.
-  spawnnpc:
-    description: spawns a temporary Citizens NPC at the senders location
   spawnnmsnpc:
     description: spawn a custom NMS NPC!
   moveactortest:

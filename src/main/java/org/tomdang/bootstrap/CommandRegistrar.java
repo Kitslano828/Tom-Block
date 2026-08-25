@@ -1,6 +1,5 @@
 package org.tomdang.bootstrap;
 
-import net.citizensnpcs.api.npc.NPCRegistry;
 import org.tomdang.TomBlock;
 import org.tomdang.actorframework.command.FollowTestCommand;
 import org.tomdang.actorframework.command.MoveActorTestCommand;
@@ -8,8 +7,6 @@ import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
 import org.tomdang.actorframework.movement.ActorFollowService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
-import org.tomdang.actorframework.presentation.ActorPresentationService;
-import org.tomdang.citizensintegration.command.CitizensNpcTestCommand;
 import org.tomdang.combat.command.GetWeapon;
 import org.tomdang.combat.command.SetDefense;
 import org.tomdang.combat.weapons.WeaponRegistry;
@@ -42,9 +39,9 @@ public class CommandRegistrar {
 	public CommandRegistrar(TomBlock instance, PlayerProfileService playerProfileService, WeaponRegistry weaponRegistry, CustomMobRegistry customMobRegistry,
 	                        CustomArmorService customArmorService, PlayerStatsService playerStatsService, CustomArmorRegistry customArmorRegistry,
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
-							DialogueController dialogueController, NPCRegistry npcRegistry, PlayerNpcLifecycleService playerNpcLifecycleService,
-							ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
-							ActorFollowService actorFollowService
+	                        DialogueController dialogueController, PlayerNpcLifecycleService playerNpcLifecycleService,
+	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
+	                        ActorFollowService actorFollowService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -94,9 +91,6 @@ public class CommandRegistrar {
 
 		DialogueChoiceCommand dialogueChoiceCommand = new DialogueChoiceCommand(dialogueSessionService, dialogueController);
 		instance.getCommand("dialoguechoice").setExecutor(dialogueChoiceCommand);
-
-		CitizensNpcTestCommand citizensNpcTestCommand = new CitizensNpcTestCommand(npcRegistry);
-		instance.getCommand("spawnnpc").setExecutor(citizensNpcTestCommand);
 
 		NmsPlayerNpcTestCommand nmsPlayerNpcTestCommand = new NmsPlayerNpcTestCommand(playerNpcLifecycleService);
 		instance.getCommand("spawnnmsnpc").setExecutor(nmsPlayerNpcTestCommand);

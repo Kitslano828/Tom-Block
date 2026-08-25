@@ -10,7 +10,6 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven("https://maven.citizensnpcs.co/repo")
 }
 
 dependencies {
@@ -18,10 +17,6 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.46")
     annotationProcessor("org.projectlombok:lombok:1.18.46")
-
-    compileOnly("net.citizensnpcs:citizens-main:2.0.43-SNAPSHOT") {
-        isTransitive = false
-    }
 }
 
 java {

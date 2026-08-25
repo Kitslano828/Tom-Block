@@ -1,8 +1,5 @@
 package org.tomdang;
 
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.MemoryNPCDataStore;
-import net.citizensnpcs.api.npc.NPCRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -203,7 +200,6 @@ public class TomBlock extends JavaPlugin {
 
 
 
-		NPCRegistry npcRegistry = CitizensAPI.createAnonymousNPCRegistry(new MemoryNPCDataStore());
 		NmsPlayerNpcFactory nmsPlayerNpcFactory = new NmsPlayerNpcFactory();
 		NmsPlayerNpcViewer nmsPlayerNpcViewer = new NmsPlayerNpcViewer();
 		PlayerNpcRegistry playerNpcRegistry = new PlayerNpcRegistry();
@@ -233,7 +229,6 @@ public class TomBlock extends JavaPlugin {
 				miningBootstrap.getMiningToolRegistry(),
 				dialogueSessionService,
 				dialogueController,
-				npcRegistry,
 				playerNpcLifecycleService,
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
