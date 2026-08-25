@@ -3,6 +3,7 @@ package org.tomdang.playernpc.nms;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.level.GameType;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -34,7 +35,7 @@ public class NmsPlayerNpcViewer {
 				serverPlayer.getId(), serverPlayer.getUUID(), serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
 				serverPlayer.getXRot(), serverPlayer.getYRot(), serverPlayer.getType(), 0, serverPlayer.getDeltaMovement(), serverPlayer.getYHeadRot());
 		gamePacketListener.send(spawnPacket);
-
+		sendHeadRotationPacket(gamePacketListener, serverPlayer);
 	}
 
 	public void hide(Player player, PlayerNPC playerNPC) {
@@ -60,7 +61,14 @@ public class NmsPlayerNpcViewer {
 				Set.of(),
 				serverPlayer.onGround
 				);
+
 		gamePacketListener.send(clientboundTeleportEntityPacket);
+		sendHeadRotationPacket(gamePacketListener, serverPlayer);
+	}
+
+	private void sendHeadRotationPacket(ServerGamePacketListenerImpl gamePacketListener, ServerPlayer serverPlayer) {
+		byte encodedYaw = (byte) Mth.floor(serverPlayer.getYHeadRot() * 256.0F / 360.0F);
+		gamePacketListener.send(new ClientboundRotateHeadPacket(serverPlayer, encodedYaw));
 	}
 
 	private ServerGamePacketListenerImpl getConnection(Player player) {

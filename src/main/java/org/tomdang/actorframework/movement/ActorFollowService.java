@@ -13,15 +13,18 @@ public class ActorFollowService {
 	private final ActorPresentationService actorPresentationService;
 	private final LinearMovementStepCalculator linearMovementStepCalculator;
 	private final ActorMovementTaskService actorMovementTaskService;
+	private final HorizontalFacingCalculator horizontalFacingCalculator;
 
-	public ActorFollowService(ActorPresentationService actorPresentationService, LinearMovementStepCalculator linearMovementStepCalculator, ActorMovementTaskService actorMovementTaskService) {
+	public ActorFollowService(ActorPresentationService actorPresentationService, LinearMovementStepCalculator linearMovementStepCalculator, ActorMovementTaskService actorMovementTaskService, HorizontalFacingCalculator horizontalFacingCalculator) {
 		if (actorPresentationService == null) throw new IllegalArgumentException("actorPresentationService should not be null");
 		if (linearMovementStepCalculator == null) throw new IllegalArgumentException("linearMovementStepCalculator should not be null");
 		if (actorMovementTaskService == null) throw new IllegalArgumentException("actorMovementTaskService should not be null");
+		if (horizontalFacingCalculator == null) throw new IllegalArgumentException("horizontalFacingCalculator should not be null");
 
 		this.actorPresentationService = actorPresentationService;
 		this.linearMovementStepCalculator = linearMovementStepCalculator;
 		this.actorMovementTaskService = actorMovementTaskService;
+		this.horizontalFacingCalculator = horizontalFacingCalculator;
 	}
 
 	public void follow(ActorInstance instance, UUID playerUUID, double maxMovableSpeed, double distanceFromPlayer) {
@@ -59,7 +62,8 @@ public class ActorFollowService {
 					double stepDistance = Math.min(maxMovableSpeed, distanceAway);
 
 					Location next = linearMovementStepCalculator.calculateNextLocation(currentLocation, currentPlayerLocation, stepDistance);
-					actorPresentationService.movePresentation(instance, next);
+					Location rotatedLocation = horizontalFacingCalculator.rotateLocation(next, currentPlayerLocation);
+					actorPresentationService.movePresentation(instance, rotatedLocation);
 
 					return false;
 				}

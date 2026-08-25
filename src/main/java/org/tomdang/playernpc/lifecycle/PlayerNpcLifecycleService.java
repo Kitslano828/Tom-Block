@@ -107,6 +107,7 @@ public class PlayerNpcLifecycleService {
 		if (!location.getWorld().equals(craftWorld)) throw new IllegalStateException("Cross world travelling has yet to be implementated");
 
 		serverPlayer.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+		serverPlayer.setYHeadRot(location.getYaw());
 
 		for (UUID playerUUID : playerNpcVisibilityRegistry.getViewers(profileUUID)) {
 			Player player = Bukkit.getPlayer(playerUUID);

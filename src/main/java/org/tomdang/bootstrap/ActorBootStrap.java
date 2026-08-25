@@ -108,8 +108,9 @@ public class ActorBootStrap {
 		linearMovementStepCalculator = new LinearMovementStepCalculator();
 		actorMovementTaskRegistry = new ActorMovementTaskRegistry();
 		actorMovementTaskService = new ActorMovementTaskService(plugin, actorMovementTaskRegistry);
+		HorizontalFacingCalculator horizontalFacingCalculator = new HorizontalFacingCalculator();
 
-		actorFollowService = new ActorFollowService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService);
+		actorFollowService = new ActorFollowService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService, horizontalFacingCalculator);
 
 		linearActorMovementService = new LinearActorMovementService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService);
 
