@@ -12,7 +12,7 @@ import static org.mockito.Mockito.*;
 public class LookAtPlayerInteractionTest {
 
 	@Test
-	void lookTest() {
+	void looksAtPlayerBeforeDelegating() {
 		ActorLookService actorLookService = mock(ActorLookService.class);
 		ActorInteraction delegate = mock(ActorInteraction.class);
 		Player player = mock(Player.class);

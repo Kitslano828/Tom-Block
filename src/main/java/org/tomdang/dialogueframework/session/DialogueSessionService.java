@@ -46,7 +46,7 @@ public class DialogueSessionService {
 		return dialogueSessionRegistry.removeSession(playerUUID);
 	}
 
-	public DialogueSession selectChoice(UUID playerUUID, String choiceID) {
+	public DialogueChoiceSelectionResult selectChoice(UUID playerUUID, String choiceID) {
 		if (playerUUID == null) throw new IllegalArgumentException("Player UUID cannot be null");
 		if (choiceID == null) throw new IllegalArgumentException("Choice ID cannot be null");
 		if (choiceID.isBlank()) throw new IllegalArgumentException("Choice ID cannot be blank");
@@ -59,14 +59,16 @@ public class DialogueSessionService {
 		DialogueChoice choice = node.getChoice(choiceID);
 		if (choice == null) throw new IllegalArgumentException("a player must only select choices belonging to their current node");
 
+		DialogueContext context = session.getDialogueContext();
+
 		String nextNodeID = choice.getNextNodeID();
 		if (nextNodeID == null) {
 			endDialogue(playerUUID);
-			return null;
+			return new DialogueChoiceSelectionResult(choice, context, null);
 		}
 
 		session.moveToNode(nextNodeID);
-		return session;
+		return new DialogueChoiceSelectionResult(choice, context, session);
 	}
 
 }

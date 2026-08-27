@@ -7,6 +7,7 @@ import org.tomdang.dialogueframework.presentation.choice.DialogueChoicePresentat
 import org.tomdang.dialogueframework.presentation.hud.DialogueDisplayState;
 import org.tomdang.dialogueframework.presentation.hud.DialogueDisplayStateRegistry;
 import org.tomdang.dialogueframework.presentation.hud.DialogueTextAnimationService;
+import org.tomdang.dialogueframework.session.DialogueChoiceSelectionResult;
 import org.tomdang.dialogueframework.session.DialogueSession;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 
@@ -61,8 +62,8 @@ public class DialogueAdvanceService {
 		}
 		if (dialogueChoices.size() == 1) {
 			DialogueChoice choice = dialogueChoices.getFirst();
-			DialogueSession dialogueSession = dialogueController.selectChoice(player, choice.getChoiceID());
-			if (dialogueSession == null) return DialogueAdvanceResult.DIALOGUE_ENDED;
+			DialogueChoiceSelectionResult result = dialogueController.selectChoice(player, choice.getChoiceID());
+			if (result.getActiveSession() == null) return DialogueAdvanceResult.DIALOGUE_ENDED;
 			return DialogueAdvanceResult.NODE_ADVANCED;
 		}
 

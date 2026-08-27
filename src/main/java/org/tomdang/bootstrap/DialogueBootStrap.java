@@ -3,6 +3,8 @@ package org.tomdang.bootstrap;
 import lombok.Getter;
 import org.tomdang.TomBlock;
 import org.tomdang.dialogueframework.DialogueController;
+import org.tomdang.dialogueframework.action.DialogueChoiceActionRegistry;
+import org.tomdang.dialogueframework.action.DialogueChoiceActionService;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.presentation.choice.DialogueChoicePresentation;
 import org.tomdang.dialogueframework.presentation.choice.chat.ChatDialogueChoicePresentation;
@@ -36,6 +38,10 @@ public class DialogueBootStrap {
 	private final DialogueController dialogueController;
 	@Getter
 	private final DialogueAdvanceService dialogueAdvanceService;
+	@Getter
+	private final DialogueChoiceActionRegistry dialogueChoiceActionRegistry;
+	@Getter
+	private final DialogueChoiceActionService dialogueChoiceActionService;
 
 	public DialogueBootStrap(TomBlock instance, ActionBarSuppressionService actionBarSuppressionService) {
 		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
@@ -78,7 +84,12 @@ public class DialogueBootStrap {
 				actionBarSuppressionService
 		);
 
-		dialogueController = new DialogueController(dialogueSessionService, hudDialoguePresentation);
+		dialogueChoiceActionRegistry = new DialogueChoiceActionRegistry();
+		dialogueChoiceActionService = new DialogueChoiceActionService(dialogueChoiceActionRegistry);
+
+		dialogueController = new DialogueController(dialogueSessionService, hudDialoguePresentation, dialogueChoiceActionService);
+
+
 
 		DialogueChoicePresentation dialogueChoicePresentation =
 				new ChatDialogueChoicePresentation();

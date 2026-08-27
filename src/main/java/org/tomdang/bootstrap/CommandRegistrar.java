@@ -6,7 +6,6 @@ import org.tomdang.actorframework.command.MoveActorTestCommand;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
 import org.tomdang.actorframework.movement.ActorFollowService;
-import org.tomdang.actorframework.movement.ActorLookService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
 import org.tomdang.combat.command.GetWeapon;
 import org.tomdang.combat.command.SetDefense;

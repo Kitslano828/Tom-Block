@@ -13,8 +13,10 @@ import org.tomdang.actorframework.movement.ActorLookService;
 import org.tomdang.actorframework.registry.ActorRegistry;
 import org.tomdang.actorframework.spawn.ActorSpawnPoint;
 import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
+import org.tomdang.crafting.dialogue.OpenForgeDialogueAction;
 import org.tomdang.crafting.interaction.OpenForgeInteraction;
 import org.tomdang.dialogueframework.DialogueController;
+import org.tomdang.dialogueframework.action.DialogueChoiceActionRegistry;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.definition.DialogueChoice;
 import org.tomdang.dialogueframework.definition.DialogueDefinition;
@@ -40,11 +42,12 @@ public class BlacksmithContent {
 	private final ActorRegistry actorRegistry;
 	private final ActorSpawnPointRegistry actorSpawnPointRegistry;
 	private final ActorLookService actorLookService;
+	private final DialogueChoiceActionRegistry dialogueChoiceActionRegistry;
 
 	public BlacksmithContent(DialogueThemeRegistry dialogueThemeRegistry, DialogueHudSkinRegistry dialogueHudSkinRegistry, DialogueRegistry dialogueRegistry,
 	                         DialogueController dialogueController, DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService,
 	                         ActorInteractionRegistry actorInteractionRegistry, ActorRegistry actorRegistry, ActorSpawnPointRegistry actorSpawnPointRegistry,
-							 ActorLookService actorLookService
+							 ActorLookService actorLookService, DialogueChoiceActionRegistry dialogueChoiceActionRegistry
 	) {
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("dialogueThemeRegistry cannot be null");
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
@@ -56,6 +59,7 @@ public class BlacksmithContent {
 		if (actorRegistry == null) throw new IllegalArgumentException("actorRegistry cannot be null");
 		if (actorSpawnPointRegistry == null) throw new IllegalArgumentException("actorSpawnPointRegistry cannot be null");
 		if (actorLookService == null) throw new IllegalArgumentException("actorLookService cannot be null");
+		if (dialogueChoiceActionRegistry == null) throw new IllegalArgumentException("dialogueChoiceActionRegistry cannot be null");
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
@@ -67,11 +71,15 @@ public class BlacksmithContent {
 		this.actorRegistry = actorRegistry;
 		this.actorSpawnPointRegistry = actorSpawnPointRegistry;
 		this.actorLookService = actorLookService;
+		this.dialogueChoiceActionRegistry = dialogueChoiceActionRegistry;
 	}
 
 	public void register() {
 		OpenForgeInteraction openForgeInteraction = new OpenForgeInteraction();
 		actorInteractionRegistry.registerInteraction("BLACKSMITH_INTERACTION", openForgeInteraction);
+
+		OpenForgeDialogueAction openForgeDialogueAction = new OpenForgeDialogueAction();
+		dialogueChoiceActionRegistry.registerAction("OPEN_FORGE", openForgeDialogueAction);
 
 		ActorDefinition blacksmithActor = new ActorDefinition(
 				"BLACKSMITH",
@@ -123,7 +131,9 @@ public class BlacksmithContent {
 				new DialogueChoice("CONTINUE", "Continue", "GOODBYE");
 		DialogueChoice checkUpChoice =
 				new DialogueChoice("CHECKUP", "How are you?", "CHECKUP");
-		DialogueNode firstNode = new DialogueNode("GREETING", "Welcome to my forge.", List.of(checkUpChoice, continueChoice));
+		DialogueChoice openForgeChoice =
+				new DialogueChoice("OPEN_FORGE", "Show me what you can forge", null, "OPEN_FORGE");
+		DialogueNode firstNode = new DialogueNode("GREETING", "Welcome to my forge.", List.of(checkUpChoice, openForgeChoice, continueChoice));
 		DialogueNode secondNode = new DialogueNode("CHECKUP", "I am doing alright! How are you?", List.of(continueChoice));
 		DialogueNode thirdNode = new DialogueNode("GOODBYE", "Come back whenever you need something forged.", List.of());
 		DialogueDefinition definition = new DialogueDefinition("BLACKSMITH_TEST_DIALOGUE", "GREETING", List.of(firstNode, secondNode, thirdNode));
