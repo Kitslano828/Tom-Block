@@ -47,6 +47,12 @@ The current Blacksmith demonstration connects several frameworks:
 
 This path demonstrates how the actor, dialogue, action, and crafting systems work together without directly depending on one another.
 
+## Demonstration
+
+A three-minute demonstration of the current project is available here:
+
+[Watch the TomBlock demonstration](https://www.youtube.com/watch?v=oZo07PBEBMk)
+
 ## Project Structure
 
 The project is divided into several major areas:
