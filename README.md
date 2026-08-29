@@ -8,7 +8,7 @@ This is my first substantial programming project and is currently being develope
 
 TomBlock is a rewrite of an earlier project with the same name. The previous version was largely created through AI-generated code that I did not properly understand.
 
-For this version, I started over and made a deliberate effort to write, test, and understand the implementation. I still use AI for guidance, unfamiliar syntax, debugging, and code review, but I implement the systems myself and work to understand why each component exists and how it communicates with the rest of the project.
+For this version, I started over and made a deliberate effort to write, test, and understand the implementation. I still use AI for guidance, unfamiliar syntax, debugging, and code review, but I implement the systems myself and work to understand why each component exists and how it communicates with the rest of the project. I am working on this project alongside learning to program.
 
 One of my current goals is to become more independent in planning features and making architectural decisions.
 
