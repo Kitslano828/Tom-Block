@@ -1,38 +1,26 @@
 package org.tomdang.mining.miningdrops;
 
 import lombok.Getter;
-import org.bukkit.inventory.ItemStack;
+import org.tomdang.customitemframework.CustomItem;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MiningDrop {
 
 	@Getter
-	private boolean isAffectedByFortune;
+	private final boolean isAffectedByFortune;
 	@Getter
-	private ItemStack item;
+	private final CustomItem item;
 	@Getter
-	private int amount;
+	private final int amount;
 	@Getter
-	private double chance;
+	private final double chance;
 
-	public MiningDrop(ItemStack item, int amount, double chance, boolean isAffectedByFortune) {
+	public MiningDrop(CustomItem item, int amount, double chance, boolean isAffectedByFortune) {
 		this.isAffectedByFortune = isAffectedByFortune;
 		this.item = item;
 		this.amount = amount;
 		this.chance = chance;
-	}
-
-	public ItemStack getItemDrops(ItemStack itemType, int amount) {
-		ItemStack droppedItem = itemType.clone();
-		droppedItem.setAmount(amount);
-		return droppedItem;
-	}
-
-	public ItemStack getItemDropsWithFortune(ItemStack itemType, int amount, int fortuneAmount) {
-		ItemStack droppedItem = itemType.clone();
-		droppedItem.setAmount(amount * fortuneAmount);
-		return droppedItem;
 	}
 
 	public boolean rollForDrop() {

@@ -25,12 +25,21 @@ public class CustomItemStackFactory {
 	}
 
 	public ItemStack createCustomItemStack(CustomItem item) {
+		if (item == null) throw new IllegalArgumentException("Item cannot be null");
 		return switch (item) {
 			case MiningTool miningTool -> miningToolCreator.createItemStack(miningTool);
 			case Weapon weapon -> weaponCreator.createItemStack(weapon);
 			case CustomArmor customArmor -> customArmorCreator.createItemStack(customArmor);
-			case null, default -> customItemCreator.createItemStack(item);
+			default -> customItemCreator.createItemStack(item);
 		};
+	}
+
+	public ItemStack createCustomItemStack(CustomItem item, int amount) {
+		if (item == null) throw new IllegalArgumentException("Item cannot be null");
+		if (amount < 1) throw new IllegalArgumentException("Amount needs to be greater than 0");
+		ItemStack stack = createCustomItemStack(item);
+		stack.setAmount(amount);
+		return stack;
 	}
 
 }

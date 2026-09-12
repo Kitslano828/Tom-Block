@@ -24,4 +24,3 @@ weapons:
     strength: 100.0
     abilities:
       - WIND_DASH_ABILITY
-      - MAGIC_BOLT_ABILITY

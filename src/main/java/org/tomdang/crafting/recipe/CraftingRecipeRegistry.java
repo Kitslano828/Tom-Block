@@ -1,9 +1,5 @@
 package org.tomdang.crafting.recipe;
 
-import org.tomdang.crafting.ingredient.CraftingIngredient;
-import org.tomdang.customitemframework.CustomItem;
-import org.tomdang.customitems.RottenFlesh;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.tomdang.mining.miningblock;
 
 import lombok.Getter;
-import org.bukkit.inventory.ItemStack;
+import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.mining.miningdrops.MiningDrop;
 import org.bukkit.Material;
 
@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MiningBlock {
-	private int blockStrength; // To be used later on (for how long it takes to break the block)
+	@Getter
+	private final int blockStrength; // To be used later on (for how long it takes to break the block)
 	@Getter
 	private final int breakingPower; // To be used later on (for tool requirement)
 	@Getter
@@ -30,7 +31,7 @@ public class MiningBlock {
 		this.regenerationTime = regenerationTime * 20; // convert into ticks
 	}
 
-	public void addBlockDrops(ItemStack item, int amount, double chance, boolean isAffectedByFortune) {
+	public void addBlockDrops(CustomItem item, int amount, double chance, boolean isAffectedByFortune) {
 		blockDrops.add(new MiningDrop(item, amount, chance, isAffectedByFortune));
 	}
 }

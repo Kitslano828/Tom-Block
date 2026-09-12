@@ -1,14 +1,10 @@
 package org.tomdang.custommobframework;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.CustomItemRegistry;
-import org.tomdang.customitemframework.ItemCategory;
-import org.tomdang.customitemframework.Rarity;
-import org.tomdang.customitems.RottenFlesh;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CustomMobRegistry {
-	RottenFlesh rottenFlesh = new RottenFlesh("ROTTEN_FLESH", Material.ROTTEN_FLESH, "TEST ROTTEN FLESH", Rarity.COMMON, ItemCategory.MOB_DROP);
-
 	CustomItemRegistry customItemRegistry;
 	private final Map<String, CustomMob> customMobMap = new HashMap<>();
 	CustomMobSpawner customMobSpawner;
@@ -28,6 +22,8 @@ public class CustomMobRegistry {
 
 		createNewCustomMob("TRAINING_ZOMBIE", EntityType.ZOMBIE, "Training Zombie", 100.0, 20, MobType.COMMON_MOB, 5);
 
+		CustomItem rottenFlesh = customItemRegistry.getCustomItem("ROTTEN_FLESH");
+		if (rottenFlesh == null) throw new IllegalStateException("ROTTEN_FLESH is not registered");
 		addDropToCustomMob(customMobMap.get("TRAINING_ZOMBIE"), rottenFlesh, 2, 100.0);
 	}
 
@@ -39,7 +35,6 @@ public class CustomMobRegistry {
 
 	public void addDropToCustomMob(CustomMob customMob, CustomItem customItem, int amount,  double chance) {
 		customMob.addMobDrops(customItem, amount, chance);
-		customItemRegistry.addItemToRegistry(customItem);
 	}
 
 	public boolean isACustomMob(String id) {

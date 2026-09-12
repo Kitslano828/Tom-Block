@@ -1,0 +1,79 @@
+mining-blocks:
+  STONE:
+    block-strength: 0
+    breaking-power: 0
+    xp: 1
+    regeneration-time-seconds: 5
+    drops:
+      - item: COBBLESTONE
+        amount: 1
+        chance: 100.0
+        affected-by-fortune: true
+      - item: GRAY_DYE
+        amount: 1
+        chance: 0.01
+        affected-by-fortune: false
+
+  COAL_ORE:
+    block-strength: 0
+    breaking-power: 1
+    xp: 3
+    regeneration-time-seconds: 5
+    drops:
+      - item: COAL
+        amount: 1
+        chance: 100.0
+        affected-by-fortune: true
+      - item: BLACK_DYE
+        amount: 1
+        chance: 0.01
+        affected-by-fortune: false
+
+  IRON_ORE:
+    block-strength: 0
+    breaking-power: 1
+    xp: 5
+    regeneration-time-seconds: 7
+    drops:
+      - item: RAW_IRON
+        amount: 1
+        chance: 100.0
+        affected-by-fortune: true
+      - item: LIGHT_GRAY_DYE
+        amount: 1
+        chance: 0.01
+        affected-by-fortune: false
+
+  DIAMOND_ORE:
+    block-strength: 0
+    breaking-power: 2
+    xp: 8
+    regeneration-time-seconds: 10
+    drops:
+      - item: DIAMOND
+        amount: 1
+        chance: 100.0
+        affected-by-fortune: true
+      - item: LIGHT_BLUE_DYE
+        amount: 1
+        chance: 0.01
+        affected-by-fortune: false
+
+  IRON_BLOCK:
+    block-strength: 0
+    breaking-power: 3
+    xp: 12
+    regeneration-time-seconds: 15
+    drops:
+      - item: RAW_IRON
+        amount: 9
+        chance: 100.0
+        affected-by-fortune: true
+      - item: IRON_BLOCK
+        amount: 1
+        chance: 5.0
+        affected-by-fortune: false
+      - item: WHITE_DYE
+        amount: 1
+        chance: 0.01
+        affected-by-fortune: false

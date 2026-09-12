@@ -26,8 +26,7 @@ public class PlayerInteractListener implements Listener {
 
 		Action action = event.getAction();
 
-		// Check if the player right-clicked the air
-		if (action == Action.RIGHT_CLICK_AIR) {
+		if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
 			triggerRightClick(event.getPlayer());
 		}
 	}

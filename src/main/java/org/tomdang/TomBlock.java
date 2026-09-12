@@ -80,7 +80,7 @@ public class TomBlock extends JavaPlugin {
 		NamespacedKey actorAudienceIDKey = new NamespacedKey(this,"actor_audience_id");
 		NamespacedKey actorSpawnPointIDKey = new NamespacedKey(this, "actor_spawn_point_id");
 
-		ItemBootStrap itemBootStrap = new ItemBootStrap(customItemIdKey);
+		ItemBootStrap itemBootStrap = new ItemBootStrap(this, customItemIdKey);
 
 		CustomItemRegistry customItemRegistry = itemBootStrap.getCustomItemRegistry();
 		CustomItemCreator customItemCreator = itemBootStrap.getCustomItemCreator();
@@ -88,6 +88,14 @@ public class TomBlock extends JavaPlugin {
 		CustomArmorRegistry customArmorRegistry = itemBootStrap.getCustomArmorRegistry();
 		CustomArmorResolver customArmorResolver = itemBootStrap.getCustomArmorResolver();
 		CustomArmorCreator customArmorCreator = itemBootStrap.getCustomArmorCreator();
+		WeaponCreator weaponCreator = new WeaponCreator(customItemIdKey);
+		MiningToolCreator miningToolCreator = new MiningToolCreator(customItemIdKey);
+		CustomItemStackFactory customItemStackFactory = new CustomItemStackFactory(
+				customItemCreator,
+				weaponCreator,
+				miningToolCreator,
+				customArmorCreator
+		);
 
 		MobBootStrap mobBootStrap = new MobBootStrap(
 				this,
@@ -157,6 +165,7 @@ public class TomBlock extends JavaPlugin {
 		CombatBootStrap combatBootStrap = new CombatBootStrap(
 				this,
 				customItemIdKey,
+				weaponCreator,
 				customItemRegistry,
 				customAbilityRegistry,
 				playerProfileService,
@@ -165,27 +174,18 @@ public class TomBlock extends JavaPlugin {
 				customMobResolver,
 				customMobHealthService
 		);
-		WeaponCreator weaponCreator = combatBootStrap.getWeaponCreator();
-
 		MiningBootstrap miningBootstrap = new MiningBootstrap(
 				this,
 				customItemIdKey,
+				miningToolCreator,
 				customItemRegistry,
+				customItemStackFactory,
 				playerActionBarService,
 				playerProfileService,
 				playerStatsService,
 				activeAbilityService,
 				customAbilityRegistry
 		);
-		MiningToolCreator miningToolCreator = miningBootstrap.getMiningToolCreator();
-
-		CustomItemStackFactory customItemStackFactory = new CustomItemStackFactory(
-				customItemCreator,
-				weaponCreator,
-				miningToolCreator,
-				customArmorCreator
-		);
-
 		CraftingBootStrap craftingBootStrap = new CraftingBootStrap(customItemResolver,
 				customItemRegistry,
 				customItemStackFactory

@@ -8,9 +8,13 @@ import org.tomdang.TomBlock;
 import org.tomdang.customabilityframework.AbilityTrigger;
 import org.tomdang.customabilityframework.CustomAbilityRegistry;
 import org.tomdang.customitemframework.CustomItemRegistry;
+import org.tomdang.customitemframework.CustomItemStackFactory;
 import org.tomdang.mining.MiningRegenerationService;
 import org.tomdang.mining.MiningService;
 import org.tomdang.customabilityframework.activeability.ActiveAbilityService;
+import org.tomdang.mining.configuration.miningblock.MiningBlockConfigurationLoader;
+import org.tomdang.mining.configuration.miningblock.MiningBlockDefinition;
+import org.tomdang.mining.configuration.miningblock.MiningBlockDefinitionRegistrar;
 import org.tomdang.mining.configuration.miningtool.MiningToolConfigurationLoader;
 import org.tomdang.mining.configuration.miningtool.MiningToolDefinition;
 import org.tomdang.mining.configuration.miningtool.MiningToolDefinitionRegistrar;
@@ -40,7 +44,8 @@ public class MiningBootstrap {
 	@Getter
 	private final MiningToolCreator miningToolCreator;
 
-	public MiningBootstrap(TomBlock instance, NamespacedKey customIDKey, CustomItemRegistry customItemRegistry,
+	public MiningBootstrap(TomBlock instance, NamespacedKey customIDKey, MiningToolCreator miningToolCreator,
+						   CustomItemRegistry customItemRegistry, CustomItemStackFactory customItemStackFactory,
 	                       PlayerActionBarService playerActionBarService, PlayerProfileService playerProfileService,
 	                       PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService,
 	                       CustomAbilityRegistry customAbilityRegistry
@@ -54,7 +59,22 @@ public class MiningBootstrap {
 
 
 		MiningBlockRegistry miningBlockRegistry = new MiningBlockRegistry();
-		miningToolCreator = new MiningToolCreator(customIDKey);
+		MiningBlockConfigurationLoader miningBlockConfigurationLoader = new MiningBlockConfigurationLoader();
+		List<MiningBlockDefinition> miningBlockDefinitions;
+		try (InputStream miningBlockConfigurationStream = instance.getResource("mining-blocks.yml")) {
+			if (miningBlockConfigurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain mining-blocks.yml");
+			}
+			miningBlockDefinitions = miningBlockConfigurationLoader.loadDefinitions(
+					new InputStreamReader(miningBlockConfigurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled mining-blocks.yml resource", exception);
+		}
+		new MiningBlockDefinitionRegistrar(miningBlockRegistry, customItemRegistry)
+				.registerDefinitions(miningBlockDefinitions);
+
+		this.miningToolCreator = miningToolCreator;
 		miningToolRegistry = new MiningToolRegistry(miningToolCreator, customItemRegistry);
 
 		MiningToolConfigurationLoader miningToolConfigurationLoader = new MiningToolConfigurationLoader();
@@ -93,7 +113,8 @@ public class MiningBootstrap {
 				miningRegenerationService,
 				playerActionBarService,
 				playerStatsService,
-				activeAbilityService
+				activeAbilityService,
+				customItemStackFactory
 		);
 
 	}

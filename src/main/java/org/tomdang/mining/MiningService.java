@@ -10,8 +10,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.tomdang.customabilityframework.activeability.ActiveAbilityService;
-import org.tomdang.customabilityframework.customability.AbilityExecutionContext;
 import org.tomdang.customabilityframework.customability.CustomAbility;
+import org.tomdang.customitemframework.CustomItemStackFactory;
 import org.tomdang.mining.customminingability.AbilityMiningHandler;
 import org.tomdang.mining.customminingability.MiningAbilityContext;
 import org.tomdang.mining.customminingability.MiningBlockReactiveAbility;
@@ -43,12 +43,13 @@ public class MiningService implements AbilityMiningHandler {
 	private final PlayerActionBarService playerActionBarService;
 	private final PlayerStatsService playerStatsService;
 	private final ActiveAbilityService activeAbilityService;
+	private final CustomItemStackFactory customItemStackFactory;
 
 
 	public MiningService(PlayerProfileService playerProfileService, MiningBlockRegistry miningBlockRegistry,
 						 MiningLevel miningLevel, MiningToolResolver miningToolResolver, MiningFortune miningFortune,
 						MiningRegenerationService miningRegenerationService, PlayerActionBarService playerActionBarService,
-						 PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService) {
+						 PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService, CustomItemStackFactory customItemStackFactory) {
 		this.playerProfileService = playerProfileService;
 		this.miningBlockRegistry = miningBlockRegistry;
 		this.miningLevel = miningLevel;
@@ -58,6 +59,7 @@ public class MiningService implements AbilityMiningHandler {
 		this.playerActionBarService = playerActionBarService;
 		this.playerStatsService = playerStatsService;
 		this.activeAbilityService = activeAbilityService;
+		this.customItemStackFactory = customItemStackFactory;
 	}
 
 	public void blockBreak(BlockBreakEvent event, UUID uuid) {
@@ -105,21 +107,16 @@ public class MiningService implements AbilityMiningHandler {
 	public void givePlayerDrops(Player player, MiningBlock block, MiningTool miningTool) {
 		for (MiningDrop miningDrop : block.getBlockDrops()) {
 			if (miningDrop.rollForDrop()) {
-				if (player.getInventory().firstEmpty() == -1) {
-						player.sendMessage("YOUR INVENTORY IS FULL!");
-					player	.dropItem(miningDrop.getItemDrops(miningDrop.getItem(), miningDrop.getAmount()));
-					if (miningDrop.isAffectedByFortune()) {
-						handleMiningFortune(player, miningDrop, miningTool);
-					} else {
-						player.sendMessage("§b§l★YOU DROPPED A RARE ITEM! " + miningDrop.getItem().getI18NDisplayName() );
-					}
+				ItemStack droppedItem = customItemStackFactory.createCustomItemStack(
+						miningDrop.getItem(),
+						miningDrop.getAmount()
+				);
+				giveOrDropItem(player, droppedItem);
+
+				if (miningDrop.isAffectedByFortune()) {
+					handleMiningFortune(player, miningDrop, miningTool);
 				} else {
-					player.getInventory().addItem(miningDrop.getItemDrops(miningDrop.getItem(), miningDrop.getAmount()));
-					if (miningDrop.isAffectedByFortune()) {
-						handleMiningFortune(player,miningDrop, miningTool);
-					} else {
-						player.sendMessage("§b§l★YOU DROPPED A RARE ITEM! " + miningDrop.getItem().getI18NDisplayName() );
-					}
+					player.sendMessage("§b§l★YOU DROPPED A RARE ITEM! " + miningDrop.getItem().getDisplayName());
 				}
 			}
 		}
@@ -131,15 +128,16 @@ public class MiningService implements AbilityMiningHandler {
 
 		// 1. Process guaranteed fortune drops
 		if (guaranteedDrops > 0) {
-			ItemStack guaranteedItem = drop.getItemDropsWithFortune(drop.getItem(), drop.getAmount(), guaranteedDrops);
+			int additionalAmount = drop.getAmount() * guaranteedDrops;
+			ItemStack guaranteedItem = customItemStackFactory.createCustomItemStack(drop.getItem(), additionalAmount);
 			giveOrDropItem(player, guaranteedItem);
 
-			player.sendMessage("§a§lYOU DROPPED " + guaranteedDrops + " ADDITIONAL DROPS FROM YOUR " + totalFortune + " TOTAL FORTUNE!");
+			player.sendMessage("§a§lYOU DROPPED " + additionalAmount + " ADDITIONAL ITEMS FROM YOUR " + totalFortune + " TOTAL FORTUNE!");
 		}
 
 		// 2. Process chance-based fortune proc drop
 		if (miningFortune.checkForMiningFortuneProc(totalFortune)) {
-			ItemStack procItem = drop.getItemDrops(drop.getItem(), drop.getAmount());
+			ItemStack procItem = customItemStackFactory.createCustomItemStack(drop.getItem(), drop.getAmount());
 			giveOrDropItem(player, procItem);
 
 			// only shows to low level miners
@@ -157,6 +155,7 @@ public class MiningService implements AbilityMiningHandler {
 	private void giveOrDropItem(Player player, ItemStack item) {
 		// firstEmpty() returns -1 if the main inventory has no empty slots
 		if (player.getInventory().firstEmpty() == -1) {
+			player.sendMessage("YOUR INVENTORY IS FULL!");
 			player.dropItem(item);
 		} else {
 			player.getInventory().addItem(item);

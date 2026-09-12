@@ -43,7 +43,8 @@ public class CombatBootStrap {
 	private final WeaponCreator weaponCreator;
 
 
-	public CombatBootStrap(TomBlock instance, NamespacedKey customItemIDKey, CustomItemRegistry customItemRegistry, CustomAbilityRegistry customAbilityRegistry,
+	public CombatBootStrap(TomBlock instance, NamespacedKey customItemIDKey, WeaponCreator weaponCreator,
+						   CustomItemRegistry customItemRegistry, CustomAbilityRegistry customAbilityRegistry,
 						   PlayerProfileService playerProfileService, PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 						   CustomMobResolver customMobResolver, CustomMobHealthService customMobHealthService
 	) {
@@ -64,7 +65,7 @@ public class CombatBootStrap {
 				instance, AbilityTrigger.RIGHT_CLICK, 10,windDashDescription);
 		customAbilityRegistry.registerAbility(windDashAbility);
 
-		weaponCreator = new WeaponCreator(customItemIDKey);
+		this.weaponCreator = weaponCreator;
 		weaponRegistry = new WeaponRegistry(weaponCreator, customItemRegistry);
 
 		WeaponConfigurationLoader weaponConfigurationLoader = new WeaponConfigurationLoader();

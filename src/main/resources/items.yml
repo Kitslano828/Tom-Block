@@ -1,0 +1,66 @@
+items:
+  ROTTEN_FLESH:
+    material: ROTTEN_FLESH
+    display-name: "Rotten Flesh"
+    rarity: COMMON
+    category: MOB_DROP
+
+  COBBLESTONE:
+    material: COBBLESTONE
+    display-name: "Cobblestone"
+    rarity: COMMON
+    category: MATERIAL
+
+  COAL:
+    material: COAL
+    display-name: "Coal"
+    rarity: COMMON
+    category: MATERIAL
+
+  RAW_IRON:
+    material: RAW_IRON
+    display-name: "Raw Iron"
+    rarity: COMMON
+    category: MATERIAL
+
+  DIAMOND:
+    material: DIAMOND
+    display-name: "Diamond"
+    rarity: COMMON
+    category: MATERIAL
+
+  GRAY_DYE:
+    material: GRAY_DYE
+    display-name: "Gray Dye"
+    rarity: COMMON
+    category: MATERIAL
+
+  BLACK_DYE:
+    material: BLACK_DYE
+    display-name: "Black Dye"
+    rarity: COMMON
+    category: MATERIAL
+
+  LIGHT_GRAY_DYE:
+    material: LIGHT_GRAY_DYE
+    display-name: "Light Gray Dye"
+    rarity: COMMON
+    category: MATERIAL
+
+  LIGHT_BLUE_DYE:
+    material: LIGHT_BLUE_DYE
+    display-name: "Light Blue Dye"
+    rarity: COMMON
+    category: MATERIAL
+
+  WHITE_DYE:
+    material: WHITE_DYE
+    display-name: "White Dye"
+    rarity: COMMON
+    category: MATERIAL
+
+  IRON_BLOCK:
+    material: IRON_BLOCK
+    display-name: "Iron Block"
+    rarity: COMMON
+    category: MATERIAL

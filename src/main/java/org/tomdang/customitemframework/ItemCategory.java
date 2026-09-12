@@ -5,5 +5,6 @@ public enum ItemCategory {
 	WEAPON,
 	ARMOR,
 	TEST_ITEM,
-	MOB_DROP;
+	MOB_DROP,
+	MATERIAL;
 }
