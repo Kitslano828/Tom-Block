@@ -1,4 +1,4 @@
-package org.tomdang.combat.weapons.configuration;
+package org.tomdang.mining.configuration.miningtool;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,31 +10,30 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WeaponConfigurationLoader {
+public class MiningToolConfigurationLoader {
 
-
-	public List<WeaponDefinition> loadDefinitions(File file) {
+	public List<MiningToolDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
 		return loadDefinitions(YamlConfiguration.loadConfiguration(file));
 	}
 
-	public List<WeaponDefinition> loadDefinitions(Reader reader) {
+	public List<MiningToolDefinition> loadDefinitions(Reader reader) {
 		if (reader == null) throw new IllegalArgumentException("reader cannot be null");
 		return loadDefinitions(YamlConfiguration.loadConfiguration(reader));
 	}
 
-	private List<WeaponDefinition> loadDefinitions(YamlConfiguration data) {
-		List<WeaponDefinition> definitions = new ArrayList<>();
+	private List<MiningToolDefinition> loadDefinitions(YamlConfiguration data) {
+		List<MiningToolDefinition> definitions = new ArrayList<>();
 
-		ConfigurationSection weaponSection = data.getConfigurationSection("weapons");
-		if (weaponSection == null) {
-			throw new IllegalArgumentException("weapons.yml does not contain the required root section.");
+		ConfigurationSection miningToolSection = data.getConfigurationSection("mining-tools");
+		if (miningToolSection == null) {
+			throw new IllegalArgumentException("mining-tools.yml does not contain the required root section.");
 		}
 
-		for (String id : weaponSection.getKeys(false)) {
-			ConfigurationSection section = weaponSection.getConfigurationSection(id);
+		for (String id : miningToolSection.getKeys(false)) {
+			ConfigurationSection section = miningToolSection.getConfigurationSection(id);
 			if (section == null) {
-				throw new IllegalArgumentException("section should not be null");
+				throw new IllegalArgumentException("Section should not be null");
 			}
 
 			String materialStr = section.getString("material");
@@ -52,19 +51,23 @@ public class WeaponConfigurationLoader {
 				throw new IllegalArgumentException(id + " cannot have a rarity be null or blank");
 			}
 
-			if (!section.isSet("damage") || (!section.isDouble("damage") && !section.isInt("damage"))) {
-				throw new IllegalArgumentException(id + " has Missing damage value, or invalid value");
+			if (!section.isSet("breaking-power") || (!section.isInt("breaking-power"))) {
+				throw new IllegalArgumentException(id + " has Missing breaking-power value, or invalid value");
 			}
-			double damage = section.getDouble("damage");
-			if (damage < 0) throw new IllegalArgumentException(id + " has damage lesser than 0");
+			int breakingPower = section.getInt("breaking-power");
+			if (breakingPower < 0) throw new IllegalArgumentException(id + " has breaking-power lesser than 0");
 
-
-			if (!section.isSet("strength") || (!section.isDouble("strength") && !section.isInt("strength"))) {
-				throw new IllegalArgumentException(id + " has Missing strength value, or invalid value");
+			if (!section.isSet("mining-speed") || (!section.isDouble("mining-speed") && !section.isInt("mining-speed"))) {
+				throw new IllegalArgumentException(id + " has Missing mining-speed value, or invalid value");
 			}
-			double strength = section.getDouble("strength");
-			if (strength < 0) throw new IllegalArgumentException(id + " has strength lesser than 0");
+			double miningSpeed = section.getDouble("mining-speed");
+			if (miningSpeed < 0) throw new IllegalArgumentException(id + " has mining-speed lesser than 0");
 
+			if (!section.isSet("fortune") || (!section.isDouble("fortune") && !section.isInt("fortune"))) {
+				throw new IllegalArgumentException(id + " has Missing fortune value, or invalid value");
+			}
+			double fortune = section.getDouble("fortune");
+			if (fortune < 0) throw new IllegalArgumentException(id + " has fortune lesser than 0");
 
 			List<String> abilities = new ArrayList<>();
 			if (section.isSet("abilities") && section.isList("abilities")) {
@@ -89,7 +92,6 @@ public class WeaponConfigurationLoader {
 				throw new IllegalArgumentException("Item " + id + " has an invalid material " + materialStr);
 			}
 
-			// Convert the rarity string into Rarity
 			Rarity rarity;
 			try {
 				rarity = Rarity.valueOf(rarityStr.toUpperCase());
@@ -97,18 +99,17 @@ public class WeaponConfigurationLoader {
 				throw new IllegalArgumentException("Item " + id + " has an invalid rarity " + rarityStr);
 			}
 
-			// Create a WeaponDefinition
-			WeaponDefinition definition = new WeaponDefinition(
+			MiningToolDefinition definition = new MiningToolDefinition(
 					id,
 					material,
 					displayName,
 					rarity,
-					damage,
-					strength,
+					breakingPower,
+					miningSpeed,
+					fortune,
 					abilities
 			);
 
-			// Add it to the result list
 			definitions.add(definition);
 		}
 

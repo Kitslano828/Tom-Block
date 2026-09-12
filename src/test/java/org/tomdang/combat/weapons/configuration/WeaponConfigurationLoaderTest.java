@@ -7,6 +7,7 @@ import org.tomdang.customitemframework.Rarity;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -21,6 +22,24 @@ class WeaponConfigurationLoaderTest {
 	Path temporaryDirectory;
 
 	private final WeaponConfigurationLoader loader = new WeaponConfigurationLoader();
+
+	@Test
+	void readerConfigurationLoadsWeapon() {
+		List<WeaponDefinition> definitions = loader.loadDefinitions(new StringReader("""
+				weapons:
+				  TEST_WEAPON:
+				    material: IRON_SWORD
+				    display-name: "Test Weapon"
+				    rarity: COMMON
+				    damage: 10.0
+				    strength: 2.0
+				    abilities: []
+				"""));
+
+		WeaponDefinition definition = findDefinition(definitions, "TEST_WEAPON");
+		assertEquals(Material.IRON_SWORD, definition.material());
+		assertEquals("Test Weapon", definition.displayName());
+	}
 
 	@Test
 	void validConfigurationLoadsEveryWeapon() throws IOException {

@@ -1,0 +1,50 @@
+mining-tools:
+  WOODEN_PICKAXE:
+    material: WOODEN_PICKAXE
+    display-name: "Wooden Pickaxe"
+    rarity: COMMON
+    breaking-power: 1
+    mining-speed: 15.0
+    fortune: 3.0
+    abilities: []
+  STONE_PICKAXE:
+    material: STONE_PICKAXE
+    display-name: "Stone Pickaxe"
+    rarity: COMMON
+    breaking-power: 1
+    mining-speed: 30.0
+    fortune: 5.0
+    abilities: []
+  GOLDEN_PICKAXE:
+    material: GOLDEN_PICKAXE
+    display-name: "Golden Pickaxe"
+    rarity: COMMON
+    breaking-power: 0
+    mining-speed: 60.0
+    fortune: 6.0
+    abilities: []
+  IRON_PICKAXE:
+    material: IRON_PICKAXE
+    display-name: "Iron Pickaxe"
+    rarity: COMMON
+    breaking-power: 2
+    mining-speed: 45.0
+    fortune: 5.0
+    abilities: []
+  DIAMOND_PICKAXE:
+    material: DIAMOND_PICKAXE
+    display-name: "Diamond Pickaxe"
+    rarity: COMMON
+    breaking-power: 3
+    mining-speed: 60.0
+    fortune: 8.0
+    abilities: []
+  NETHERITE_PICKAXE:
+    material: NETHERITE_PICKAXE
+    display-name: "Netherite Pickaxe"
+    rarity: UNCOMMON
+    breaking-power: 3
+    mining-speed: 85.0
+    fortune: 11.0
+    abilities:
+      - MINING_SPREAD_ABILITY

@@ -25,7 +25,10 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class CombatBootStrap {
@@ -64,10 +67,18 @@ public class CombatBootStrap {
 		weaponCreator = new WeaponCreator(customItemIDKey);
 		weaponRegistry = new WeaponRegistry(weaponCreator, customItemRegistry);
 
-		instance.saveResource("weapons.yml", false);
-		File weaponConfigurationFile = new File(instance.getDataFolder(), "weapons.yml");
 		WeaponConfigurationLoader weaponConfigurationLoader = new WeaponConfigurationLoader();
-		List<WeaponDefinition> weaponDefinitions = weaponConfigurationLoader.loadDefinitions(weaponConfigurationFile);
+		List<WeaponDefinition> weaponDefinitions;
+		try (InputStream weaponConfigurationStream = instance.getResource("weapons.yml")) {
+			if (weaponConfigurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain weapons.yml");
+			}
+			weaponDefinitions = weaponConfigurationLoader.loadDefinitions(
+					new InputStreamReader(weaponConfigurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled weapons.yml resource", exception);
+		}
 		WeaponDefinitionRegistrar weaponDefinitionRegistrar = new WeaponDefinitionRegistrar(
 				weaponRegistry,
 				customAbilityRegistry

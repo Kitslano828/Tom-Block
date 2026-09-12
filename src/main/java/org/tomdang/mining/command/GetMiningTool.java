@@ -37,6 +37,10 @@ public class GetMiningTool implements CommandExecutor, TabCompleter {
 
 		String toolID = args[0];
 		MiningTool miningTool = miningToolRegistry.getMiningTool(toolID);
+		if (miningTool == null) {
+			sender.sendMessage(toolID + " is not a valid mining tool id!");
+			return true;
+		}
 		ItemStack toolItem = miningToolRegistry.getMiningToolAsItem(miningTool);
 
 		((Player) sender).getInventory().addItem(toolItem);
