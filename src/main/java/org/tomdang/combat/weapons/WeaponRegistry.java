@@ -21,21 +21,9 @@ public class WeaponRegistry {
 	private final Map<String, Weapon> weapons = new HashMap<>();
 	ItemCategory weaponCategory = ItemCategory.WEAPON;
 
-	public WeaponRegistry(WeaponCreator weaponCreator, CustomItemRegistry customItemRegistry, CustomAbilityRegistry customAbilityRegistry) {
+	public WeaponRegistry(WeaponCreator weaponCreator, CustomItemRegistry customItemRegistry) {
 		this.weaponCreator = weaponCreator;
 		this.customItemRegistry = customItemRegistry;
-
-		createNewWeapon(Material.IRON_SWORD, 17, 5, "ROOKIE_SWORD", Rarity.COMMON,
-				"Rookie Sword", weaponCategory);
-		createNewWeapon(Material.STICK, 5, 5, "PRACTICE_WAND", Rarity.RARE,
-				"Practice Wand",  weaponCategory);
-		createNewWeapon(Material.DIAMOND_SWORD, 100, 100, "WIND_BLADE", Rarity.EPIC,
-				"Wind Blade", weaponCategory);
-
-
-		weapons.get("PRACTICE_WAND").addAbility(customAbilityRegistry.getCustomAbility("MAGIC_BOLT_ABILITY"));
-		weapons.get("WIND_BLADE").addAbility(customAbilityRegistry.getCustomAbility("WIND_DASH_ABILITY"));
-
 	}
 
 	public void createNewWeapon(Material material, double damage, double strength, String id, Rarity rarity,
@@ -49,6 +37,7 @@ public class WeaponRegistry {
 	}
 
 	public void addWeaponToRegistry(String id, Weapon weapon) {
+		if (containsWeapon(id)) throw new IllegalStateException("weapon " + id + " already exists");
 		weapons.put(id, weapon);
 		customItemRegistry.addItemToRegistry(weapon);
 	}
@@ -59,6 +48,11 @@ public class WeaponRegistry {
 
 	public Weapon getWeapon(String id) {
 		return weapons.get(id);
+	}
+
+	public boolean containsWeapon(String id) {
+		if (id == null || id.isBlank()) throw new IllegalArgumentException("id cannot be null or blank");
+		return weapons.containsKey(id);
 	}
 
 }

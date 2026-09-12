@@ -16,11 +16,17 @@ public class CustomItemRegistry {
 	}
 
 	public void addItemToRegistry(CustomItem item) {
+		if (containsCustomItem(item.getId())) throw new IllegalStateException("item " + item.getId() + " already exists");
 		customitemMap.put(item.getId(), item);
 	}
 
 	public CustomItem getCustomItem(String id) {
 		return customitemMap.get(id);
+	}
+
+	public boolean containsCustomItem(String id) {
+		if (id == null || id.isBlank()) throw new IllegalArgumentException("id cannot be null or blank");
+		return customitemMap.containsKey(id);
 	}
 
 }

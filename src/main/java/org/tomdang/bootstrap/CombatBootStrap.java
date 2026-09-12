@@ -13,6 +13,9 @@ import org.tomdang.combat.customcombatability.abilities.WindDashAbility;
 import org.tomdang.combat.weapons.WeaponCreator;
 import org.tomdang.combat.weapons.WeaponRegistry;
 import org.tomdang.combat.weapons.WeaponResolver;
+import org.tomdang.combat.weapons.configuration.WeaponConfigurationLoader;
+import org.tomdang.combat.weapons.configuration.WeaponDefinition;
+import org.tomdang.combat.weapons.configuration.WeaponDefinitionRegistrar;
 import org.tomdang.customabilityframework.AbilityTrigger;
 import org.tomdang.customabilityframework.CustomAbilityRegistry;
 import org.tomdang.customitemframework.CustomItemRegistry;
@@ -21,6 +24,9 @@ import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
+
+import java.io.File;
+import java.util.List;
 
 public class CombatBootStrap {
 
@@ -51,12 +57,23 @@ public class CombatBootStrap {
 		customAbilityRegistry.registerAbility(magicBoltAbility);
 
 		Component windDashDescription = Component.text("Dash Forward!", NamedTextColor.GRAY);
-		WindDashAbility windDashAbility = new WindDashAbility("WIND_DASH_ABILITY", "Wind Dash", 10,
+		WindDashAbility windDashAbility = new WindDashAbility("WIND_DASH_ABILITY", "Wind Dash", 0,
 				instance, AbilityTrigger.RIGHT_CLICK, 10,windDashDescription);
 		customAbilityRegistry.registerAbility(windDashAbility);
 
 		weaponCreator = new WeaponCreator(customItemIDKey);
-		weaponRegistry = new WeaponRegistry(weaponCreator, customItemRegistry, customAbilityRegistry);
+		weaponRegistry = new WeaponRegistry(weaponCreator, customItemRegistry);
+
+		instance.saveResource("weapons.yml", false);
+		File weaponConfigurationFile = new File(instance.getDataFolder(), "weapons.yml");
+		WeaponConfigurationLoader weaponConfigurationLoader = new WeaponConfigurationLoader();
+		List<WeaponDefinition> weaponDefinitions = weaponConfigurationLoader.loadDefinitions(weaponConfigurationFile);
+		WeaponDefinitionRegistrar weaponDefinitionRegistrar = new WeaponDefinitionRegistrar(
+				weaponRegistry,
+				customAbilityRegistry
+		);
+		weaponDefinitionRegistrar.registerWeaponDefinitions(weaponDefinitions);
+
 		WeaponResolver weaponResolver = new WeaponResolver(
 				customItemIDKey,
 				customItemRegistry,

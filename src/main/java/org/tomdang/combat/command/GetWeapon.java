@@ -35,6 +35,12 @@ public class GetWeapon implements CommandExecutor, TabCompleter {
 
 		String weaponID = args[0];
 		Weapon weapon = weaponRegistry.getWeapon(weaponID);
+
+		if (weapon == null) {
+			sender.sendMessage("Weapon does not exist");
+			return true;
+		}
+
 		ItemStack weaponItem = weaponRegistry.getWeaponAsItem(weapon);
 
 		((Player) sender).getInventory().addItem(weaponItem);
