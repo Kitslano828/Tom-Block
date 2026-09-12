@@ -1,41 +1,48 @@
 package org.tomdang.bootstrap;
 
 import lombok.Getter;
+import org.tomdang.TomBlock;
 import org.tomdang.crafting.CraftingRecipeMatcher;
 import org.tomdang.crafting.CraftingService;
-import org.tomdang.crafting.ingredient.CraftingIngredient;
+import org.tomdang.crafting.configuration.CraftingRecipeConfigurationLoader;
+import org.tomdang.crafting.configuration.CraftingRecipeDefinitionRegistrar;
+import org.tomdang.crafting.configuration.ShapedCraftingRecipeDefinition;
 import org.tomdang.crafting.recipe.CraftingRecipeRegistry;
-import org.tomdang.crafting.recipe.ShapedCraftingRecipe;
-import org.tomdang.customitemframework.CustomItemCreator;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.customitemframework.CustomItemStackFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class CraftingBootStrap {
 
 	@Getter
 	private final CraftingService craftingService;
 
-	public CraftingBootStrap(CustomItemResolver customItemResolver, CustomItemRegistry customItemRegistry,
+	public CraftingBootStrap(TomBlock instance, CustomItemResolver customItemResolver, CustomItemRegistry customItemRegistry,
 							 CustomItemStackFactory customItemStackFactory) {
 
 		CraftingRecipeRegistry craftingRecipeRegistry = new CraftingRecipeRegistry();
 		CraftingRecipeMatcher craftingRecipeMatcher = new CraftingRecipeMatcher(customItemResolver);
 
-		CraftingIngredient[] rookieSwordIngredient = new CraftingIngredient[9];
-		CraftingIngredient rottenFlesh = new CraftingIngredient("ROTTEN_FLESH", 2);
-		rookieSwordIngredient[1] = rottenFlesh;
-		rookieSwordIngredient[4] = rottenFlesh;
-		rookieSwordIngredient[7] = rottenFlesh;
-		ShapedCraftingRecipe rookieSwordRecipe = new ShapedCraftingRecipe(
-				"ROOKIE_SWORD_RECIPE",
-				rookieSwordIngredient,
-				1,
-				"ROOKIE_SWORD"
-		);
-
-		craftingRecipeRegistry.registerRecipe(rookieSwordRecipe);
-
+		CraftingRecipeConfigurationLoader configurationLoader = new CraftingRecipeConfigurationLoader();
+		List<ShapedCraftingRecipeDefinition> definitions;
+		try (InputStream configurationStream = instance.getResource("recipes.yml")) {
+			if (configurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain recipes.yml");
+			}
+			definitions = configurationLoader.loadDefinitions(
+					new InputStreamReader(configurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled recipes.yml resource", exception);
+		}
+		new CraftingRecipeDefinitionRegistrar(craftingRecipeRegistry, customItemRegistry)
+				.registerDefinitions(definitions);
 
 		craftingService = new CraftingService(
 				craftingRecipeRegistry,

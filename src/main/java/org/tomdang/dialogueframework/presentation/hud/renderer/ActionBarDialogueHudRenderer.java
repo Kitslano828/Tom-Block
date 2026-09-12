@@ -1,14 +1,28 @@
 package org.tomdang.dialogueframework.presentation.hud.renderer;
 
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.hud.DialogueHudRenderer;
+import org.tomdang.dialogueframework.presentation.hud.DialogueVisibleLineService;
+import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 
+import java.util.List;
+
 public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
+
+	private final DialogueVisibleLineService dialogueVisibleLineService;
+	private final DialogueHudLayoutComposer dialogueHudLayoutComposer;
+
+	public ActionBarDialogueHudRenderer(DialogueVisibleLineService dialogueVisibleLineService, DialogueHudLayoutComposer dialogueHudLayoutComposer) {
+		if (dialogueVisibleLineService == null) throw new IllegalArgumentException("dialogueVisibleLineService cannot be null");
+		if (dialogueHudLayoutComposer == null) throw new IllegalArgumentException("dialogueHudLayoutComposer cannot be null");
+
+		this.dialogueVisibleLineService = dialogueVisibleLineService;
+		this.dialogueHudLayoutComposer = dialogueHudLayoutComposer;
+	}
 
 	@Override
 	public void render(Player player, DialogueThemeDefinition definition, DialogueHudSkin hudSkin, DialogueNode node, int revealedCharacterCount) {
@@ -21,41 +35,14 @@ public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
 		int nodeTextLength = node.getDialogueText().length();
 		if (revealedCharacterCount > nodeTextLength) throw new IllegalStateException("revealedCharacterCount is higher than Node text length");
 
-		String speakerName = definition.speakerName();
+		String completeText = node.getDialogueText();
+		List<String> visibleLines =  dialogueVisibleLineService.prepare(hudSkin, completeText, revealedCharacterCount);
 
-		String revealedStr = node.getDialogueText().substring(0, revealedCharacterCount);
 
 
-		Component dialogueComponent = Component.text()
-				.append(Component.text("[" + speakerName + "]"))
-				.append(Component.text(" "))
-				.append(Component.text(revealedStr))
-				.build();
-
-		player.sendActionBar(dialogueComponent);
+		player.sendActionBar(dialogueHudLayoutComposer.compose(hudSkin, visibleLines));
 
 	}
-
-	/*
-	// Test implementation for custom texture pack!
-	@Override
-	public void render(
-			Player player,
-			DialogueThemeDefinition definition,
-			DialogueHudSkin hudSkin,
-			DialogueNode node,
-			int revealedCharacterCount
-	) {
-		if (player == null) {
-			throw new IllegalArgumentException("player cannot be null");
-		}
-
-		Component dialogueComponent = Component.text("\uE001")
-				.font(Key.key("tomblock", "dialogue"));
-
-		player.sendActionBar(dialogueComponent);
-	}
-	 */
 
 	@Override
 	public void clear(Player player) {

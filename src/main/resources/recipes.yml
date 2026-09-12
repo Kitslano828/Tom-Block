@@ -1,0 +1,13 @@
+ recipes:
+  ROOKIE_SWORD_RECIPE:
+    shape:
+      - ".F."
+      - ".F."
+      - ".F."
+    ingredients:
+      F:
+        item: ROTTEN_FLESH
+        amount: 2
+    output:
+      item: ROOKIE_SWORD
+      amount: 1

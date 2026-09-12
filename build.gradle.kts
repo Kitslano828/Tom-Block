@@ -1,4 +1,5 @@
 import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
+import java.security.MessageDigest
 
 plugins {
     java
@@ -49,6 +50,67 @@ val copyPluginToServer by tasks.registering(Copy::class) {
     into("C:/Users/tomda/Desktop/26.2/plugins")
 }
 
+val resourcePackArchiveName = "TomBlock-Resource-Pack.zip"
+val localServerDirectory = file("C:/Users/tomda/Desktop/26.2")
+
+val packageResourcePack by tasks.registering(Zip::class) {
+    group = "build"
+    description = "Packages the TomBlock resource pack for client download."
+    from(layout.projectDirectory.dir("../resource-pack"))
+    archiveFileName.set(resourcePackArchiveName)
+    destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
+}
+
+val deployResourcePackToServer by tasks.registering {
+    group = "build"
+    description = "Copies the resource pack to the local server and updates its required-pack settings."
+    dependsOn(packageResourcePack)
+
+    doLast {
+        val archive = packageResourcePack.get().archiveFile.get().asFile
+        val serverPackDirectory = localServerDirectory.resolve("resource-pack")
+        serverPackDirectory.mkdirs()
+        archive.copyTo(serverPackDirectory.resolve(resourcePackArchiveName), overwrite = true)
+
+        val digest = MessageDigest.getInstance("SHA-1")
+        val hash = archive.inputStream().use { input ->
+            val buffer = ByteArray(8192)
+            var bytesRead = input.read(buffer)
+            while (bytesRead != -1) {
+                digest.update(buffer, 0, bytesRead)
+                bytesRead = input.read(buffer)
+            }
+            digest.digest().joinToString("") { byte ->
+                (byte.toInt() and 0xff).toString(16).padStart(2, '0')
+            }
+        }
+
+        val serverProperties = localServerDirectory.resolve("server.properties")
+        val replacements = mapOf(
+            "require-resource-pack" to "true",
+            "resource-pack" to "http\\://127.0.0.1\\:8123/$resourcePackArchiveName",
+            "resource-pack-sha1" to hash
+        )
+        val updatedKeys = mutableSetOf<String>()
+        val updatedLines = serverProperties.readLines().map { line ->
+            val key = replacements.keys.firstOrNull { candidate -> line.startsWith("$candidate=") }
+            if (key == null) {
+                line
+            } else {
+                updatedKeys.add(key)
+                "$key=${replacements.getValue(key)}"
+            }
+        }.toMutableList()
+        replacements.forEach { (key, value) ->
+            if (key !in updatedKeys) updatedLines.add("$key=$value")
+        }
+        serverProperties.writeText(updatedLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+
+        logger.lifecycle("Deployed required resource pack: ${archive.name}")
+        logger.lifecycle("Resource pack SHA-1: $hash")
+    }
+}
+
 tasks.build {
-    finalizedBy(copyPluginToServer)
+    finalizedBy(copyPluginToServer, deployResourcePackToServer)
 }

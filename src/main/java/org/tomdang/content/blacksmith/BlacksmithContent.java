@@ -1,5 +1,6 @@
 package org.tomdang.content.blacksmith;
 
+import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
@@ -28,6 +29,7 @@ import org.tomdang.dialogueframework.registry.DialogueRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
+import org.tomdang.hud.glyph.HudGlyph;
 
 import java.util.List;
 
@@ -121,7 +123,14 @@ public class BlacksmithContent {
 		);
 		actorSpawnPointRegistry.registerSpawnPoint(forgeSpawnPoint);
 
-		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", "dialogue/blacksmith_box");
+		HudGlyph hudGlyph = new HudGlyph(Key.key("tomblock", "dialogue"), "\uE001", 256);
+		List<Key> dialogueLineFonts = List.of(
+				Key.key("tomblock", "dialogue_line_1"),
+				Key.key("tomblock", "dialogue_line_2"),
+				Key.key("tomblock", "dialogue_line_3")
+		);
+
+		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts);
 		dialogueHudSkinRegistry.registerSkin(hudSkin);
 		DialogueThemeDefinition themeDefinition = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
 		dialogueThemeRegistry.registerTheme(themeDefinition);

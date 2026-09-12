@@ -10,12 +10,17 @@ import org.tomdang.dialogueframework.presentation.choice.DialogueChoicePresentat
 import org.tomdang.dialogueframework.presentation.choice.chat.ChatDialogueChoicePresentation;
 import org.tomdang.dialogueframework.presentation.hud.*;
 import org.tomdang.dialogueframework.presentation.hud.animation.BukkitDialogueTextAnimator;
+import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
 import org.tomdang.dialogueframework.presentation.hud.renderer.ActionBarDialogueHudRenderer;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.registry.DialogueRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
+import org.tomdang.hud.spacing.HudSpacingService;
+import org.tomdang.hud.text.HudTextWidthService;
+import org.tomdang.hud.text.HudTextWrapper;
+import org.tomdang.hud.text.MinecraftDefaultTextWidthService;
 import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 
 public class DialogueBootStrap {
@@ -56,9 +61,19 @@ public class DialogueBootStrap {
 		dialogueHudSkinRegistry = new DialogueHudSkinRegistry();
 		dialogueDisplayStateRegistry = new DialogueDisplayStateRegistry();
 
-		DialogueHudRenderer dialogueHudRenderer = new ActionBarDialogueHudRenderer();
+		HudTextWidthService hudTextWidthService = new MinecraftDefaultTextWidthService();
+		HudTextWrapper hudTextWrapper = new HudTextWrapper(hudTextWidthService);
+		DialogueVisibleLineService dialogueVisibleLineService = new DialogueVisibleLineService(hudTextWrapper);
+		HudSpacingService hudSpacingService = new HudSpacingService();
+		DialogueHudLayoutComposer dialogueHudLayoutComposer = new DialogueHudLayoutComposer(
+				hudSpacingService,
+				hudTextWidthService
+		);
+		DialogueHudRenderer dialogueHudRenderer = new ActionBarDialogueHudRenderer(
+				dialogueVisibleLineService,
+				dialogueHudLayoutComposer
+		);
 
-		// Temp Renderer
 		DialogueTextAnimationService dialogueTextAnimationService = new DialogueTextAnimationService(
 				dialogueDisplayStateRegistry,
 				dialogueThemeRegistry,
