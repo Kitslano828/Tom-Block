@@ -91,11 +91,12 @@ public class DialogueHudLayoutComposer {
 			}
 		}
 
-		if (indicatorState == DialogueHudIndicatorState.CONTINUE) {
-			DialogueHudIndicatorStyle indicatorStyle = skin.getContinueIndicatorStyle();
+		if (indicatorState != DialogueHudIndicatorState.HIDDEN) {
+			DialogueHudIndicatorStyle indicatorStyle = skin.getIndicatorStyle(indicatorState);
+			if (indicatorStyle == null) throw new IllegalStateException("No indicator style exists for " + indicatorState);
 			int indicatorWidth = hudTextWidthService.measure(indicatorStyle.text());
 			int indicatorOffset = indicatorStyle.rightPadding() + indicatorWidth;
-			if (indicatorOffset > backgroundWidth) throw new IllegalStateException("continue indicator exceeds background width");
+			if (indicatorOffset > backgroundWidth) throw new IllegalStateException("indicator exceeds background width");
 
 			builder.append(hudSpacingService.createSpacing(-indicatorOffset));
 			builder.append(Component.text(indicatorStyle.text())

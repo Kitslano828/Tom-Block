@@ -130,6 +130,7 @@ public class DialogueTextAnimationService {
 	}
 
 	private DialogueHudIndicatorState indicatorState(DialogueDisplayState displayState) {
+		if (displayState.areChoicesShown()) return DialogueHudIndicatorState.CHOICE_REQUIRED;
 		return displayState.isCurrentPageFullyRevealed()
 				? DialogueHudIndicatorState.CONTINUE
 				: DialogueHudIndicatorState.HIDDEN;

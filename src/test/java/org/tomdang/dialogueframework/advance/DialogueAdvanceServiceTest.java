@@ -188,6 +188,7 @@ class DialogueAdvanceServiceTest {
 		assertEquals(DialogueAdvanceResult.CHOICE_REQUIRED, result);
 		verify(choicePresentation).showChoices(player, session);
 		verify(displayState).markChoicesShown();
+		verify(animationService).refresh(player, session);
 	}
 
 	@Test
@@ -203,5 +204,6 @@ class DialogueAdvanceServiceTest {
 		assertEquals(DialogueAdvanceResult.CHOICE_REQUIRED, result);
 		verify(choicePresentation, never()).showChoices(player, session);
 		verify(displayState, never()).markChoicesShown();
+		verify(animationService, never()).refresh(player, session);
 	}
 }

@@ -112,6 +112,7 @@ public class DialogueAdvanceService {
 		if (!displayState.areChoicesShown()) {
 			dialogueChoicePresentation.showChoices(player, session);
 			displayState.markChoicesShown();
+			dialogueTextAnimationService.refresh(player, session);
 		}
 		return DialogueAdvanceResult.CHOICE_REQUIRED;
 	}

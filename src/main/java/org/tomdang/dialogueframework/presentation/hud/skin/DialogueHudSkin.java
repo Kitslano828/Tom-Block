@@ -4,9 +4,11 @@ import lombok.Getter;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.TextColor;
 import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
 import org.tomdang.hud.glyph.HudGlyph;
 
 import java.util.List;
+import java.util.Map;
 
 public class DialogueHudSkin {
 
@@ -31,11 +33,11 @@ public class DialogueHudSkin {
 	@Getter
 	private final TextColor speakerNameColor;
 	@Getter
-	private final DialogueHudIndicatorStyle continueIndicatorStyle;
+	private final Map<DialogueHudIndicatorState, DialogueHudIndicatorStyle> indicatorStyles;
 
 	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts, Key speakerFontKey,
 						   int speakerLeftPadding, int speakerRightPadding, TextColor bodyTextColor, TextColor speakerNameColor,
-						   DialogueHudIndicatorStyle continueIndicatorStyle) {
+						   Map<DialogueHudIndicatorState, DialogueHudIndicatorStyle> indicatorStyles) {
 		if (skinID == null) throw new IllegalArgumentException("skinID cannot be null");
 		if (skinID.isBlank()) throw new IllegalArgumentException("skinID cannot be blank");
 		if (backgroundGlyph == null) throw new IllegalArgumentException("backgroundGlyph cannot be null");
@@ -51,8 +53,19 @@ public class DialogueHudSkin {
 		if ( (long) speakerLeftPadding + speakerRightPadding >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("combined speaker padding must be less than the background glyph width");
 		if (bodyTextColor == null) throw new IllegalArgumentException("bodyTextColor cannot be null");
 		if (speakerNameColor == null) throw new IllegalArgumentException("speakerNameColor cannot be null");
-		if (continueIndicatorStyle == null) throw new IllegalArgumentException("continueIndicatorStyle cannot be null");
-		if (continueIndicatorStyle.rightPadding() >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("indicator right padding must be less than the background glyph width");
+		if (indicatorStyles == null) throw new IllegalArgumentException("indicatorStyles cannot be null");
+		if (indicatorStyles.entrySet().stream().anyMatch(entry -> entry.getKey() == null || entry.getValue() == null)) {
+			throw new IllegalArgumentException("indicatorStyles cannot contain null");
+		}
+		if (indicatorStyles.containsKey(DialogueHudIndicatorState.HIDDEN)) throw new IllegalArgumentException("HIDDEN cannot have an indicator style");
+		for (DialogueHudIndicatorState state : DialogueHudIndicatorState.values()) {
+			if (state != DialogueHudIndicatorState.HIDDEN && !indicatorStyles.containsKey(state)) {
+				throw new IllegalArgumentException("Missing indicator style for " + state);
+			}
+		}
+		if (indicatorStyles.values().stream().anyMatch(style -> style.rightPadding() >= backgroundGlyph.getPixelWidth())) {
+			throw new IllegalArgumentException("indicator right padding must be less than the background glyph width");
+		}
 
 		this.skinID = skinID;
 		this.backgroundGlyph = backgroundGlyph;
@@ -64,7 +77,7 @@ public class DialogueHudSkin {
 		this.speakerRightPadding = speakerRightPadding;
 		this.bodyTextColor = bodyTextColor;
 		this.speakerNameColor = speakerNameColor;
-		this.continueIndicatorStyle = continueIndicatorStyle;
+		this.indicatorStyles = Map.copyOf(indicatorStyles);
 	}
 
 	public int getMaximumLines() {
@@ -75,6 +88,11 @@ public class DialogueHudSkin {
 		if (lineIndex < 0) throw new IllegalArgumentException("lineIndex cannot be negative");
 		if (lineIndex >= lineFonts.size()) throw new IllegalArgumentException("Index equal to or above the number of fonts.");
 		return lineFonts.get(lineIndex);
+	}
+
+	public DialogueHudIndicatorStyle getIndicatorStyle(DialogueHudIndicatorState state) {
+		if (state == null) throw new IllegalArgumentException("state cannot be null");
+		return indicatorStyles.get(state);
 	}
 
 }

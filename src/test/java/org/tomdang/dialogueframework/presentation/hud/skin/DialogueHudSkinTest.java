@@ -5,9 +5,12 @@ import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.Test;
 import org.tomdang.hud.glyph.HudGlyph;
 import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -20,6 +23,7 @@ class DialogueHudSkinTest {
 	private final TextColor bodyTextColor = TextColor.color(0xD8D8D8);
 	private final TextColor speakerNameColor = TextColor.color(0xFFF1D0);
 	private final DialogueHudIndicatorStyle indicatorStyle = new DialogueHudIndicatorStyle("»", speakerFont, speakerNameColor, 10);
+	private final DialogueHudIndicatorStyle choiceIndicatorStyle = new DialogueHudIndicatorStyle("?", speakerFont, speakerNameColor, 10);
 	private final List<Key> lineFonts = List.of(
 			Key.key("tomblock", "dialogue_line_1"),
 			Key.key("tomblock", "dialogue_line_2"),
@@ -42,7 +46,9 @@ class DialogueHudSkinTest {
 		assertEquals(10, skin.getSpeakerRightPadding());
 		assertEquals(bodyTextColor, skin.getBodyTextColor());
 		assertEquals(speakerNameColor, skin.getSpeakerNameColor());
-		assertSame(indicatorStyle, skin.getContinueIndicatorStyle());
+		assertSame(indicatorStyle, skin.getIndicatorStyle(DialogueHudIndicatorState.CONTINUE));
+		assertSame(choiceIndicatorStyle, skin.getIndicatorStyle(DialogueHudIndicatorState.CHOICE_REQUIRED));
+		assertEquals(null, skin.getIndicatorStyle(DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
@@ -81,10 +87,10 @@ class DialogueHudSkinTest {
 	@Test
 	void nullTextColorsAreRejected() {
 		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
-				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, null, speakerNameColor, indicatorStyle
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, null, speakerNameColor, indicatorStyles()
 		));
 		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
-				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, bodyTextColor, null, indicatorStyle
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, bodyTextColor, null, indicatorStyles()
 		));
 	}
 
@@ -97,7 +103,26 @@ class DialogueHudSkinTest {
 		DialogueHudIndicatorStyle excessivePadding = new DialogueHudIndicatorStyle("»", speakerFont, speakerNameColor, 256);
 		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
 				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
-				bodyTextColor, speakerNameColor, excessivePadding
+				bodyTextColor, speakerNameColor, Map.of(
+						DialogueHudIndicatorState.CONTINUE, excessivePadding,
+						DialogueHudIndicatorState.CHOICE_REQUIRED, choiceIndicatorStyle
+				)
+		));
+	}
+
+	@Test
+	void missingAndHiddenIndicatorMappingsAreRejected() {
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
+				bodyTextColor, speakerNameColor, Map.of(DialogueHudIndicatorState.CONTINUE, indicatorStyle)
+		));
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
+				bodyTextColor, speakerNameColor, Map.of(
+						DialogueHudIndicatorState.HIDDEN, indicatorStyle,
+						DialogueHudIndicatorState.CONTINUE, indicatorStyle,
+						DialogueHudIndicatorState.CHOICE_REQUIRED, choiceIndicatorStyle
+				)
 		));
 	}
 
@@ -118,6 +143,20 @@ class DialogueHudSkinTest {
 
 		assertEquals(3, skin.getMaximumLines());
 		assertEquals(lineFonts.getFirst(), skin.getLineFont(0));
+	}
+
+	@Test
+	void indicatorStylesAreDefensivelyCopied() {
+		Map<DialogueHudIndicatorState, DialogueHudIndicatorStyle> mutableStyles = new HashMap<>(indicatorStyles());
+		DialogueHudSkin skin = new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
+				bodyTextColor, speakerNameColor, mutableStyles
+		);
+
+		mutableStyles.clear();
+
+		assertSame(indicatorStyle, skin.getIndicatorStyle(DialogueHudIndicatorState.CONTINUE));
+		assertSame(choiceIndicatorStyle, skin.getIndicatorStyle(DialogueHudIndicatorState.CHOICE_REQUIRED));
 	}
 
 	private DialogueHudSkin createSkin(
@@ -141,7 +180,14 @@ class DialogueHudSkinTest {
 				speakerRightPadding,
 				bodyTextColor,
 				speakerNameColor,
-				indicatorStyle
+				indicatorStyles()
+		);
+	}
+
+	private Map<DialogueHudIndicatorState, DialogueHudIndicatorStyle> indicatorStyles() {
+		return Map.of(
+				DialogueHudIndicatorState.CONTINUE, indicatorStyle,
+				DialogueHudIndicatorState.CHOICE_REQUIRED, choiceIndicatorStyle
 		);
 	}
 }

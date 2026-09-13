@@ -14,6 +14,7 @@ import org.tomdang.hud.text.HudTextWidthService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,7 +52,12 @@ class DialogueHudLayoutComposerTest {
 				10,
 				TextColor.fromHexString("#D8D8D8"),
 				TextColor.fromHexString("#FFF1D0"),
-				new DialogueHudIndicatorStyle("»", Key.key("tomblock", "dialogue_speaker"), TextColor.color(0xFFF1D0), 10)
+				Map.of(
+						DialogueHudIndicatorState.CONTINUE,
+						new DialogueHudIndicatorStyle("»", Key.key("tomblock", "dialogue_speaker"), TextColor.color(0xFFF1D0), 10),
+						DialogueHudIndicatorState.CHOICE_REQUIRED,
+						new DialogueHudIndicatorStyle("?", Key.key("tomblock", "dialogue_speaker"), TextColor.color(0xFFF1D0), 10)
+				)
 		);
 		when(spacingService.createSpacing(anyInt())).thenAnswer(invocation ->
 				Component.text("[space:" + invocation.<Integer>getArgument(0) + "]")
@@ -160,5 +166,20 @@ class DialogueHudLayoutComposerTest {
 				.color(TextColor.color(0xFFF1D0)), indicator);
 		verify(spacingService).createSpacing(-(10 + 6));
 		verify(spacingService).createSpacing(10);
+	}
+
+	@Test
+	void choiceIndicatorUsesStyleMappedToChoiceRequiredState() {
+		when(widthService.measure("Blacksmith")).thenReturn(52);
+		when(widthService.measure("Hello")).thenReturn(25);
+		when(widthService.measure("?")).thenReturn(5);
+
+		Component result = composer.compose(skin, "Hello", "Blacksmith", DialogueHudIndicatorState.CHOICE_REQUIRED);
+		Component indicator = result.children().get(result.children().size() - 2);
+
+		assertEquals(Component.text("?")
+				.font(Key.key("tomblock", "dialogue_speaker"))
+				.color(TextColor.color(0xFFF1D0)), indicator);
+		verify(spacingService).createSpacing(-(10 + 5));
 	}
 }
