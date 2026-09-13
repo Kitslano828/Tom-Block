@@ -2,6 +2,7 @@ package org.tomdang.dialogueframework.presentation.hud.layout;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
@@ -45,7 +46,9 @@ class DialogueHudLayoutComposerTest {
 				),
 				Key.key("tomblock", "dialogue_speaker"),
 				8,
-				10
+				10,
+				TextColor.fromHexString("#D8D8D8"),
+				TextColor.fromHexString("#FFF1D0")
 		);
 		when(spacingService.createSpacing(anyInt())).thenAnswer(invocation ->
 				Component.text("[space:" + invocation.<Integer>getArgument(0) + "]")
@@ -108,6 +111,7 @@ class DialogueHudLayoutComposerTest {
 		Component result = composer.compose(skin, "Hello", "Blacksmith");
 
 		assertEquals(Key.key("tomblock", "dialogue_speaker"), result.children().get(3).style().font());
+		assertEquals(TextColor.color(0xFFF1D0), result.children().get(3).style().color());
 		verify(spacingService).createSpacing(8);
 		verify(spacingService).createSpacing(-(8 + 52));
 	}
@@ -122,6 +126,8 @@ class DialogueHudLayoutComposerTest {
 
 		assertEquals(Key.key("tomblock", "dialogue_line_1"), result.children().get(6).style().font());
 		assertEquals(Key.key("tomblock", "dialogue_line_2"), result.children().get(8).style().font());
+		assertEquals(TextColor.color(0xD8D8D8), result.children().get(6).style().color());
+		assertEquals(TextColor.color(0xD8D8D8), result.children().get(8).style().color());
 	}
 
 	@Test

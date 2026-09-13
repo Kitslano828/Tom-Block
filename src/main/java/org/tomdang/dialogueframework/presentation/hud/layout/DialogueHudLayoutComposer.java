@@ -45,7 +45,7 @@ public class DialogueHudLayoutComposer {
 		int speakerWidth = hudTextWidthService.measure(speakersName);
 		if (speakerWidth > usableSpeakerWidth) throw new IllegalStateException("speakerName cannot exceed usableSpeakerWidth");
 
-		Component speakerComponent = Component.text(speakersName).font(skin.getSpeakerFontKey());
+		Component speakerComponent = Component.text(speakersName).font(skin.getSpeakerFontKey()).color(skin.getSpeakerNameColor());
 
 		var builder = Component.text();
 
@@ -74,7 +74,7 @@ public class DialogueHudLayoutComposer {
 			int textWidth = hudTextWidthService.measure(line);
 			if (textWidth > usableWidth) throw new IllegalStateException("textWidth exceeds usableWidth");
 
-			Component lineComponent = Component.text(line).font(skin.getLineFont(i));
+			Component lineComponent = Component.text(line).font(skin.getLineFont(i)).color(skin.getBodyTextColor());
 			builder.append(lineComponent);
 
 			boolean isLastLine = (i == lines.size() - 1);

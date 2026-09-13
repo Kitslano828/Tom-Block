@@ -1,6 +1,7 @@
 package org.tomdang.dialogueframework.presentation.hud.skin;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.Test;
 import org.tomdang.hud.glyph.HudGlyph;
 
@@ -15,6 +16,8 @@ class DialogueHudSkinTest {
 
 	private final HudGlyph backgroundGlyph = new HudGlyph(Key.key("tomblock", "dialogue"), "\uE001", 256);
 	private final Key speakerFont = Key.key("tomblock", "dialogue_speaker");
+	private final TextColor bodyTextColor = TextColor.color(0xD8D8D8);
+	private final TextColor speakerNameColor = TextColor.color(0xFFF1D0);
 	private final List<Key> lineFonts = List.of(
 			Key.key("tomblock", "dialogue_line_1"),
 			Key.key("tomblock", "dialogue_line_2"),
@@ -35,6 +38,8 @@ class DialogueHudSkinTest {
 		assertEquals(speakerFont, skin.getSpeakerFontKey());
 		assertEquals(8, skin.getSpeakerLeftPadding());
 		assertEquals(10, skin.getSpeakerRightPadding());
+		assertEquals(bodyTextColor, skin.getBodyTextColor());
+		assertEquals(speakerNameColor, skin.getSpeakerNameColor());
 	}
 
 	@Test
@@ -68,6 +73,16 @@ class DialogueHudSkinTest {
 		assertThrows(IllegalArgumentException.class, () -> createSkin("SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, -1, 0));
 		assertThrows(IllegalArgumentException.class, () -> createSkin("SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, -1));
 		assertThrows(IllegalArgumentException.class, () -> createSkin("SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 128, 128));
+	}
+
+	@Test
+	void nullTextColorsAreRejected() {
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, null, speakerNameColor
+		));
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, bodyTextColor, null
+		));
 	}
 
 	@Test
@@ -107,7 +122,9 @@ class DialogueHudSkinTest {
 				fonts,
 				speakerFontKey,
 				speakerLeftPadding,
-				speakerRightPadding
+				speakerRightPadding,
+				bodyTextColor,
+				speakerNameColor
 		);
 	}
 }

@@ -1,6 +1,7 @@
 package org.tomdang.content.blacksmith;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
@@ -125,7 +126,7 @@ public class BlacksmithContent {
 
 		Key blacksmithFont = Key.key("tomblock", "dialogue_speaker");
 
-		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts, blacksmithFont, 12, 12);
+		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts, blacksmithFont, 12, 12, TextColor.fromHexString("#D8D8D8"), TextColor.fromHexString("#FFF1D0"));
 		dialogueHudSkinRegistry.registerSkin(hudSkin);
 		DialogueThemeDefinition themeDefinition = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
 		dialogueThemeRegistry.registerTheme(themeDefinition);

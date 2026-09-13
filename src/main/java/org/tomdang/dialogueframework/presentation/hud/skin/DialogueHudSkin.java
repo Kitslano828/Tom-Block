@@ -2,6 +2,7 @@ package org.tomdang.dialogueframework.presentation.hud.skin;
 
 import lombok.Getter;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.format.TextColor;
 import org.tomdang.hud.glyph.HudGlyph;
 
 import java.util.List;
@@ -24,8 +25,13 @@ public class DialogueHudSkin {
 	private final int speakerLeftPadding;
 	@Getter
 	private final int speakerRightPadding;
+	@Getter
+	private final TextColor bodyTextColor;
+	@Getter
+	private final TextColor speakerNameColor;
 
-	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts, Key speakerFontKey, int speakerLeftPadding, int speakerRightPadding) {
+	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts, Key speakerFontKey,
+						   int speakerLeftPadding, int speakerRightPadding, TextColor bodyTextColor, TextColor speakerNameColor) {
 		if (skinID == null) throw new IllegalArgumentException("skinID cannot be null");
 		if (skinID.isBlank()) throw new IllegalArgumentException("skinID cannot be blank");
 		if (backgroundGlyph == null) throw new IllegalArgumentException("backgroundGlyph cannot be null");
@@ -39,6 +45,8 @@ public class DialogueHudSkin {
 		if (speakerLeftPadding < 0) throw new IllegalArgumentException("speakerLeftPadding cannot be negative");
 		if (speakerRightPadding < 0) throw new IllegalArgumentException("speakerRightPadding cannot be negative");
 		if ( (long) speakerLeftPadding + speakerRightPadding >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("combined speaker padding must be less than the background glyph width");
+		if (bodyTextColor == null) throw new IllegalArgumentException("bodyTextColor cannot be null");
+		if (speakerNameColor == null) throw new IllegalArgumentException("speakerNameColor cannot be null");
 
 		this.skinID = skinID;
 		this.backgroundGlyph = backgroundGlyph;
@@ -48,6 +56,8 @@ public class DialogueHudSkin {
 		this.speakerFontKey = speakerFontKey;
 		this.speakerLeftPadding = speakerLeftPadding;
 		this.speakerRightPadding = speakerRightPadding;
+		this.bodyTextColor = bodyTextColor;
+		this.speakerNameColor = speakerNameColor;
 	}
 
 	public int getMaximumLines() {
