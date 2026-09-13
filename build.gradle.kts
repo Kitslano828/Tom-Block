@@ -56,7 +56,7 @@ val localServerDirectory = file("C:/Users/tomda/Desktop/26.2")
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    from(layout.projectDirectory.dir("../resource-pack"))
+    from(layout.projectDirectory.dir("resource-pack"))
     archiveFileName.set(resourcePackArchiveName)
     destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
 }

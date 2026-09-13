@@ -1,0 +1,17 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "tomblock:gui/dialogue/dialogueboxalpha.png",
+      "ascent": 63,
+      "height": 64,
+      "chars": [
+        "\uE001"
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}
