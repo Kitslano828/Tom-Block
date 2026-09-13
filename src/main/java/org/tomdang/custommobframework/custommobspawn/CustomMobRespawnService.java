@@ -1,7 +1,6 @@
 package org.tomdang.custommobframework.custommobspawn;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -43,7 +42,7 @@ public class 	CustomMobRespawnService {
 		}
 		customMobSpawnPoint.setOccupied(false);
 		Bukkit.getScheduler().runTaskLater( instance, () -> {
-			spawnMob(customMobSpawnPoint);
+			reconcileSpawnPoint(customMobSpawnPoint);
 		},customMobSpawnPoint.getRespawnDelayInTicks());
 	}
 
@@ -69,28 +68,27 @@ public class 	CustomMobRespawnService {
 		if (world == null) {
 			return;
 		}
+		String spawnPointID = spawnPoint.getSpawnPointID();
+		if (spawnPointID == null) return;
+		CustomMob customMob = customMobRegistry.getCustomMob(spawnPoint.getCustomMobID());
+		if (customMob == null) throw new IllegalStateException("Unknown custom mob " + spawnPoint.getCustomMobID());
 		spawnPoint.getLocation().getChunk().load();
 
 		for (Entity entity : world.getEntities()) {
 			String id = entity.getPersistentDataContainer().get(spawnPointIDKey, PersistentDataType.STRING);
-			CustomMobContext context = customMobContextRegistry.getCustomMobContext(entity.getUniqueId());
+			if (!spawnPointID.equals(id) || !entity.isValid() || entity.isDead()) continue;
 
-			if (spawnPoint.getSpawnPointID() == null) {
+			if (foundExistingMob) {
+				customMobContextRegistry.removeCustomMobContext(entity.getUniqueId());
+				entity.remove();
 				continue;
-			} else {
-				if(spawnPoint.getSpawnPointID().equals(id) && entity.isValid() && !entity.isDead()) {
-					if (context != null) {
-						if (!foundExistingMob) {
-							foundExistingMob = true;
-						} else {
-							entity.remove();
-						}
-					} else {
-						customMobContextRegistry.createNewCustomMobContext(entity.getUniqueId(), customMobRegistry.getCustomMob(spawnPoint.getCustomMobID()));
-						foundExistingMob = true;
-					}
+			}
 
-				}
+			foundExistingMob = true;
+			customMobSpawner.applyEntityBehavior(customMob, entity);
+			CustomMobContext context = customMobContextRegistry.getCustomMobContext(entity.getUniqueId());
+			if (context == null) {
+				customMobContextRegistry.createNewCustomMobContext(entity.getUniqueId(), customMob);
 			}
 
 		}
@@ -101,21 +99,4 @@ public class 	CustomMobRespawnService {
 		}
 	}
 
-	private boolean spawnPointHasLivingEntity(CustomMobSpawnPoint spawnPoint) {
-
-		World world = spawnPoint.getLocation().getWorld();
-		if (world == null) return false;
-		Chunk chunk = world.getChunkAt(spawnPoint.getLocation());
-		String spawnPointID = spawnPoint.getSpawnPointID();
-		if (spawnPointID == null) return false;
-
-		for (Entity entity : chunk.getEntities()) {
-			String id = entity.getPersistentDataContainer().get(spawnPointIDKey, PersistentDataType.STRING);
-			if (id == null) continue;
-			if (id.equals(spawnPointID) && !entity.isDead() && entity.isValid()) {
-				return true;
-			}
-		}
-		return false;
-	}
 }

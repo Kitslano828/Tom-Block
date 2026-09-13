@@ -3,6 +3,7 @@ package org.tomdang.dialogueframework.presentation.hud;
 import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
@@ -66,7 +67,7 @@ public class DialogueTextAnimationService {
 		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
 
 		displayState.revealCharacters(charactersToBeRevealed, currentPage.getEndingIndex());
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount(), indicatorState(displayState));
 		return displayState;
 	}
 
@@ -96,7 +97,7 @@ public class DialogueTextAnimationService {
 		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
 
 		displayState.revealAll(currentPage.getEndingIndex());
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount(), indicatorState(displayState));
 		return displayState;
 	}
 
@@ -125,7 +126,13 @@ public class DialogueTextAnimationService {
 
 		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
 
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount(), indicatorState(displayState));
+	}
+
+	private DialogueHudIndicatorState indicatorState(DialogueDisplayState displayState) {
+		return displayState.isCurrentPageFullyRevealed()
+				? DialogueHudIndicatorState.CONTINUE
+				: DialogueHudIndicatorState.HIDDEN;
 	}
 
 	private DialoguePage getCurrentPage(DialogueNode node, DialogueHudSkin skin, DialogueDisplayState displayState) {

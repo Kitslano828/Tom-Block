@@ -9,13 +9,12 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Zombie;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContext;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContextRegistry;
 import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPoint;
-
-import java.awt.*;
 
 public class CustomMobSpawner {
 
@@ -33,9 +32,7 @@ public class CustomMobSpawner {
 		// if CustomMobSpawnPoint Exist
 		Entity entity = location.getWorld().spawnEntity(location, customMob.getEntityType());
 
-		if (entity instanceof Mob) {
-			((Mob) entity).setRemoveWhenFarAway(false);
-		}
+		applyEntityBehavior(customMob, entity);
 
 		CustomMobContext customMobContext = new CustomMobContext(entity.getUniqueId(), customMob.getMaxHealth(), customMob);
 		customMobContextRegistry.addCustomMobContextToRegistry(customMobContext);
@@ -60,5 +57,17 @@ public class CustomMobSpawner {
 
 
 		return entity;
+	}
+
+	public void applyEntityBehavior(CustomMob customMob, Entity entity) {
+		if (customMob == null) throw new IllegalArgumentException("customMob cannot be null");
+		if (entity == null) throw new IllegalArgumentException("entity cannot be null");
+
+		if (entity instanceof Mob) {
+			((Mob) entity).setRemoveWhenFarAway(false);
+		}
+		if (entity instanceof Zombie zombie) {
+			zombie.setShouldBurnInDay(customMob.isBurnsInDaylight());
+		}
 	}
 }

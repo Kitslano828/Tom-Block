@@ -20,7 +20,8 @@ public class CustomMobRegistry {
 		this.customItemRegistry = customItemRegistry;
 		this.customMobSpawner = customMobSpawner;
 
-		createNewCustomMob("TRAINING_ZOMBIE", EntityType.ZOMBIE, "Training Zombie", 100.0, 20, MobType.COMMON_MOB, 5);
+		createNewCustomMob("TRAINING_ZOMBIE", EntityType.ZOMBIE, "Training Zombie", 100.0, 20,
+				MobType.COMMON_MOB, 5, false);
 
 		CustomItem rottenFlesh = customItemRegistry.getCustomItem("ROTTEN_FLESH");
 		if (rottenFlesh == null) throw new IllegalStateException("ROTTEN_FLESH is not registered");
@@ -28,8 +29,8 @@ public class CustomMobRegistry {
 	}
 
 	public void createNewCustomMob(String id, EntityType entityType, String name,
-								   double maxHealth, double damage, MobType mobType, int xpAmount) {
-		CustomMob customMob = new CustomMob(id, entityType, name, maxHealth, damage,mobType, xpAmount);
+								   double maxHealth, double damage, MobType mobType, int xpAmount, boolean burnsInDaylight) {
+		CustomMob customMob = new CustomMob(id, entityType, name, maxHealth, damage, mobType, xpAmount, burnsInDaylight);
 		customMobMap.put(id, customMob);
 	}
 

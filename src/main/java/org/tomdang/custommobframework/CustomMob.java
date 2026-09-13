@@ -25,8 +25,11 @@ public class CustomMob {
 	private final List<CustomMobDrop> customMobDrops;
 	@Getter
 	private final int xpAmount;
+	@Getter
+	private final boolean burnsInDaylight;
 
-	public CustomMob(String id, EntityType entityType, String name, double maxHealth, double damage, MobType mobType, int xpAmount) {
+	public CustomMob(String id, EntityType entityType, String name, double maxHealth, double damage, MobType mobType,
+	                 int xpAmount, boolean burnsInDaylight) {
 		customMobDrops = new ArrayList<>();
 		this.id = id;
 		this.entityType = entityType;
@@ -35,6 +38,7 @@ public class CustomMob {
 		this.damage = damage;
 		this.mobType = mobType;
 		this.xpAmount = xpAmount;
+		this.burnsInDaylight = burnsInDaylight;
 	}
 
 	public void addMobDrops(CustomItem customItem, int amount, double chance) {

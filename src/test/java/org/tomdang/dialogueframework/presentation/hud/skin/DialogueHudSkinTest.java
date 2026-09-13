@@ -4,6 +4,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.Test;
 import org.tomdang.hud.glyph.HudGlyph;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ class DialogueHudSkinTest {
 	private final Key speakerFont = Key.key("tomblock", "dialogue_speaker");
 	private final TextColor bodyTextColor = TextColor.color(0xD8D8D8);
 	private final TextColor speakerNameColor = TextColor.color(0xFFF1D0);
+	private final DialogueHudIndicatorStyle indicatorStyle = new DialogueHudIndicatorStyle("»", speakerFont, speakerNameColor, 10);
 	private final List<Key> lineFonts = List.of(
 			Key.key("tomblock", "dialogue_line_1"),
 			Key.key("tomblock", "dialogue_line_2"),
@@ -40,6 +42,7 @@ class DialogueHudSkinTest {
 		assertEquals(10, skin.getSpeakerRightPadding());
 		assertEquals(bodyTextColor, skin.getBodyTextColor());
 		assertEquals(speakerNameColor, skin.getSpeakerNameColor());
+		assertSame(indicatorStyle, skin.getContinueIndicatorStyle());
 	}
 
 	@Test
@@ -78,10 +81,23 @@ class DialogueHudSkinTest {
 	@Test
 	void nullTextColorsAreRejected() {
 		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
-				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, null, speakerNameColor
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, null, speakerNameColor, indicatorStyle
 		));
 		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
-				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, bodyTextColor, null
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0, bodyTextColor, null, indicatorStyle
+		));
+	}
+
+	@Test
+	void invalidContinueIndicatorStyleIsRejected() {
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
+				bodyTextColor, speakerNameColor, null
+		));
+		DialogueHudIndicatorStyle excessivePadding = new DialogueHudIndicatorStyle("»", speakerFont, speakerNameColor, 256);
+		assertThrows(IllegalArgumentException.class, () -> new DialogueHudSkin(
+				"SKIN", backgroundGlyph, 0, 0, lineFonts, speakerFont, 0, 0,
+				bodyTextColor, speakerNameColor, excessivePadding
 		));
 	}
 
@@ -124,7 +140,8 @@ class DialogueHudSkinTest {
 				speakerLeftPadding,
 				speakerRightPadding,
 				bodyTextColor,
-				speakerNameColor
+				speakerNameColor,
+				indicatorStyle
 		);
 	}
 }

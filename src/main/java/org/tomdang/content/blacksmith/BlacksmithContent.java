@@ -22,6 +22,7 @@ import org.tomdang.dialogueframework.action.DialogueChoiceActionRegistry;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.integration.actor.ActorDialogueInteraction;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
@@ -125,8 +126,14 @@ public class BlacksmithContent {
 		);
 
 		Key blacksmithFont = Key.key("tomblock", "dialogue_speaker");
+		Key dialogueIndicatorFont = Key.key("tomblock", "dialogue_indicator");
 
-		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts, blacksmithFont, 12, 12, TextColor.fromHexString("#D8D8D8"), TextColor.fromHexString("#FFF1D0"));
+		DialogueHudIndicatorStyle continueIndicatorStyle = new DialogueHudIndicatorStyle(
+				"»", dialogueIndicatorFont, TextColor.fromHexString("#FFF1D0"), 12
+		);
+		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts,
+				blacksmithFont, 12, 12, TextColor.fromHexString("#D8D8D8"), TextColor.fromHexString("#FFF1D0"),
+				continueIndicatorStyle);
 		dialogueHudSkinRegistry.registerSkin(hudSkin);
 		DialogueThemeDefinition themeDefinition = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
 		dialogueThemeRegistry.registerTheme(themeDefinition);

@@ -6,6 +6,8 @@ import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
 import org.tomdang.hud.glyph.HudGlyph;
 import org.tomdang.hud.spacing.HudSpacingService;
 import org.tomdang.hud.text.HudTextWidthService;
@@ -48,7 +50,8 @@ class DialogueHudLayoutComposerTest {
 				8,
 				10,
 				TextColor.fromHexString("#D8D8D8"),
-				TextColor.fromHexString("#FFF1D0")
+				TextColor.fromHexString("#FFF1D0"),
+				new DialogueHudIndicatorStyle("»", Key.key("tomblock", "dialogue_speaker"), TextColor.color(0xFFF1D0), 10)
 		);
 		when(spacingService.createSpacing(anyInt())).thenAnswer(invocation ->
 				Component.text("[space:" + invocation.<Integer>getArgument(0) + "]")
@@ -63,28 +66,29 @@ class DialogueHudLayoutComposerTest {
 
 	@Test
 	void invalidArgumentsAreRejected() {
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(null, List.of("Hello"), "Blacksmith"));
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, (List<String>) null, "Blacksmith"));
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of(), "Blacksmith"));
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of("Hello"), null));
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of("Hello"), "   "));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(null, List.of("Hello"), "Blacksmith", DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, (List<String>) null, "Blacksmith", DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of(), "Blacksmith", DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of("Hello"), null, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of("Hello"), "   ", DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, List.of("Hello"), "Blacksmith", null));
 
 		List<String> linesWithNull = new ArrayList<>();
 		linesWithNull.add("Hello");
 		linesWithNull.add(null);
-		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, linesWithNull, "Blacksmith"));
+		assertThrows(IllegalArgumentException.class, () -> composer.compose(skin, linesWithNull, "Blacksmith", DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
 	void emptyDialogueTextIsAccepted() {
 		when(widthService.measure(anyString())).thenReturn(0);
-		assertDoesNotThrow(() -> composer.compose(skin, "", "Blacksmith"));
+		assertDoesNotThrow(() -> composer.compose(skin, "", "Blacksmith", DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
 	void tooManyLinesAreRejected() {
 		assertThrows(IllegalArgumentException.class, () ->
-				composer.compose(skin, List.of("One", "Two", "Three", "Four"), "Blacksmith")
+				composer.compose(skin, List.of("One", "Two", "Three", "Four"), "Blacksmith", DialogueHudIndicatorState.HIDDEN)
 		);
 	}
 
@@ -93,14 +97,14 @@ class DialogueHudLayoutComposerTest {
 		when(widthService.measure("Blacksmith")).thenReturn(50);
 		when(widthService.measure("Too wide")).thenReturn(231);
 
-		assertThrows(IllegalStateException.class, () -> composer.compose(skin, "Too wide", "Blacksmith"));
+		assertThrows(IllegalStateException.class, () -> composer.compose(skin, "Too wide", "Blacksmith", DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
 	void oversizedSpeakerNameIsRejectedUsingMeasuredPixelWidth() {
 		when(widthService.measure("A very wide speaker")).thenReturn(239);
 
-		assertThrows(IllegalStateException.class, () -> composer.compose(skin, "Hello", "A very wide speaker"));
+		assertThrows(IllegalStateException.class, () -> composer.compose(skin, "Hello", "A very wide speaker", DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
@@ -108,7 +112,7 @@ class DialogueHudLayoutComposerTest {
 		when(widthService.measure("Blacksmith")).thenReturn(52);
 		when(widthService.measure("Hello")).thenReturn(25);
 
-		Component result = composer.compose(skin, "Hello", "Blacksmith");
+		Component result = composer.compose(skin, "Hello", "Blacksmith", DialogueHudIndicatorState.HIDDEN);
 
 		assertEquals(Key.key("tomblock", "dialogue_speaker"), result.children().get(3).style().font());
 		assertEquals(TextColor.color(0xFFF1D0), result.children().get(3).style().color());
@@ -122,7 +126,7 @@ class DialogueHudLayoutComposerTest {
 		when(widthService.measure("One")).thenReturn(18);
 		when(widthService.measure("Two")).thenReturn(19);
 
-		Component result = composer.compose(skin, List.of("One", "Two"), "Blacksmith");
+		Component result = composer.compose(skin, List.of("One", "Two"), "Blacksmith", DialogueHudIndicatorState.HIDDEN);
 
 		assertEquals(Key.key("tomblock", "dialogue_line_1"), result.children().get(6).style().font());
 		assertEquals(Key.key("tomblock", "dialogue_line_2"), result.children().get(8).style().font());
@@ -135,10 +139,26 @@ class DialogueHudLayoutComposerTest {
 		when(widthService.measure("Blacksmith")).thenReturn(52);
 		when(widthService.measure("Hello")).thenReturn(25);
 
-		composer.compose(skin, "Hello", "Blacksmith");
+		composer.compose(skin, "Hello", "Blacksmith", DialogueHudIndicatorState.HIDDEN);
 
 		verify(spacingService).createSpacing(-256);
 		verify(spacingService).createSpacing(12);
 		verify(spacingService).createSpacing(256 - 12 - 25);
+	}
+
+	@Test
+	void continueIndicatorUsesConfiguredStyleAndRightAlignment() {
+		when(widthService.measure("Blacksmith")).thenReturn(52);
+		when(widthService.measure("Hello")).thenReturn(25);
+		when(widthService.measure("»")).thenReturn(6);
+
+		Component result = composer.compose(skin, "Hello", "Blacksmith", DialogueHudIndicatorState.CONTINUE);
+		Component indicator = result.children().get(result.children().size() - 2);
+
+		assertEquals(Component.text("»")
+				.font(Key.key("tomblock", "dialogue_speaker"))
+				.color(TextColor.color(0xFFF1D0)), indicator);
+		verify(spacingService).createSpacing(-(10 + 6));
+		verify(spacingService).createSpacing(10);
 	}
 }

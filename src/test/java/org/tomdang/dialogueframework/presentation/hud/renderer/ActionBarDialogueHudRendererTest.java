@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.hud.DialogueVisibleLineService;
 import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
@@ -53,16 +54,17 @@ class ActionBarDialogueHudRendererTest {
 
 	@Test
 	void nullRenderArgumentsAreRejected() {
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(null, theme, skin, node, page, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, null, skin, node, page, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, null, node, page, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, null, page, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, null, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(null, theme, skin, node, page, 0, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, null, skin, node, page, 0, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, null, node, page, 0, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, null, page, 0, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, null, 0, DialogueHudIndicatorState.HIDDEN));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, page, 0, null));
 	}
 
 	@Test
 	void negativeRevealCountIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, page, -1));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, page, -1, DialogueHudIndicatorState.HIDDEN));
 	}
 
 	@Test
@@ -74,12 +76,12 @@ class ActionBarDialogueHudRendererTest {
 
 		when(node.getDialogueText()).thenReturn(completeText);
 		when(visibleLineService.prepare(page, completeText, revealedCharacterCount)).thenReturn(visibleLines);
-		when(layoutComposer.compose(skin, visibleLines, "Blacksmith")).thenReturn(composedHud);
+		when(layoutComposer.compose(skin, visibleLines, "Blacksmith", DialogueHudIndicatorState.CONTINUE)).thenReturn(composedHud);
 
-		renderer.render(player, theme, skin, node, page, revealedCharacterCount);
+		renderer.render(player, theme, skin, node, page, revealedCharacterCount, DialogueHudIndicatorState.CONTINUE);
 
 		verify(visibleLineService).prepare(page, completeText, revealedCharacterCount);
-		verify(layoutComposer).compose(skin, visibleLines, "Blacksmith");
+		verify(layoutComposer).compose(skin, visibleLines, "Blacksmith", DialogueHudIndicatorState.CONTINUE);
 		verify(player).sendActionBar(composedHud);
 	}
 

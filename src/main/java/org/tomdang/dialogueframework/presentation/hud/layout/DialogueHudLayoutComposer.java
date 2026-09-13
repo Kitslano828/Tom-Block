@@ -2,6 +2,8 @@ package org.tomdang.dialogueframework.presentation.hud.layout;
 
 import net.kyori.adventure.text.Component;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
 import org.tomdang.hud.spacing.HudSpacingService;
 import org.tomdang.hud.text.HudTextWidthService;
 
@@ -21,18 +23,19 @@ public class DialogueHudLayoutComposer {
 		this.hudTextWidthService = hudTextWidthService;
 	}
 
-	public Component compose(DialogueHudSkin skin, String text, String speakersName ) {
+	public Component compose(DialogueHudSkin skin, String text, String speakersName, DialogueHudIndicatorState indicatorState) {
 		if (text == null) throw new IllegalArgumentException("text cannot be null");
 		if (speakersName == null || speakersName.isBlank()) throw new IllegalArgumentException("Speaker's name cannot be null or blank");
-		return compose(skin, List.of(text), speakersName);
+		return compose(skin, List.of(text), speakersName, indicatorState);
 	}
 
-	public Component compose(DialogueHudSkin skin, List<String> lines, String speakersName ) {
+	public Component compose(DialogueHudSkin skin, List<String> lines, String speakersName, DialogueHudIndicatorState indicatorState) {
 		if (skin == null) throw new IllegalArgumentException("skin cannot be null");
 		if (lines == null || lines.isEmpty()) throw new IllegalArgumentException("lines cannot be null or empty");
 		if (!lines.stream().allMatch(Objects::nonNull)) throw new IllegalArgumentException("There is a null line");
 		if (lines.size() > skin.getMaximumLines()) throw new IllegalArgumentException("lines size cannot be greater than skin's maximum lines");
 		if (speakersName == null || speakersName.isBlank()) throw new IllegalArgumentException("Speaker's name cannot be null or blank");
+		if (indicatorState == null) throw new IllegalArgumentException("indicatorState cannot be null");
 
 		int backgroundWidth = skin.getBackgroundGlyph().getPixelWidth();
 		int leftPadding = skin.getTextLeftPadding();
@@ -86,6 +89,19 @@ public class DialogueHudLayoutComposer {
 				int trailingSpace = backgroundWidth - leftPadding - textWidth;
 				builder.append(hudSpacingService.createSpacing(trailingSpace));
 			}
+		}
+
+		if (indicatorState == DialogueHudIndicatorState.CONTINUE) {
+			DialogueHudIndicatorStyle indicatorStyle = skin.getContinueIndicatorStyle();
+			int indicatorWidth = hudTextWidthService.measure(indicatorStyle.text());
+			int indicatorOffset = indicatorStyle.rightPadding() + indicatorWidth;
+			if (indicatorOffset > backgroundWidth) throw new IllegalStateException("continue indicator exceeds background width");
+
+			builder.append(hudSpacingService.createSpacing(-indicatorOffset));
+			builder.append(Component.text(indicatorStyle.text())
+					.font(indicatorStyle.fontKey())
+					.color(indicatorStyle.color()));
+			builder.append(hudSpacingService.createSpacing(indicatorStyle.rightPadding()));
 		}
 
 		return builder.build();

@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.DialoguePresentation;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorState;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
@@ -82,7 +83,8 @@ public class HudDialoguePresentation implements DialoguePresentation {
 
 		int currentPageIndex = displayState.getCurrentPageIndex();
 
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, currentNode, pages.get(currentPageIndex), displayState.getRevealedCharacterCount());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, currentNode, pages.get(currentPageIndex),
+				displayState.getRevealedCharacterCount(), DialogueHudIndicatorState.HIDDEN);
 		dialogueTextAnimator.start(player, session);
 	}
 

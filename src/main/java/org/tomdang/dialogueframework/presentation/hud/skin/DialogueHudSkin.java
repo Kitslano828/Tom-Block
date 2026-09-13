@@ -3,6 +3,7 @@ package org.tomdang.dialogueframework.presentation.hud.skin;
 import lombok.Getter;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.TextColor;
+import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndicatorStyle;
 import org.tomdang.hud.glyph.HudGlyph;
 
 import java.util.List;
@@ -29,9 +30,12 @@ public class DialogueHudSkin {
 	private final TextColor bodyTextColor;
 	@Getter
 	private final TextColor speakerNameColor;
+	@Getter
+	private final DialogueHudIndicatorStyle continueIndicatorStyle;
 
 	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts, Key speakerFontKey,
-						   int speakerLeftPadding, int speakerRightPadding, TextColor bodyTextColor, TextColor speakerNameColor) {
+						   int speakerLeftPadding, int speakerRightPadding, TextColor bodyTextColor, TextColor speakerNameColor,
+						   DialogueHudIndicatorStyle continueIndicatorStyle) {
 		if (skinID == null) throw new IllegalArgumentException("skinID cannot be null");
 		if (skinID.isBlank()) throw new IllegalArgumentException("skinID cannot be blank");
 		if (backgroundGlyph == null) throw new IllegalArgumentException("backgroundGlyph cannot be null");
@@ -47,6 +51,8 @@ public class DialogueHudSkin {
 		if ( (long) speakerLeftPadding + speakerRightPadding >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("combined speaker padding must be less than the background glyph width");
 		if (bodyTextColor == null) throw new IllegalArgumentException("bodyTextColor cannot be null");
 		if (speakerNameColor == null) throw new IllegalArgumentException("speakerNameColor cannot be null");
+		if (continueIndicatorStyle == null) throw new IllegalArgumentException("continueIndicatorStyle cannot be null");
+		if (continueIndicatorStyle.rightPadding() >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("indicator right padding must be less than the background glyph width");
 
 		this.skinID = skinID;
 		this.backgroundGlyph = backgroundGlyph;
@@ -58,6 +64,7 @@ public class DialogueHudSkin {
 		this.speakerRightPadding = speakerRightPadding;
 		this.bodyTextColor = bodyTextColor;
 		this.speakerNameColor = speakerNameColor;
+		this.continueIndicatorStyle = continueIndicatorStyle;
 	}
 
 	public int getMaximumLines() {
