@@ -39,7 +39,7 @@ public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
 
 
 
-		player.sendActionBar(dialogueHudLayoutComposer.compose(hudSkin, visibleLines));
+		player.sendActionBar(dialogueHudLayoutComposer.compose(hudSkin, visibleLines, definition.speakerName()));
 
 	}
 

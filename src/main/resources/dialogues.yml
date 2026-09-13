@@ -1,0 +1,37 @@
+dialogues:
+  BLACKSMITH_TEST_DIALOGUE:
+    starting-node: GREETING
+    nodes:
+      GREETING:
+        text: "Welcome to my forge."
+        choices:
+          CHECKUP:
+            display-text: "How are you?"
+            next-node: CHECKUP
+          OPEN_FORGE:
+            display-text: "Show me what you can forge"
+            action: OPEN_FORGE
+          PAGINATION_TEST:
+            display-text: "Tell me about this forge"
+            next-node: PAGINATION_TEST
+          CONTINUE:
+            display-text: "Continue"
+            next-node: GOODBYE
+
+      CHECKUP:
+        text: "I am doing alright! How are you?"
+        choices:
+          CONTINUE:
+            display-text: "Continue"
+            next-node: GOODBYE
+
+      PAGINATION_TEST:
+        text: >-
+          This forge has served the town for longer than most people remember.
+          Every weapon begins as ordinary metal, but careful heating, patient
+          hammering, and a steady hand can turn it into something worth carrying.
+          There is always another technique to learn, so even an old blacksmith
+          must keep practicing.
+
+      GOODBYE:
+        text: "Come back whenever you need something forged."

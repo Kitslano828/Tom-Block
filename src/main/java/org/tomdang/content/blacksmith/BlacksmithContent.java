@@ -19,13 +19,9 @@ import org.tomdang.crafting.interaction.OpenForgeInteraction;
 import org.tomdang.dialogueframework.DialogueController;
 import org.tomdang.dialogueframework.action.DialogueChoiceActionRegistry;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
-import org.tomdang.dialogueframework.definition.DialogueChoice;
-import org.tomdang.dialogueframework.definition.DialogueDefinition;
-import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.integration.actor.ActorDialogueInteraction;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
-import org.tomdang.dialogueframework.registry.DialogueRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
@@ -36,7 +32,6 @@ import java.util.List;
 public class BlacksmithContent {
 	private final DialogueThemeRegistry dialogueThemeRegistry;
 	private final DialogueHudSkinRegistry dialogueHudSkinRegistry;
-	private final DialogueRegistry dialogueRegistry;
 	private final DialogueController dialogueController;
 	private final DialogueSessionService dialogueSessionService;
 	private final DialogueAdvanceService dialogueAdvanceService;
@@ -46,14 +41,13 @@ public class BlacksmithContent {
 	private final ActorLookService actorLookService;
 	private final DialogueChoiceActionRegistry dialogueChoiceActionRegistry;
 
-	public BlacksmithContent(DialogueThemeRegistry dialogueThemeRegistry, DialogueHudSkinRegistry dialogueHudSkinRegistry, DialogueRegistry dialogueRegistry,
+	public BlacksmithContent(DialogueThemeRegistry dialogueThemeRegistry, DialogueHudSkinRegistry dialogueHudSkinRegistry,
 	                         DialogueController dialogueController, DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService,
 	                         ActorInteractionRegistry actorInteractionRegistry, ActorRegistry actorRegistry, ActorSpawnPointRegistry actorSpawnPointRegistry,
 							 ActorLookService actorLookService, DialogueChoiceActionRegistry dialogueChoiceActionRegistry
 	) {
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("dialogueThemeRegistry cannot be null");
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
-		if (dialogueRegistry == null) throw new IllegalArgumentException("dialogueRegistry cannot be null");
 		if (dialogueController == null) throw new IllegalArgumentException("dialogueController cannot be null");
 		if (dialogueSessionService == null) throw new IllegalArgumentException("dialogueSessionService cannot be null");
 		if (dialogueAdvanceService == null) throw new IllegalArgumentException("dialogueAdvanceService cannot be null");
@@ -65,7 +59,6 @@ public class BlacksmithContent {
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
-		this.dialogueRegistry = dialogueRegistry;
 		this.dialogueController = dialogueController;
 		this.dialogueSessionService = dialogueSessionService;
 		this.dialogueAdvanceService = dialogueAdvanceService;
@@ -130,30 +123,13 @@ public class BlacksmithContent {
 				Key.key("tomblock", "dialogue_line_3")
 		);
 
-		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts);
+		Key blacksmithFont = Key.key("tomblock", "dialogue_speaker");
+
+		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts, blacksmithFont, 12, 12);
 		dialogueHudSkinRegistry.registerSkin(hudSkin);
 		DialogueThemeDefinition themeDefinition = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
 		dialogueThemeRegistry.registerTheme(themeDefinition);
 		dialogueThemeRegistry.bindSource("BLACKSMITH", "BLACKSMITH_THEME");
-
-		DialogueChoice continueChoice =
-				new DialogueChoice("CONTINUE", "Continue", "GOODBYE");
-		DialogueChoice checkUpChoice =
-				new DialogueChoice("CHECKUP", "How are you?", "CHECKUP");
-		DialogueChoice openForgeChoice =
-				new DialogueChoice("OPEN_FORGE", "Show me what you can forge", null, "OPEN_FORGE");
-		DialogueChoice paginationTestChoice =
-				new DialogueChoice("PAGINATION_TEST", "Tell me about this forge", "PAGINATION_TEST");
-		DialogueNode firstNode = new DialogueNode("GREETING", "Welcome to my forge.", List.of(checkUpChoice, openForgeChoice, paginationTestChoice, continueChoice));
-		DialogueNode secondNode = new DialogueNode("CHECKUP", "I am doing alright! How are you?", List.of(continueChoice));
-		DialogueNode thirdNode = new DialogueNode("GOODBYE", "Come back whenever you need something forged.", List.of());
-		DialogueNode paginationTestNode = new DialogueNode(
-				"PAGINATION_TEST",
-				"This forge has served the town for longer than most people remember. Every weapon begins as ordinary metal, but careful heating, patient hammering, and a steady hand can turn it into something worth carrying. There is always another technique to learn, so even an old blacksmith must keep practicing.",
-				List.of()
-		);
-		DialogueDefinition definition = new DialogueDefinition("BLACKSMITH_TEST_DIALOGUE", "GREETING", List.of(firstNode, secondNode, thirdNode, paginationTestNode));
-		dialogueRegistry.registerDialogue(definition);
 
 		ActorDialogueInteraction interaction = new ActorDialogueInteraction("BLACKSMITH_TEST_DIALOGUE", dialogueController, dialogueSessionService, dialogueAdvanceService);
 

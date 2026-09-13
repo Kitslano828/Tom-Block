@@ -32,7 +32,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.tomdang.dialogueframework.DialogueController;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
-import org.tomdang.dialogueframework.registry.DialogueRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 import org.tomdang.mining.miningtool.MiningToolCreator;
@@ -143,14 +142,12 @@ public class TomBlock extends JavaPlugin {
 		DialogueSessionService dialogueSessionService = dialogueBootStrap.getDialogueSessionService();
 		DialogueAdvanceService dialogueAdvanceService = dialogueBootStrap.getDialogueAdvanceService();
 		DialogueController dialogueController = dialogueBootStrap.getDialogueController();
-		DialogueRegistry dialogueRegistry = dialogueBootStrap.getDialogueRegistry();
 		DialogueThemeRegistry dialogueThemeRegistry = dialogueBootStrap.getDialogueThemeRegistry();
 		DialogueHudSkinRegistry dialogueHudSkinRegistry = dialogueBootStrap.getDialogueHudSkinRegistry();
 
 
 		BlacksmithContent blacksmithContent = new BlacksmithContent(dialogueThemeRegistry,
 				dialogueHudSkinRegistry,
-				dialogueRegistry,
 				dialogueController,
 				dialogueSessionService,
 				dialogueAdvanceService,

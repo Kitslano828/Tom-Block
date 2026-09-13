@@ -74,12 +74,12 @@ class ActionBarDialogueHudRendererTest {
 
 		when(node.getDialogueText()).thenReturn(completeText);
 		when(visibleLineService.prepare(page, completeText, revealedCharacterCount)).thenReturn(visibleLines);
-		when(layoutComposer.compose(skin, visibleLines)).thenReturn(composedHud);
+		when(layoutComposer.compose(skin, visibleLines, "Blacksmith")).thenReturn(composedHud);
 
 		renderer.render(player, theme, skin, node, page, revealedCharacterCount);
 
 		verify(visibleLineService).prepare(page, completeText, revealedCharacterCount);
-		verify(layoutComposer).compose(skin, visibleLines);
+		verify(layoutComposer).compose(skin, visibleLines, "Blacksmith");
 		verify(player).sendActionBar(composedHud);
 	}
 

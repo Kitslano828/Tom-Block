@@ -6,6 +6,9 @@ import org.tomdang.dialogueframework.DialogueController;
 import org.tomdang.dialogueframework.action.DialogueChoiceActionRegistry;
 import org.tomdang.dialogueframework.action.DialogueChoiceActionService;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
+import org.tomdang.dialogueframework.configuration.DialogueConfigurationDefinition;
+import org.tomdang.dialogueframework.configuration.DialogueConfigurationDefinitionRegistrar;
+import org.tomdang.dialogueframework.configuration.DialogueConfigurationLoader;
 import org.tomdang.dialogueframework.presentation.choice.DialogueChoicePresentation;
 import org.tomdang.dialogueframework.presentation.choice.chat.ChatDialogueChoicePresentation;
 import org.tomdang.dialogueframework.presentation.hud.*;
@@ -23,6 +26,12 @@ import org.tomdang.hud.text.HudTextWidthService;
 import org.tomdang.hud.text.HudTextWrapper;
 import org.tomdang.hud.text.MinecraftDefaultTextWidthService;
 import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class DialogueBootStrap {
 
@@ -55,6 +64,22 @@ public class DialogueBootStrap {
 
 		dialogueRegistry = new DialogueRegistry();
 		dialogueSessionRegistry = new DialogueSessionRegistry();
+
+		DialogueConfigurationLoader configurationLoader = new DialogueConfigurationLoader();
+		List<DialogueConfigurationDefinition> dialogueDefinitions;
+		try (InputStream configurationStream = instance.getResource("dialogues.yml")) {
+			if (configurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain dialogues.yml");
+			}
+			dialogueDefinitions = configurationLoader.loadDefinitions(
+					new InputStreamReader(configurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled dialogues.yml resource", exception);
+		}
+		DialogueConfigurationDefinitionRegistrar definitionRegistrar =
+				new DialogueConfigurationDefinitionRegistrar(dialogueRegistry);
+		definitionRegistrar.registerDefinitions(dialogueDefinitions);
 
 		dialogueSessionService = new DialogueSessionService(dialogueRegistry, dialogueSessionRegistry);
 

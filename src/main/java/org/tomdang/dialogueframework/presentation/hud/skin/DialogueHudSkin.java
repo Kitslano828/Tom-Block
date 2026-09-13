@@ -18,8 +18,14 @@ public class DialogueHudSkin {
 	private final int textRightPadding;
 	@Getter
 	private final List<Key> lineFonts;
+	@Getter
+	private final Key speakerFontKey;
+	@Getter
+	private final int speakerLeftPadding;
+	@Getter
+	private final int speakerRightPadding;
 
-	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts) {
+	public DialogueHudSkin(String skinID, HudGlyph backgroundGlyph, int textLeftPadding, int textRightPadding, List<Key> lineFonts, Key speakerFontKey, int speakerLeftPadding, int speakerRightPadding) {
 		if (skinID == null) throw new IllegalArgumentException("skinID cannot be null");
 		if (skinID.isBlank()) throw new IllegalArgumentException("skinID cannot be blank");
 		if (backgroundGlyph == null) throw new IllegalArgumentException("backgroundGlyph cannot be null");
@@ -29,12 +35,19 @@ public class DialogueHudSkin {
 		if (lineFonts == null) throw new IllegalArgumentException("lineFonts cannot be null");
 		if (lineFonts.isEmpty()) throw new IllegalArgumentException("lineFonts cannot be empty");
 		if (lineFonts.stream().anyMatch(font -> font == null)) throw new IllegalArgumentException("lineFonts cannot contain null");
+		if (speakerFontKey == null) throw new IllegalArgumentException("speakerFontKey cannot be null");
+		if (speakerLeftPadding < 0) throw new IllegalArgumentException("speakerLeftPadding cannot be negative");
+		if (speakerRightPadding < 0) throw new IllegalArgumentException("speakerRightPadding cannot be negative");
+		if ( (long) speakerLeftPadding + speakerRightPadding >= backgroundGlyph.getPixelWidth()) throw new IllegalArgumentException("combined speaker padding must be less than the background glyph width");
 
 		this.skinID = skinID;
 		this.backgroundGlyph = backgroundGlyph;
 		this.textLeftPadding = textLeftPadding;
 		this.textRightPadding = textRightPadding;
 		this.lineFonts = List.copyOf(lineFonts);
+		this.speakerFontKey = speakerFontKey;
+		this.speakerLeftPadding = speakerLeftPadding;
+		this.speakerRightPadding = speakerRightPadding;
 	}
 
 	public int getMaximumLines() {
