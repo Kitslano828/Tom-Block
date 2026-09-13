@@ -1,36 +1,26 @@
 package org.tomdang.dialogueframework.presentation.hud;
 
-import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
-import org.tomdang.hud.text.HudTextWrapper;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DialogueVisibleLineService {
 
-	private final HudTextWrapper hudTextWrapper;
-
-	public DialogueVisibleLineService(HudTextWrapper hudTextWrapper) {
-		if (hudTextWrapper == null) throw new IllegalArgumentException("hudTextWrapper cannot be null");
-
-		this.hudTextWrapper = hudTextWrapper;
-	}
-
-	public List<String> prepare(DialogueHudSkin skin, String text, int revealedCharacterCount) {
-		if (skin == null) throw new IllegalArgumentException("Skin cannot be null");
+	public List<String> prepare(DialoguePage current, String text, int revealedCharacterCount) {
+		if (current == null) throw new IllegalArgumentException("current cannot be null");
 		if (text == null) throw new IllegalArgumentException("text cannot be null");
 		if (revealedCharacterCount < 0) throw new IllegalArgumentException("revealedCharacterCount cannot be negative");
-		if (revealedCharacterCount > text.length()) throw new IllegalArgumentException("revealedCharacterCount cannot be greater than length of text");
+		if (current.getEndingIndex() > text.length()) throw new IllegalArgumentException("current page ending index cannot exceed text length");
+		if (revealedCharacterCount < current.getBeginningIndex()) throw new IllegalArgumentException("revealedCharacterCount cannot be before current page beginning");
+		if (revealedCharacterCount > current.getEndingIndex()) throw new IllegalArgumentException("revealedCharacterCount cannot exceed current page ending");
 
-		int usableWidth = skin.getBackgroundGlyph().getPixelWidth() - skin.getTextLeftPadding() - skin.getTextRightPadding();
-		List<String> wrappedLines = hudTextWrapper.wrap(text, usableWidth);
-		if (wrappedLines.size() > skin.getMaximumLines()) throw new IllegalStateException("resulting number of lines exceeds skin.getMaximumLines()");
 
-		List<String> visibleLines = new ArrayList<>(wrappedLines.size());
+		List<String> visibleLines = new ArrayList<>(current.getLines().size());
 
-		int searchCursor = 0;
+		int searchCursor = current.getBeginningIndex();
 
-		for (String line : wrappedLines) {
+		for (String line : current.getLines()) {
 			int lineStart = text.indexOf(line, searchCursor);
 			if (lineStart == -1) {
 				// Fallback in case of unexpected character mapping differences

@@ -93,7 +93,7 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 				return;
 			}
 
-			if (currentState.isFullyRevealed()) {
+			if (currentState.isCurrentPageFullyRevealed()) {
 				long currentTick = instance.getServer().getCurrentTick();
 				long lastRefreshTick = lastRefreshTickMap.getOrDefault(playerUUID, currentTick);
 				if (currentTick - lastRefreshTick >= keepAlivePeriodTicks) {
@@ -104,7 +104,7 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 			}
 
 			DialogueDisplayState updatedState = dialogueTextAnimationService.revealCharacters(player, session, charactersPerStep);
-			if (updatedState.isFullyRevealed()) {
+			if (updatedState.isCurrentPageFullyRevealed()) {
 				lastRefreshTickMap.put(playerUUID, (long) instance.getServer().getCurrentTick());
 			}
 

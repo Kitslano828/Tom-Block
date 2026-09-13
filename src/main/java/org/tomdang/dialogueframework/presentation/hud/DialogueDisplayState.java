@@ -13,7 +13,9 @@ public class DialogueDisplayState {
 	@Getter
 	private int revealedCharacterCount = 0;
 	@Getter
-	private boolean fullyRevealed = false;
+	private boolean currentPageFullyRevealed = false;
+	@Getter
+	private int currentPageIndex = 0;
 	private boolean choicesShown;
 
 	public DialogueDisplayState(UUID playerUUID, String displayNodeID) {
@@ -26,20 +28,38 @@ public class DialogueDisplayState {
 		choicesShown = false;
 	}
 
-	public void revealCharacters(int amountToReveal, int totalTextLength) {
+	public void revealCharacters(int amountToReveal, int currentPageEndingIndex) {
 		if (amountToReveal <= 0) throw new IllegalArgumentException("Amount to reveal cannot be 0 or below");
-		if (totalTextLength < 0) throw new IllegalArgumentException("Total Text Length cannot be negative");
-		if (this.revealedCharacterCount > totalTextLength) throw new IllegalStateException("Revealed Character Amount is higher than total");
+		if (currentPageEndingIndex < 0) throw new IllegalArgumentException("Current page ending index cannot be negative");
+		if (this.revealedCharacterCount > currentPageEndingIndex) throw new IllegalStateException("Current page ending index cannot be behind the revealed character count");
 
 		this.revealedCharacterCount += amountToReveal;
-		if (this.revealedCharacterCount > totalTextLength) this.revealedCharacterCount = totalTextLength;
-		if (this.revealedCharacterCount >= totalTextLength) fullyRevealed = true;
+		if (this.revealedCharacterCount > currentPageEndingIndex) this.revealedCharacterCount = currentPageEndingIndex;
+		if (this.revealedCharacterCount >= currentPageEndingIndex) currentPageFullyRevealed = true;
 	}
 
-	public void revealAll(int totalTextLength) {
-		if (totalTextLength < 0) throw new IllegalArgumentException("Total Text Length cannot be negative");
-		this.revealedCharacterCount = totalTextLength;
-		fullyRevealed = true;
+	public void revealAll(int currentPageEndingIndex) {
+		if (currentPageEndingIndex < 0) throw new IllegalArgumentException("Current page ending index cannot be negative");
+		if (this.revealedCharacterCount > currentPageEndingIndex) throw new IllegalStateException("Current page ending index cannot be behind the revealed character count");
+
+		this.revealedCharacterCount = currentPageEndingIndex;
+		currentPageFullyRevealed = true;
+	}
+
+	public void advancePage(int numberOfPages, int beginningCharacterIndex) {
+		if (numberOfPages <= 0) {
+			throw new IllegalArgumentException("numberOfPages must be greater than 0");
+		}
+		if (beginningCharacterIndex < 0) {
+			throw new IllegalArgumentException("beginningCharacterIndex cannot be negative");
+		}
+		if (this.currentPageIndex + 1 >= numberOfPages) {
+			throw new IllegalStateException("Cannot advance page: no next page exists");
+		}
+
+		this.currentPageIndex++;
+		this.revealedCharacterCount = beginningCharacterIndex;
+		this.currentPageFullyRevealed = false;
 	}
 
 	public boolean areChoicesShown() {

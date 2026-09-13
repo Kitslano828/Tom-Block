@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.hud.DialogueVisibleLineService;
 import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class  ActionBarDialogueHudRendererTest {
+class ActionBarDialogueHudRendererTest {
 
 	private DialogueVisibleLineService visibleLineService;
 	private DialogueHudLayoutComposer layoutComposer;
@@ -25,6 +26,7 @@ class  ActionBarDialogueHudRendererTest {
 	private Player player;
 	private DialogueHudSkin skin;
 	private DialogueNode node;
+	private DialoguePage page;
 	private DialogueThemeDefinition theme;
 
 	@BeforeEach
@@ -35,49 +37,32 @@ class  ActionBarDialogueHudRendererTest {
 		player = mock(Player.class);
 		skin = mock(DialogueHudSkin.class);
 		node = mock(DialogueNode.class);
+		page = mock(DialoguePage.class);
 		theme = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
 	}
 
 	@Test
 	void nullVisibleLineServiceIsRejected() {
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> new ActionBarDialogueHudRenderer(null, layoutComposer)
-		);
+		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(null, layoutComposer));
 	}
 
 	@Test
 	void nullLayoutComposerIsRejected() {
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> new ActionBarDialogueHudRenderer(visibleLineService, null)
-		);
+		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(visibleLineService, null));
 	}
 
 	@Test
 	void nullRenderArgumentsAreRejected() {
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(null, theme, skin, node, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, null, skin, node, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, null, node, 0));
-		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, null, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(null, theme, skin, node, page, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, null, skin, node, page, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, null, node, page, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, null, page, 0));
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, null, 0));
 	}
 
 	@Test
 	void negativeRevealCountIsRejected() {
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> renderer.render(player, theme, skin, node, -1)
-		);
-	}
-
-	@Test
-	void revealCountBeyondNodeTextLengthIsRejected() {
-		when(node.getDialogueText()).thenReturn("Hello");
-
-		assertThrows(
-				IllegalStateException.class,
-				() -> renderer.render(player, theme, skin, node, 6)
-		);
+		assertThrows(IllegalArgumentException.class, () -> renderer.render(player, theme, skin, node, page, -1));
 	}
 
 	@Test
@@ -86,13 +71,14 @@ class  ActionBarDialogueHudRendererTest {
 		int revealedCharacterCount = 9;
 		List<String> visibleLines = List.of("Welcome t", "");
 		Component composedHud = Component.text("composed dialogue HUD");
+
 		when(node.getDialogueText()).thenReturn(completeText);
-		when(visibleLineService.prepare(skin, completeText, revealedCharacterCount)).thenReturn(visibleLines);
+		when(visibleLineService.prepare(page, completeText, revealedCharacterCount)).thenReturn(visibleLines);
 		when(layoutComposer.compose(skin, visibleLines)).thenReturn(composedHud);
 
-		renderer.render(player, theme, skin, node, revealedCharacterCount);
+		renderer.render(player, theme, skin, node, page, revealedCharacterCount);
 
-		verify(visibleLineService).prepare(skin, completeText, revealedCharacterCount);
+		verify(visibleLineService).prepare(page, completeText, revealedCharacterCount);
 		verify(layoutComposer).compose(skin, visibleLines);
 		verify(player).sendActionBar(composedHud);
 	}
@@ -100,7 +86,6 @@ class  ActionBarDialogueHudRendererTest {
 	@Test
 	void clearSendsAnEmptyActionBar() {
 		renderer.clear(player);
-
 		verify(player).sendActionBar(Component.empty());
 	}
 

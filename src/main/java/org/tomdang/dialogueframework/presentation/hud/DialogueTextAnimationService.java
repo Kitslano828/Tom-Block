@@ -2,12 +2,15 @@ package org.tomdang.dialogueframework.presentation.hud;
 
 import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.session.DialogueSession;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 
+import java.util.List;
 import java.util.UUID;
 
 public class DialogueTextAnimationService {
@@ -16,20 +19,24 @@ public class DialogueTextAnimationService {
 	private final DialogueThemeRegistry dialogueThemeRegistry;
 	private final DialogueHudRenderer dialogueHudRenderer;
 	private final DialogueHudSkinRegistry dialogueHudSkinRegistry;
+	private final DialoguePaginationService dialoguePaginationService;
 
 	public DialogueTextAnimationService(DialogueDisplayStateRegistry dialogueDisplayStateRegistry,
 										DialogueThemeRegistry dialogueThemeRegistry,
-	                               		DialogueHudRenderer dialogueHudRenderer, DialogueHudSkinRegistry dialogueHudSkinRegistry)
+										DialogueHudRenderer dialogueHudRenderer, DialogueHudSkinRegistry dialogueHudSkinRegistry,
+										DialoguePaginationService dialoguePaginationService)
 	{
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("DialogueThemeRegistry cannot be null");
 		if (dialogueDisplayStateRegistry == null) throw new IllegalArgumentException("dialogueDisplayStateRegistry cannot be null");
 		if (dialogueHudRenderer == null) throw new IllegalArgumentException("dialogueHudRenderer cannot be null");
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
+		if (dialoguePaginationService == null) throw new IllegalArgumentException("dialoguePaginationService cannot be null");
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
 		this.dialogueDisplayStateRegistry = dialogueDisplayStateRegistry;
 		this.dialogueHudRenderer = dialogueHudRenderer;
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
+		this.dialoguePaginationService = dialoguePaginationService;
 	}
 
 	public DialogueDisplayState revealCharacters(Player player, DialogueSession session, int charactersToBeRevealed) {
@@ -56,9 +63,10 @@ public class DialogueTextAnimationService {
 		DialogueHudSkin hudSkin = dialogueHudSkinRegistry.lookupSkin(skinID);
 		if (hudSkin == null) throw new IllegalStateException(skinID + " does not exist");
 
-		int currentNodeLength = getTotalNodeLength(node);
-		displayState.revealCharacters(charactersToBeRevealed, currentNodeLength);
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, displayState.getRevealedCharacterCount());
+		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
+
+		displayState.revealCharacters(charactersToBeRevealed, currentPage.getEndingIndex());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
 		return displayState;
 	}
 
@@ -85,9 +93,10 @@ public class DialogueTextAnimationService {
 		DialogueHudSkin hudSkin = dialogueHudSkinRegistry.lookupSkin(skinID);
 		if (hudSkin == null) throw new IllegalStateException(skinID + " does not exist");
 
-		int currentNodeLength = getTotalNodeLength(node);
-		displayState.revealAll(currentNodeLength);
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, displayState.getRevealedCharacterCount());
+		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
+
+		displayState.revealAll(currentPage.getEndingIndex());
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
 		return displayState;
 	}
 
@@ -114,11 +123,21 @@ public class DialogueTextAnimationService {
 		DialogueHudSkin hudSkin = dialogueHudSkinRegistry.lookupSkin(skinID);
 		if (hudSkin == null) throw new IllegalStateException(skinID + " does not exist");
 
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, displayState.getRevealedCharacterCount());
+		DialoguePage currentPage = getCurrentPage(node, hudSkin, displayState);
+
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, node, currentPage, displayState.getRevealedCharacterCount());
 	}
 
-	private int getTotalNodeLength(DialogueNode node) {
-		return node.getDialogueText().length();
+	private DialoguePage getCurrentPage(DialogueNode node, DialogueHudSkin skin, DialogueDisplayState displayState) {
+
+		List<DialoguePage> pages =  dialoguePaginationService.paginate(skin, node.getDialogueText());
+
+		int currentIndex = displayState.getCurrentPageIndex();
+		if (currentIndex < 0 || currentIndex >= pages.size()) {
+			throw new IllegalStateException("Current page index does not exist: " + currentIndex);
+		}
+
+		return pages.get(currentIndex);
 	}
 
 }

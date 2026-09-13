@@ -142,10 +142,17 @@ public class BlacksmithContent {
 				new DialogueChoice("CHECKUP", "How are you?", "CHECKUP");
 		DialogueChoice openForgeChoice =
 				new DialogueChoice("OPEN_FORGE", "Show me what you can forge", null, "OPEN_FORGE");
-		DialogueNode firstNode = new DialogueNode("GREETING", "Welcome to my forge.", List.of(checkUpChoice, openForgeChoice, continueChoice));
+		DialogueChoice paginationTestChoice =
+				new DialogueChoice("PAGINATION_TEST", "Tell me about this forge", "PAGINATION_TEST");
+		DialogueNode firstNode = new DialogueNode("GREETING", "Welcome to my forge.", List.of(checkUpChoice, openForgeChoice, paginationTestChoice, continueChoice));
 		DialogueNode secondNode = new DialogueNode("CHECKUP", "I am doing alright! How are you?", List.of(continueChoice));
 		DialogueNode thirdNode = new DialogueNode("GOODBYE", "Come back whenever you need something forged.", List.of());
-		DialogueDefinition definition = new DialogueDefinition("BLACKSMITH_TEST_DIALOGUE", "GREETING", List.of(firstNode, secondNode, thirdNode));
+		DialogueNode paginationTestNode = new DialogueNode(
+				"PAGINATION_TEST",
+				"This forge has served the town for longer than most people remember. Every weapon begins as ordinary metal, but careful heating, patient hammering, and a steady hand can turn it into something worth carrying. There is always another technique to learn, so even an old blacksmith must keep practicing.",
+				List.of()
+		);
+		DialogueDefinition definition = new DialogueDefinition("BLACKSMITH_TEST_DIALOGUE", "GREETING", List.of(firstNode, secondNode, thirdNode, paginationTestNode));
 		dialogueRegistry.registerDialogue(definition);
 
 		ActorDialogueInteraction interaction = new ActorDialogueInteraction("BLACKSMITH_TEST_DIALOGUE", dialogueController, dialogueSessionService, dialogueAdvanceService);

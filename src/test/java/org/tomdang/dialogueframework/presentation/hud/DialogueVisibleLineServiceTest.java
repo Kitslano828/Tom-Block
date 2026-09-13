@@ -1,158 +1,111 @@
 package org.tomdang.dialogueframework.presentation.hud;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
-import org.tomdang.hud.glyph.HudGlyph;
-import org.tomdang.hud.text.HudTextWrapper;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DialogueVisibleLineServiceTest {
 
-	@Mock
-	private HudTextWrapper hudTextWrapper;
-
-	@Mock
-	private DialogueHudSkin skin;
-
-	@Mock
-	private HudGlyph backgroundGlyph;
-
-	private DialogueVisibleLineService service;
-
-	@BeforeEach
-	void setUp() {
-		// Manually initialize @Mock annotated fields without needing @ExtendWith
-		MockitoAnnotations.openMocks(this);
-		service = new DialogueVisibleLineService(hudTextWrapper);
-	}
-
-	private void setupSkinMock(int maxLines) {
-		when(backgroundGlyph.getPixelWidth()).thenReturn(256);
-		when(skin.getBackgroundGlyph()).thenReturn(backgroundGlyph);
-		when(skin.getTextLeftPadding()).thenReturn(12);
-		when(skin.getTextRightPadding()).thenReturn(14);
-		when(skin.getMaximumLines()).thenReturn(maxLines);
-	}
+	private final DialogueVisibleLineService service = new DialogueVisibleLineService();
 
 	@Test
-	void nullWrapperDependencyIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> new DialogueVisibleLineService(null));
-	}
-
-	@Test
-	void nullSkinIsRejected() {
+	void nullPageIsRejected() {
 		assertThrows(IllegalArgumentException.class, () -> service.prepare(null, "Hello", 0));
 	}
 
 	@Test
-	void nullCompleteTextIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> service.prepare(skin, null, 0));
+	void nullSourceTextIsRejected() {
+		DialoguePage page = new DialoguePage(List.of("Hello"), 0, 5);
+		assertThrows(IllegalArgumentException.class, () -> service.prepare(page, null, 0));
 	}
 
 	@Test
 	void negativeRevealCountIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> service.prepare(skin, "Hello", -1));
+		DialoguePage page = new DialoguePage(List.of("Hello"), 0, 5);
+		assertThrows(IllegalArgumentException.class, () -> service.prepare(page, "Hello", -1));
 	}
 
 	@Test
-	void revealCountBeyondTextLengthIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> service.prepare(skin, "Hello", 6));
+	void revealCountBeforePageBeginningIsRejected() {
+		DialoguePage page = new DialoguePage(List.of("Second"), 6, 12);
+		assertThrows(IllegalArgumentException.class, () -> service.prepare(page, "First Second", 5));
 	}
 
 	@Test
-	void zeroRevealReturnsEmptyVersionsOfEveryWrappedLine() {
-		String text = "Welcome to my forge, traveler. What do you need?";
-		setupSkinMock(3);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Welcome to my", "forge, traveler.", "What do you need?"));
+	void revealCountBeyondPageEndingIsRejected() {
+		DialoguePage page = new DialoguePage(List.of("Hello"), 0, 5);
+		assertThrows(IllegalArgumentException.class, () -> service.prepare(page, "Hello there", 6));
+	}
 
-		List<String> result = service.prepare(skin, text, 0);
+	@Test
+	void pageEndingBeyondSourceTextIsRejected() {
+		DialoguePage page = new DialoguePage(List.of("Hello"), 0, 10);
+		assertThrows(IllegalArgumentException.class, () -> service.prepare(page, "Hello", 0));
+	}
 
-		assertEquals(List.of("", "", ""), result);
+	@Test
+	void pageBeginningReturnsEmptyVersionOfEveryLine() {
+		String text = "Welcome to my forge";
+		DialoguePage page = new DialoguePage(List.of("Welcome to", "my forge"), 0, text.length());
+
+		assertEquals(List.of("", ""), service.prepare(page, text, page.getBeginningIndex()));
 	}
 
 	@Test
 	void partialFirstLineRevealsOnlyItsPrefix() {
 		String text = "Welcome to my forge";
-		setupSkinMock(2);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Welcome to", "my forge"));
+		DialoguePage page = new DialoguePage(List.of("Welcome to", "my forge"), 0, text.length());
 
-		// "Welco" = 5 characters
-		List<String> result = service.prepare(skin, text, 5);
-
-		assertEquals(List.of("Welco", ""), result);
+		assertEquals(List.of("Welco", ""), service.prepare(page, text, 5));
 	}
 
 	@Test
-	void completedFirstLineLeavesLaterLinesEmpty() {
+	void completedFirstLineLeavesSecondLineEmpty() {
 		String text = "Welcome to my forge";
-		setupSkinMock(2);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Welcome to", "my forge"));
+		DialoguePage page = new DialoguePage(List.of("Welcome to", "my forge"), 0, text.length());
 
-		// "Welcome to" = 10 characters
-		List<String> result = service.prepare(skin, text, 10);
-
-		assertEquals(List.of("Welcome to", ""), result);
+		assertEquals(List.of("Welcome to", ""), service.prepare(page, text, 10));
 	}
 
 	@Test
-	void partialSecondLineKeepsTheFirstLineComplete() {
+	void partialSecondLineRetainsCompleteFirstLine() {
 		String text = "Welcome to my forge";
-		setupSkinMock(2);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Welcome to ", "my forge"));
+		DialoguePage page = new DialoguePage(List.of("Welcome to", "my forge"), 0, text.length());
 
-		// "Welcome to m" = 12 characters (11 characters for line 1 + 1 char "m" into line 2)
-		List<String> result = service.prepare(skin, text, 12);
-
-		assertEquals(List.of("Welcome to ", "m"), result);
+		assertEquals(List.of("Welcome to", "m"), service.prepare(page, text, 12));
 	}
 
 	@Test
-	void fullRevealReturnsAllWrappedLines() {
+	void pageEndingRevealsAllPageLines() {
 		String text = "Welcome to my forge";
-		setupSkinMock(2);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Welcome to ", "my forge"));
+		DialoguePage page = new DialoguePage(List.of("Welcome to", "my forge"), 0, text.length());
 
-		List<String> result = service.prepare(skin, text, text.length());
-
-		assertEquals(List.of("Welcome to ", "my forge"), result);
+		assertEquals(List.of("Welcome to", "my forge"), service.prepare(page, text, page.getEndingIndex()));
 	}
 
 	@Test
-	void tooManyWrappedLinesForTheSkinAreRejected() {
-		String text = "Line one Line two Line three Line four";
-		setupSkinMock(3); // max 3 lines allowed
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("Line one", "Line two", "Line three", "Line four"));
+	void laterPageUsesItsGlobalSourceIndexes() {
+		String text = "same first same second";
+		DialoguePage page = new DialoguePage(List.of("same", "second"), 11, text.length());
 
-		assertThrows(IllegalStateException.class, () -> service.prepare(skin, text, 5));
+		assertEquals(List.of("sa", ""), service.prepare(page, text, 13));
 	}
 
 	@Test
-	void repeatedWordsAreLocatedInTheirCorrectSequentialPositions() {
-		// "the" appears on line 1, line 2, and line 3
-		String text = "the test that the test can test the test";
-		setupSkinMock(3);
-		when(hudTextWrapper.wrap(eq(text), anyInt()))
-				.thenReturn(List.of("the test that ", "the test can ", "test the test"));
+	void explicitBlankLineIsPreserved() {
+		String text = "Top\n\nBottom";
+		DialoguePage page = new DialoguePage(List.of("Top", "", "Bottom"), 0, text.length());
 
-		// Reveal through line 1 ("the test that " = 14 chars) + 3 chars into line 2 ("the") = 17 chars total
-		List<String> result = service.prepare(skin, text, 17);
+		assertEquals(List.of("Top", "", "Bottom"), service.prepare(page, text, text.length()));
+	}
 
-		assertEquals(List.of("the test that ", "the", ""), result);
+	@Test
+	void lineMissingFromSourceTextIsRejected() {
+		DialoguePage page = new DialoguePage(List.of("Missing"), 0, 7);
+		assertThrows(IllegalStateException.class, () -> service.prepare(page, "Present", 0));
 	}
 }

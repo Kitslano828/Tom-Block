@@ -3,6 +3,8 @@ package org.tomdang.dialogueframework.presentation.hud;
 import org.bukkit.entity.Player;
 import org.tomdang.dialogueframework.definition.DialogueNode;
 import org.tomdang.dialogueframework.presentation.DialoguePresentation;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.session.DialogueSession;
@@ -10,6 +12,7 @@ import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 
+import java.util.List;
 import java.util.UUID;
 
 public class HudDialoguePresentation implements DialoguePresentation {
@@ -20,11 +23,13 @@ public class HudDialoguePresentation implements DialoguePresentation {
 	private final DialogueHudSkinRegistry dialogueHudSkinRegistry;
 	private final DialogueTextAnimator dialogueTextAnimator;
 	private final ActionBarSuppressionService actionBarSuppressionService;
+	private final DialoguePaginationService dialoguePaginationService;
 
 	public HudDialoguePresentation(DialogueThemeRegistry dialogueThemeRegistry,
 	                               DialogueDisplayStateRegistry dialogueDisplayStateRegistry,
 	                               DialogueHudRenderer dialogueHudRenderer, DialogueHudSkinRegistry dialogueHudSkinRegistry,
-	                               DialogueTextAnimator dialogueTextAnimator, ActionBarSuppressionService actionBarSuppressionService)
+	                               DialogueTextAnimator dialogueTextAnimator, ActionBarSuppressionService actionBarSuppressionService,
+								   DialoguePaginationService dialoguePaginationService)
 	{
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("DialogueThemeRegistry cannot be null");
 		if (dialogueDisplayStateRegistry == null) throw new IllegalArgumentException("dialogueDisplayStateRegistry cannot be null");
@@ -32,6 +37,7 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
 		if (dialogueTextAnimator == null) throw new IllegalArgumentException("dialogueTextAnimator cannot be null");
 		if (actionBarSuppressionService == null) throw new IllegalArgumentException("actionBarSuppressionService cannot be null");
+		if (dialoguePaginationService == null) throw new IllegalArgumentException("dialoguePaginationService cannot be null");
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
 		this.dialogueDisplayStateRegistry = dialogueDisplayStateRegistry;
@@ -39,6 +45,7 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
 		this.dialogueTextAnimator = dialogueTextAnimator;
 		this.actionBarSuppressionService = actionBarSuppressionService;
+		this.dialoguePaginationService = dialoguePaginationService;
 	}
 
 	@Override
@@ -61,6 +68,10 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		DialogueHudSkin hudSkin = dialogueHudSkinRegistry.lookupSkin(skinID);
 		if (hudSkin == null) throw new IllegalStateException("No skin is found for " + skinID);
 
+		String completeText =currentNode.getDialogueText();
+
+		List<DialoguePage> pages = dialoguePaginationService.paginate(hudSkin, completeText);
+
 		actionBarSuppressionService.suppress(playerUUID);
 
 		dialogueTextAnimator.cancel(playerUUID);
@@ -69,7 +80,9 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		DialogueDisplayState displayState = new DialogueDisplayState(playerUUID, currentNode.getNodeID());
 		dialogueDisplayStateRegistry.registerState(displayState);
 
-		dialogueHudRenderer.render(player, themeDefinition, hudSkin, currentNode, displayState.getRevealedCharacterCount());
+		int currentPageIndex = displayState.getCurrentPageIndex();
+
+		dialogueHudRenderer.render(player, themeDefinition, hudSkin, currentNode, pages.get(currentPageIndex), displayState.getRevealedCharacterCount());
 		dialogueTextAnimator.start(player, session);
 	}
 

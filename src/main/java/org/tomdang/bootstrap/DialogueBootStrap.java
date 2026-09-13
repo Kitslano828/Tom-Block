@@ -11,6 +11,7 @@ import org.tomdang.dialogueframework.presentation.choice.chat.ChatDialogueChoice
 import org.tomdang.dialogueframework.presentation.hud.*;
 import org.tomdang.dialogueframework.presentation.hud.animation.BukkitDialogueTextAnimator;
 import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
+import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
 import org.tomdang.dialogueframework.presentation.hud.renderer.ActionBarDialogueHudRenderer;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.registry.DialogueRegistry;
@@ -63,7 +64,8 @@ public class DialogueBootStrap {
 
 		HudTextWidthService hudTextWidthService = new MinecraftDefaultTextWidthService();
 		HudTextWrapper hudTextWrapper = new HudTextWrapper(hudTextWidthService);
-		DialogueVisibleLineService dialogueVisibleLineService = new DialogueVisibleLineService(hudTextWrapper);
+		DialoguePaginationService dialoguePaginationService = new DialoguePaginationService(hudTextWrapper);
+		DialogueVisibleLineService dialogueVisibleLineService = new DialogueVisibleLineService();
 		HudSpacingService hudSpacingService = new HudSpacingService();
 		DialogueHudLayoutComposer dialogueHudLayoutComposer = new DialogueHudLayoutComposer(
 				hudSpacingService,
@@ -78,7 +80,8 @@ public class DialogueBootStrap {
 				dialogueDisplayStateRegistry,
 				dialogueThemeRegistry,
 				dialogueHudRenderer,
-				dialogueHudSkinRegistry
+				dialogueHudSkinRegistry,
+				dialoguePaginationService
 		);
 
 		DialogueTextAnimator bukkitDialogueTextAnimator = new BukkitDialogueTextAnimator(
@@ -96,7 +99,8 @@ public class DialogueBootStrap {
 				dialogueHudRenderer,
 				dialogueHudSkinRegistry,
 				bukkitDialogueTextAnimator,
-				actionBarSuppressionService
+				actionBarSuppressionService,
+				dialoguePaginationService
 		);
 
 		dialogueChoiceActionRegistry = new DialogueChoiceActionRegistry();
@@ -114,7 +118,10 @@ public class DialogueBootStrap {
 				dialogueDisplayStateRegistry,
 				dialogueTextAnimationService,
 				dialogueController,
-				dialogueChoicePresentation
+				dialogueChoicePresentation,
+				dialoguePaginationService,
+				dialogueThemeRegistry,
+				dialogueHudSkinRegistry
 		);
 
 
