@@ -24,6 +24,15 @@ public class ActorNameplatePresentationRegistry {
 		return viewerHandles.get(key);
 	}
 
+	public ActorNameplateViewerHandle replaceHandle(ActorNameplateViewerHandle handle) {
+		if (handle == null) throw new IllegalArgumentException("handle cannot be null");
+
+		ActorNameplateViewerKey key = handle.actorNameplateViewerKey();
+		if (!viewerHandles.containsKey(key)) throw new IllegalStateException("There are no handles to be replaced");
+
+		return viewerHandles.put(key, handle);
+	}
+
 	public ActorNameplateViewerHandle removeHandle(ActorNameplateViewerKey key) {
 		if (key == null) throw new IllegalArgumentException("Key cannot be null");
 		return viewerHandles.remove(key);

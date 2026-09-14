@@ -19,6 +19,14 @@ public class ActorNameplate {
 		if (lines.stream().filter(line -> line.getRole() == ActorNameplateLineRole.NAME).count() != 1) {
 			throw new IllegalArgumentException("lines must contain exactly one line with the NAME role");
 		}
+
+		ActorNameplateLine nameLine = lines.stream()
+				.filter(line -> line.getRole() == ActorNameplateLineRole.NAME)
+				.findFirst()
+				.orElseThrow();
+		if (!nameLine.isVisibleWhileMoving()) {
+			throw new IllegalArgumentException("NAME line must remain visible while moving");
+		}
 		this.lines = List.copyOf(lines);
 
 	}

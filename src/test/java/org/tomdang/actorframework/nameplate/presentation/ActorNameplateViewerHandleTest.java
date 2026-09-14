@@ -60,9 +60,9 @@ class ActorNameplateViewerHandleTest {
 	void rejectsDuplicatePresentationUUID() {
 		UUID duplicatedUUID = UUID.randomUUID();
 		ActorNameplateLinePresentationHandle first =
-				new ActorNameplateLinePresentationHandle(duplicatedUUID, 1);
+				new ActorNameplateLinePresentationHandle(duplicatedUUID, 1, 2.3);
 		ActorNameplateLinePresentationHandle second =
-				new ActorNameplateLinePresentationHandle(duplicatedUUID, 2);
+				new ActorNameplateLinePresentationHandle(duplicatedUUID, 2, 2.3);
 
 		assertThrows(IllegalArgumentException.class, () ->
 				new ActorNameplateViewerHandle(viewerKey(), List.of(first, second), false)
@@ -107,6 +107,6 @@ class ActorNameplateViewerHandleTest {
 	}
 
 	private static ActorNameplateLinePresentationHandle lineHandle(int entityID) {
-		return new ActorNameplateLinePresentationHandle(UUID.randomUUID(), entityID);
+		return new ActorNameplateLinePresentationHandle(UUID.randomUUID(), entityID, 2.3);
 	}
 }

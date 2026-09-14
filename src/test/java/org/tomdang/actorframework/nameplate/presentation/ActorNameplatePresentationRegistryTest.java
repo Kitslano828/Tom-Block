@@ -45,6 +45,50 @@ class ActorNameplatePresentationRegistryTest {
 	}
 
 	@Test
+	void replacesExistingHandleAndReturnsPreviousHandle() {
+		UUID instanceUUID = UUID.randomUUID();
+		UUID viewerUUID = UUID.randomUUID();
+		ActorNameplateViewerHandle original = viewerHandle(instanceUUID, viewerUUID, 1);
+		ActorNameplateViewerHandle replacement = viewerHandle(instanceUUID, viewerUUID, 2);
+		registry.register(original);
+
+		ActorNameplateViewerHandle returned = registry.replaceHandle(replacement);
+
+		assertSame(original, returned);
+		assertSame(replacement, registry.lookup(original.actorNameplateViewerKey()));
+	}
+
+	@Test
+	void replacementRejectsNullHandle() {
+		assertThrows(IllegalArgumentException.class, () -> registry.replaceHandle(null));
+	}
+
+	@Test
+	void replacementRejectsUnknownKey() {
+		ActorNameplateViewerHandle replacement =
+				viewerHandle(UUID.randomUUID(), UUID.randomUUID(), 1);
+
+		assertThrows(IllegalStateException.class, () -> registry.replaceHandle(replacement));
+		assertFalse(registry.doesPresentationHandleExist(replacement.actorNameplateViewerKey()));
+	}
+
+	@Test
+	void failedReplacementDoesNotAffectAnotherHandle() {
+		ActorNameplateViewerHandle existing =
+				viewerHandle(UUID.randomUUID(), UUID.randomUUID(), 1);
+		ActorNameplateViewerHandle unknownReplacement =
+				viewerHandle(UUID.randomUUID(), UUID.randomUUID(), 2);
+		registry.register(existing);
+
+		assertThrows(IllegalStateException.class, () ->
+				registry.replaceHandle(unknownReplacement)
+		);
+
+		assertSame(existing, registry.lookup(existing.actorNameplateViewerKey()));
+		assertFalse(registry.doesPresentationHandleExist(unknownReplacement.actorNameplateViewerKey()));
+	}
+
+	@Test
 	void existenceCheckRejectsNullKey() {
 		assertThrows(IllegalArgumentException.class, () ->
 				registry.doesPresentationHandleExist(null)
@@ -148,7 +192,7 @@ class ActorNameplatePresentationRegistryTest {
 	) {
 		ActorNameplateViewerKey key = new ActorNameplateViewerKey(instanceUUID, viewerUUID);
 		ActorNameplateLinePresentationHandle lineHandle =
-				new ActorNameplateLinePresentationHandle(UUID.randomUUID(), entityID);
+				new ActorNameplateLinePresentationHandle(UUID.randomUUID(), entityID, 2.3);
 		return new ActorNameplateViewerHandle(key, List.of(lineHandle), false);
 	}
 }

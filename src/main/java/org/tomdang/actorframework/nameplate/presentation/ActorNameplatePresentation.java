@@ -12,7 +12,7 @@ public interface ActorNameplatePresentation {
 
 	boolean hideFromViewer(Player viewer, UUID instanceUUID);
 
-	void updateNameplate(UUID instanceUUID, Location newLocation, boolean isMoving);
+	void updateNameplate(ActorInstance instance, Location newLocation, boolean isMoving);
 
 	boolean removeNameplate(UUID instanceUUID);
 

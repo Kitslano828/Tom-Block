@@ -42,6 +42,15 @@ class ActorNameplateTest {
 	}
 
 	@Test
+	void rejectsNameLineHiddenWhileMoving() {
+		ActorNameplateLine hiddenName = line(ActorNameplateLineRole.NAME, "Blacksmith", false);
+
+		assertThrows(IllegalArgumentException.class, () ->
+				new ActorNameplate(List.of(hiddenName))
+		);
+	}
+
+	@Test
 	void defensivelyCopiesOriginalLineCollection() {
 		ActorNameplateLine name = nameLine();
 		List<ActorNameplateLine> suppliedLines = new ArrayList<>();
