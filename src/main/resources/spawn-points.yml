@@ -1,0 +1,19 @@
+spawn-points:
+  PACKET_SMITH_TEST:
+    actor-id: PACKET_SMITH
+    audience:
+      scope: GLOBAL
+    location:
+      world: world
+      x: 93.5
+      y: 76
+      z: 187.5
+  TALKING_BLACKSMITH_TEST:
+    actor-id: TALKING_BLACKSMITH
+    audience:
+      scope: GLOBAL
+    location:
+      world: world
+      x: 95.5
+      y: 76
+      z: 192.5

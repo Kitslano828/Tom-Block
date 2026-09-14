@@ -161,8 +161,6 @@ public class TomBlock extends JavaPlugin {
 				dialogueSessionService,
 				dialogueAdvanceService,
 				actorInteractionRegistry,
-				actorRegistry,
-				actorSpawnPointRegistry,
 				actorBootStrap.getActorLookService(),
 				dialogueBootStrap.getDialogueChoiceActionRegistry()
 		);
@@ -236,6 +234,17 @@ public class TomBlock extends JavaPlugin {
 				new PlayerNpcProfileNameFactory()
 		);
 		actorBootStrap.getActorPresentationTypeRegistry().registerPresentation("PLAYER_NPC", playerNpcActorPresentation);
+		new ActorConfigurationBootStrap(
+				this,
+				actorRegistry,
+				actorBootStrap.getActorPresentationTypeRegistry(),
+				actorInteractionRegistry
+		);
+		new ActorSpawnPointConfigurationBootStrap(
+				this,
+				actorRegistry,
+				actorSpawnPointRegistry
+		);
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());
 		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);

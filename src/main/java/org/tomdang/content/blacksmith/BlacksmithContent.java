@@ -1,25 +1,10 @@
 package org.tomdang.content.blacksmith;
 
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.tomdang.actorframework.audience.ActorAudienceKey;
-import org.tomdang.actorframework.audience.ActorAudienceScope;
-import org.tomdang.actorframework.collision.ActorCollisionPolicy;
-import org.tomdang.actorframework.combat.ActorDamagePolicy;
-import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.LookAtPlayerInteraction;
 import org.tomdang.actorframework.movement.ActorLookService;
-import org.tomdang.actorframework.nameplate.ActorNameplate;
-import org.tomdang.actorframework.nameplate.ActorNameplateLine;
-import org.tomdang.actorframework.nameplate.ActorNameplateLineRole;
-import org.tomdang.actorframework.registry.ActorRegistry;
-import org.tomdang.actorframework.spawn.ActorSpawnPoint;
-import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
 import org.tomdang.crafting.dialogue.OpenForgeDialogueAction;
 import org.tomdang.crafting.interaction.OpenForgeInteraction;
 import org.tomdang.dialogueframework.DialogueController;
@@ -35,7 +20,6 @@ import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 import org.tomdang.hud.glyph.HudGlyph;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,14 +30,12 @@ public class BlacksmithContent {
 	private final DialogueSessionService dialogueSessionService;
 	private final DialogueAdvanceService dialogueAdvanceService;
 	private final ActorInteractionRegistry actorInteractionRegistry;
-	private final ActorRegistry actorRegistry;
-	private final ActorSpawnPointRegistry actorSpawnPointRegistry;
 	private final ActorLookService actorLookService;
 	private final DialogueChoiceActionRegistry dialogueChoiceActionRegistry;
 
 	public BlacksmithContent(DialogueThemeRegistry dialogueThemeRegistry, DialogueHudSkinRegistry dialogueHudSkinRegistry,
 	                         DialogueController dialogueController, DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService,
-	                         ActorInteractionRegistry actorInteractionRegistry, ActorRegistry actorRegistry, ActorSpawnPointRegistry actorSpawnPointRegistry,
+	                         ActorInteractionRegistry actorInteractionRegistry,
 							 ActorLookService actorLookService, DialogueChoiceActionRegistry dialogueChoiceActionRegistry
 	) {
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("dialogueThemeRegistry cannot be null");
@@ -62,8 +44,6 @@ public class BlacksmithContent {
 		if (dialogueSessionService == null) throw new IllegalArgumentException("dialogueSessionService cannot be null");
 		if (dialogueAdvanceService == null) throw new IllegalArgumentException("dialogueAdvanceService cannot be null");
 		if (actorInteractionRegistry == null) throw new IllegalArgumentException("actorInteractionRegistry cannot be null");
-		if (actorRegistry == null) throw new IllegalArgumentException("actorRegistry cannot be null");
-		if (actorSpawnPointRegistry == null) throw new IllegalArgumentException("actorSpawnPointRegistry cannot be null");
 		if (actorLookService == null) throw new IllegalArgumentException("actorLookService cannot be null");
 		if (dialogueChoiceActionRegistry == null) throw new IllegalArgumentException("dialogueChoiceActionRegistry cannot be null");
 
@@ -73,8 +53,6 @@ public class BlacksmithContent {
 		this.dialogueSessionService = dialogueSessionService;
 		this.dialogueAdvanceService = dialogueAdvanceService;
 		this.actorInteractionRegistry = actorInteractionRegistry;
-		this.actorRegistry = actorRegistry;
-		this.actorSpawnPointRegistry = actorSpawnPointRegistry;
 		this.actorLookService = actorLookService;
 		this.dialogueChoiceActionRegistry = dialogueChoiceActionRegistry;
 	}
@@ -85,32 +63,6 @@ public class BlacksmithContent {
 
 		OpenForgeDialogueAction openForgeDialogueAction = new OpenForgeDialogueAction();
 		dialogueChoiceActionRegistry.registerAction("OPEN_FORGE", openForgeDialogueAction);
-
-		ActorNameplateLine nameplateLine  = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"),true);
-		List<ActorNameplateLine> lines = new ArrayList<>();
-		lines.add(nameplateLine);
-		ActorNameplate basicBlacksmithNameplate = new ActorNameplate(lines);
-
-		ActorDefinition packetSmith = new ActorDefinition(
-				"PACKET_SMITH",
-				"Blacksmith",
-				ActorAudienceScope.GLOBAL,
-				"PLAYER_NPC",
-				"BLACKSMITH_INTERACTION",
-				ActorDamagePolicy.PROTECTED,
-				ActorCollisionPolicy.PASS_THROUGH,
-				basicBlacksmithNameplate
-		);
-		actorRegistry.registerActor(packetSmith);
-
-		Location packetSmithSpawnLocation = new Location(Bukkit.getWorld("world"), 93.5, 76, 187.5);
-		ActorSpawnPoint packetSmithSpawnPoint = new ActorSpawnPoint(
-				"PACKET_SMITH_TEST",
-				"PACKET_SMITH",
-				ActorAudienceKey.global(),
-				packetSmithSpawnLocation
-		);
-		actorSpawnPointRegistry.registerSpawnPoint(packetSmithSpawnPoint);
 
 		HudGlyph hudGlyph = new HudGlyph(Key.key("tomblock", "dialogue"), "\uE001", 256);
 		List<Key> dialogueLineFonts = List.of(
@@ -144,36 +96,8 @@ public class BlacksmithContent {
 		LookAtPlayerInteraction lookInteraction = new LookAtPlayerInteraction(actorLookService, interaction);
 		actorInteractionRegistry.registerInteraction("BLACKSMITH_DIALOGUE_INTERACTION", lookInteraction);
 
-		ActorNameplateLine talkingSmithNamePlateLine1 = new ActorNameplateLine(ActorNameplateLineRole.STATUS, Component.text("QUEST").color(TextColor.fromHexString("#ADD8E6")).decoration(TextDecoration.BOLD, true), false);
-		ActorNameplateLine talkingSmithNamePlateLine2 = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"), true);
-		ActorNameplateLine talkingSmithNamePlateLine3 = new ActorNameplateLine(ActorNameplateLineRole.INTERACTION, Component.text("CLICK")
-				.color(TextColor.fromHexString("#FFEA00"))
-				.decoration(TextDecoration.BOLD, true), false);
-
-		List<ActorNameplateLine> talkingSmithLines = new ArrayList<>();
-		talkingSmithLines.add(talkingSmithNamePlateLine1);
-		talkingSmithLines.add(talkingSmithNamePlateLine2);
-		talkingSmithLines.add(talkingSmithNamePlateLine3);
-
-		ActorNameplate talkingSmithNameplate = new ActorNameplate(talkingSmithLines);
-
-		ActorDefinition actorDefinition = new ActorDefinition(
-				"TALKING_BLACKSMITH",
-				"Talking Blacksmith",
-				ActorAudienceScope.GLOBAL,
-				"PLAYER_NPC",
-				"BLACKSMITH_DIALOGUE_INTERACTION",
-				ActorDamagePolicy.PROTECTED,
-				ActorCollisionPolicy.PASS_THROUGH,
-				talkingSmithNameplate
-		);
-
-		actorRegistry.registerActor(actorDefinition);
 		dialogueThemeRegistry.bindSource("TALKING_BLACKSMITH", "BLACKSMITH_THEME");
 
-		Location spawnLocation = new Location(Bukkit.getWorld("world"), 95.5,76,192.5);
-		ActorSpawnPoint actorSpawnPoint = new ActorSpawnPoint("TALKING_BLACKSMITH_TEST", "TALKING_BLACKSMITH", ActorAudienceKey.global(), spawnLocation);
-		actorSpawnPointRegistry.registerSpawnPoint(actorSpawnPoint);
 	}
 
 }
