@@ -31,7 +31,7 @@ public class ActorLookService {
 
 		Location finalLocation = horizontalFacingCalculator.rotateLocation(location, target);
 
-		actorPresentationService.movePresentation(instance, finalLocation);
+		actorPresentationService.movePresentation(instance, finalLocation, false);
 
 	}
 

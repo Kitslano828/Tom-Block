@@ -11,9 +11,6 @@ import org.tomdang.actorframework.spawn.ActorSpawnPoint;
 import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
 import org.tomdang.actorframework.spawn.ActorSpawnPointService;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class ActorReconciliationService {
 
 	private final ActorResolver actorResolver;
@@ -75,38 +72,17 @@ public class ActorReconciliationService {
 			spawnPoint.getLocation().getChunk().load();
 		}
 
-		Set<String> restoredIDs = new HashSet<>();
-
-		// Iterate through every loaded Bukkit world
+		// Packet-player actors are recreated on every startup. Remove any Bukkit
+		// entities left behind by the former persistent presentation model first.
 		for (World world : Bukkit.getWorlds()) {
-			// Iterate through every entity in the world
 			for (Entity entity : world.getEntities()) {
-
-				ActorDefinition definition = actorResolver.resolveDefinition(entity);
-				if (definition == null) continue;
-				String spawnPointID = actorResolver.resolveSpawnPointID(entity);
-				if (spawnPointID == null) continue;
-				if (restoredIDs.contains(spawnPointID)) {
+				if (actorResolver.isManagedActorEntity(entity)) {
 					entity.remove();
-					continue;
-				}
-
-				// Process the entity through the restoration lifecycle loop
-				if (restoreEntity(entity)) {
-					restoredIDs.add(spawnPointID);
 				}
 			}
 		}
 
 		for (ActorSpawnPoint spawnPoint : actorSpawnPointRegistry.getAllSpawnPoints()) {
-			String spawnPointID = spawnPoint.getSpawnPointID();
-
-			// If its ID is in the restored set, do nothing.
-			if (restoredIDs.contains(spawnPointID)) {
-				continue;
-			}
-
-			// If its ID is absent, call the service to generate the actor at its registered point
 			actorSpawnPointService.spawnAtPoint(spawnPoint.getSpawnPointID());
 		}
 	}

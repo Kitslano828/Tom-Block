@@ -91,21 +91,9 @@ public class BlacksmithContent {
 		lines.add(nameplateLine);
 		ActorNameplate basicBlacksmithNameplate = new ActorNameplate(lines);
 
-		ActorDefinition blacksmithActor = new ActorDefinition(
-				"BLACKSMITH",
-				"Blacksmith",
-				ActorAudienceScope.GLOBAL,
-				"VILLAGER",
-				"BLACKSMITH_INTERACTION",
-				ActorDamagePolicy.PROTECTED,
-				ActorCollisionPolicy.PASS_THROUGH,
-				basicBlacksmithNameplate
-		);
-		actorRegistry.registerActor(blacksmithActor);
-
 		ActorDefinition packetSmith = new ActorDefinition(
 				"PACKET_SMITH",
-				"Blacksmith ",
+				"Blacksmith",
 				ActorAudienceScope.GLOBAL,
 				"PLAYER_NPC",
 				"BLACKSMITH_INTERACTION",
@@ -123,15 +111,6 @@ public class BlacksmithContent {
 				packetSmithSpawnLocation
 		);
 		actorSpawnPointRegistry.registerSpawnPoint(packetSmithSpawnPoint);
-
-		Location forgeSpawnLocation = new Location(Bukkit.getWorld("world"), 95.5, 76, 187.5);
-		ActorSpawnPoint forgeSpawnPoint = new ActorSpawnPoint(
-				"TOWN_BLACKSMITH",
-				"BLACKSMITH",
-				ActorAudienceKey.global(),
-				forgeSpawnLocation
-		);
-		actorSpawnPointRegistry.registerSpawnPoint(forgeSpawnPoint);
 
 		HudGlyph hudGlyph = new HudGlyph(Key.key("tomblock", "dialogue"), "\uE001", 256);
 		List<Key> dialogueLineFonts = List.of(
@@ -165,9 +144,11 @@ public class BlacksmithContent {
 		LookAtPlayerInteraction lookInteraction = new LookAtPlayerInteraction(actorLookService, interaction);
 		actorInteractionRegistry.registerInteraction("BLACKSMITH_DIALOGUE_INTERACTION", lookInteraction);
 
-		ActorNameplateLine talkingSmithNamePlateLine1 = new ActorNameplateLine(ActorNameplateLineRole.STATUS, Component.text("QUEST").color(TextColor.fromHexString("#EFBF04")).decoration(TextDecoration.BOLD, true), false);
+		ActorNameplateLine talkingSmithNamePlateLine1 = new ActorNameplateLine(ActorNameplateLineRole.STATUS, Component.text("QUEST").color(TextColor.fromHexString("#ADD8E6")).decoration(TextDecoration.BOLD, true), false);
 		ActorNameplateLine talkingSmithNamePlateLine2 = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"), true);
-		ActorNameplateLine talkingSmithNamePlateLine3 = new ActorNameplateLine(ActorNameplateLineRole.INTERACTION, Component.text("CLICK"), false);
+		ActorNameplateLine talkingSmithNamePlateLine3 = new ActorNameplateLine(ActorNameplateLineRole.INTERACTION, Component.text("CLICK")
+				.color(TextColor.fromHexString("#FFEA00"))
+				.decoration(TextDecoration.BOLD, true), false);
 
 		List<ActorNameplateLine> talkingSmithLines = new ArrayList<>();
 		talkingSmithLines.add(talkingSmithNamePlateLine1);
@@ -180,7 +161,7 @@ public class BlacksmithContent {
 				"TALKING_BLACKSMITH",
 				"Talking Blacksmith",
 				ActorAudienceScope.GLOBAL,
-				"VILLAGER",
+				"PLAYER_NPC",
 				"BLACKSMITH_DIALOGUE_INTERACTION",
 				ActorDamagePolicy.PROTECTED,
 				ActorCollisionPolicy.PASS_THROUGH,

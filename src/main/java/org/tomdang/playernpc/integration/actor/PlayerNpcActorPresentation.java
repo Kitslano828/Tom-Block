@@ -6,6 +6,7 @@ import org.tomdang.actorframework.audience.ActorAudienceKey;
 import org.tomdang.actorframework.audience.ActorAudienceResolver;
 import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.instance.ActorInstance;
+import org.tomdang.actorframework.nameplate.presentation.ActorNameplatePresentation;
 import org.tomdang.actorframework.presentation.ActorPresentation;
 import org.tomdang.actorframework.presentation.ActorPresentationHandle;
 import org.tomdang.actorframework.presentation.LocatableActorPresentation;
@@ -22,15 +23,21 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 	private final PlayerNpcLifecycleService playerNpcLifecycleService;
 	private final ActorAudienceResolver actorAudienceResolver;
 	private final BukkitActorCollisionService bukkitActorCollisionService;
+	private final ActorNameplatePresentation actorNameplatePresentation;
+	private final PlayerNpcProfileNameFactory playerNpcProfileNameFactory;
 
-	public PlayerNpcActorPresentation(PlayerNpcLifecycleService playerNpcLifecycleService, ActorAudienceResolver actorAudienceResolver, BukkitActorCollisionService bukkitActorCollisionService) {
+	public PlayerNpcActorPresentation(PlayerNpcLifecycleService playerNpcLifecycleService, ActorAudienceResolver actorAudienceResolver, BukkitActorCollisionService bukkitActorCollisionService, ActorNameplatePresentation actorNameplatePresentation, PlayerNpcProfileNameFactory playerNpcProfileNameFactory) {
 		if (playerNpcLifecycleService == null) throw new IllegalArgumentException("playerNpcLifecycleService cannot be null");
 		if (actorAudienceResolver == null) throw new IllegalArgumentException("actorAudienceResolver cannot be null");
 		if (bukkitActorCollisionService == null) throw new IllegalArgumentException("bukkitActorCollisionService cannot be null");
+		if (actorNameplatePresentation == null) throw new IllegalArgumentException("actorNameplatePresentation cannot be null");
+		if (playerNpcProfileNameFactory == null) throw new IllegalArgumentException("playerNpcProfileNameFactory cannot be null");
 
 		this.playerNpcLifecycleService = playerNpcLifecycleService;
 		this.actorAudienceResolver = actorAudienceResolver;
 		this.bukkitActorCollisionService = bukkitActorCollisionService;
+		this.actorNameplatePresentation = actorNameplatePresentation;
+		this.playerNpcProfileNameFactory = playerNpcProfileNameFactory;
 	}
 
 	@Override
@@ -41,7 +48,8 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 		ActorAudienceKey key = instance.getAudienceKey();
 		Collection<Player> players = actorAudienceResolver.resolvePlayers(key);
 
-		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, instance.getActorDefinition().getDisplayName());
+		String requestedProfileName = playerNpcProfileNameFactory.create(instance.getInstanceID());
+		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, requestedProfileName);
 		UUID npcUUID = playerNPC.getProfileUUID();
 		String profileName = playerNPC.getProfileName();
 		ActorCollisionPolicy collisionPolicy = instance.getActorDefinition().getActorCollisionPolicy();
@@ -50,8 +58,15 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 			bukkitActorCollisionService.applyCollisionPolicyToEntry(profileName, collisionPolicy);
 			for (Player player : players) {
 				playerNpcLifecycleService.showToViewer(player, npcUUID);
+				actorNameplatePresentation.showToViewer(player, instance, location, false);
 			}
 		} catch (RuntimeException spawnException) {
+			try {
+				actorNameplatePresentation.removeNameplate(instance.getInstanceID());
+			} catch (RuntimeException cleanupException) {
+				spawnException.addSuppressed(cleanupException);
+			}
+
 			try {
 				playerNpcLifecycleService.removeNpc(npcUUID);
 			} catch (RuntimeException cleanupException) {
@@ -73,6 +88,7 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 	@Override
 	public void removePresentationHandle(ActorPresentationHandle presentationHandle) {
 		if (presentationHandle == null) throw new IllegalArgumentException("presentationHandle cannot be null");
+		actorNameplatePresentation.removeNameplate(presentationHandle.actorInstanceID());
 		UUID npcProfileID = presentationHandle.presentationID();
 		PlayerNPC removedNpc = playerNpcLifecycleService.removeNpc(npcProfileID);
 		if (removedNpc == null) return;
@@ -80,13 +96,15 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 	}
 
 	@Override
-	public void movePresentationHandle(ActorPresentationHandle handle, Location location) {
+	public void movePresentationHandle(ActorInstance instance, ActorPresentationHandle handle, Location location, boolean isMoving) {
+		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
 		if (handle == null) throw new IllegalArgumentException("Handle cannot be null");
 		if (location == null) throw new IllegalArgumentException("location cannot be null");
 		if (location.getWorld() == null) throw new IllegalArgumentException("world cannot be null");
 
 		UUID presentationID = handle.presentationID();
 		playerNpcLifecycleService.moveNpc(presentationID, location);
+		actorNameplatePresentation.updateNameplate(instance, location, isMoving);
 	}
 
 	@Override

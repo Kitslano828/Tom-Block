@@ -83,7 +83,7 @@ public class ActorPresentationService {
 		return presentationHandle;
 	}
 
-	public void movePresentation(ActorInstance instance, Location location) {
+	public void movePresentation(ActorInstance instance, Location location, boolean isMoving) {
 		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
 		if (location == null) throw new IllegalArgumentException("location cannot be null");
 
@@ -105,7 +105,7 @@ public class ActorPresentationService {
 			);
 		}
 
-		movableActorPresentation.movePresentationHandle(handle, location);
+		movableActorPresentation.movePresentationHandle(instance, handle, location, isMoving);
 	}
 
 	public Location getPresentationLocation(ActorInstance instance) {

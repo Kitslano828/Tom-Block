@@ -6,6 +6,14 @@ import org.bukkit.entity.Player;
 import org.tomdang.actorframework.combat.ActorDamageService;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.ActorInteractionService;
+import org.tomdang.actorframework.nameplate.layout.ActorNameplateLayout;
+import org.tomdang.actorframework.nameplate.layout.ActorNameplateLayoutCalculator;
+import org.tomdang.actorframework.nameplate.nms.NmsActorNameplateLineFactory;
+import org.tomdang.actorframework.nameplate.nms.NmsActorNameplatePresentation;
+import org.tomdang.actorframework.nameplate.nms.NmsActorNameplateViewer;
+import org.tomdang.actorframework.nameplate.nms.runtime.NmsActorNameplateLineRegistry;
+import org.tomdang.actorframework.nameplate.presentation.ActorNameplatePresentation;
+import org.tomdang.actorframework.nameplate.presentation.ActorNameplatePresentationRegistry;
 import org.tomdang.actorframework.reconciliation.ActorReconciliationService;
 import org.tomdang.actorframework.registry.ActorRegistry;
 import org.tomdang.actorframework.resolver.ActorResolver;
@@ -45,6 +53,7 @@ import org.tomdang.playernpc.integration.actor.PlayerNpcActorInteractionService;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorPresentation;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorResolver;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
+import org.tomdang.playernpc.integration.actor.PlayerNpcProfileNameFactory;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.nms.NmsPlayerNpcFactory;
 import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
@@ -210,13 +219,28 @@ public class TomBlock extends JavaPlugin {
 				nmsPlayerNpcViewer,
 				nmsPlayerNpcFactory
 		);
-		PlayerNpcActorPresentation playerNpcActorPresentation = new PlayerNpcActorPresentation(playerNpcLifecycleService, actorBootStrap.getActorAudienceResolver(), actorBootStrap.getBukkitActorCollisionService());
+		ActorNameplatePresentation actorNameplatePresentation = new NmsActorNameplatePresentation(
+				new ActorNameplatePresentationRegistry(),
+				new NmsActorNameplateLineRegistry(),
+				new ActorNameplateLayoutCalculator(),
+				new NmsActorNameplateLineFactory(),
+				new NmsActorNameplateViewer(),
+				new ActorNameplateLayout(2.05, 0.3),
+				getServer()
+		);
+		PlayerNpcActorPresentation playerNpcActorPresentation = new PlayerNpcActorPresentation(
+				playerNpcLifecycleService,
+				actorBootStrap.getActorAudienceResolver(),
+				actorBootStrap.getBukkitActorCollisionService(),
+				actorNameplatePresentation,
+				new PlayerNpcProfileNameFactory()
+		);
 		actorBootStrap.getActorPresentationTypeRegistry().registerPresentation("PLAYER_NPC", playerNpcActorPresentation);
 
 		PlayerNpcActorResolver playerNpcActorResolver = new PlayerNpcActorResolver(playerNpcRegistry, actorBootStrap.getActiveActorPresentationRegistry(), actorBootStrap.getActorInstanceRegistry());
 		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);
 		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
-		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService);
+		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService, actorNameplatePresentation);
 		new CommandRegistrar(
 				this,
 				playerProfileService,
@@ -255,7 +279,8 @@ public class TomBlock extends JavaPlugin {
 				dialogueController,
 				playerNpcLifecycleService,
 				playerNpcActorVisibilityService,
-				nmsPlayerNpcInteractionInterceptor
+				nmsPlayerNpcInteractionInterceptor,
+				actorNameplatePresentation
 				);
 
 		playerBootStrap.start();

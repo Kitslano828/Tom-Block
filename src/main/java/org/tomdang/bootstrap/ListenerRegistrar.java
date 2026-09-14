@@ -5,6 +5,7 @@ import org.tomdang.actorframework.combat.ActorDamageService;
 import org.tomdang.actorframework.interaction.ActorInteractionService;
 import org.tomdang.actorframework.listener.ActorDamageListener;
 import org.tomdang.actorframework.listener.ActorInteractListener;
+import org.tomdang.actorframework.nameplate.presentation.ActorNameplatePresentation;
 import org.tomdang.actorframework.resolver.ActorResolver;
 import org.tomdang.combat.CombatService;
 import org.tomdang.combat.listener.MobDeathListener;
@@ -44,7 +45,8 @@ public class ListenerRegistrar {
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
-							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor
+							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor,
+							 ActorNameplatePresentation actorNameplatePresentation
 	){
 		PlayerConnectionListener playerConnectionListener = new PlayerConnectionListener(
 				playerProfileService,
@@ -67,7 +69,7 @@ public class ListenerRegistrar {
 		ActorInteractListener actorInteractListener = new ActorInteractListener(actorResolver, actorInteractionService);
 		ActorDamageListener actorDamageListener = new ActorDamageListener(actorDamageService);
 		DialogueSneakListener dialogueSneakListener = new DialogueSneakListener(dialogueSessionService, dialogueAdvanceService);
-		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService, playerNpcActorVisibilityService, nmsPlayerNpcInteractionInterceptor);
+		PlayerNpcConnectionListener playerNpcConnectionListener = new PlayerNpcConnectionListener(playerNpcLifecycleService, playerNpcActorVisibilityService, nmsPlayerNpcInteractionInterceptor, actorNameplatePresentation);
 
 
 		instance.getServer().getPluginManager().registerEvents(playerInteractListener, instance);

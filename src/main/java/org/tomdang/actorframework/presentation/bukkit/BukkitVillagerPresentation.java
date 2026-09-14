@@ -153,7 +153,8 @@ public class BukkitVillagerPresentation implements RestorableActorPresentation, 
 	}
 
 	@Override
-	public void movePresentationHandle(ActorPresentationHandle handle, Location location) {
+	public void movePresentationHandle(ActorInstance instance, ActorPresentationHandle handle, Location location, boolean isMoving) {
+		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
 		if (handle == null) throw new IllegalArgumentException("Handle cannot be null");
 		if (location == null) throw new IllegalArgumentException("location cannot be null");
 		if (location.getWorld() == null) throw new IllegalArgumentException("world cannot be null");

@@ -41,7 +41,7 @@ public class LinearActorMovementService {
 
 		if (linearMovementStepCalculator.hasReachedDestination(currentLocation, destinationLocation)) {
 			actorMovementTaskService.cancel(instanceID);
-			actorPresentationService.movePresentation(instance, destinationLocation);
+			actorPresentationService.movePresentation(instance, destinationLocation, false);
 			return;
 		}
 
@@ -55,12 +55,13 @@ public class LinearActorMovementService {
 							distancePerTick
 					);
 
-			actorPresentationService.movePresentation(instance, nextLocation);
-
-			return linearMovementStepCalculator.hasReachedDestination(
+			boolean reachedDestination = linearMovementStepCalculator.hasReachedDestination(
 					nextLocation,
 					destinationLocation
 			);
+			actorPresentationService.movePresentation(instance, nextLocation, !reachedDestination);
+
+			return reachedDestination;
 		});
 	}
 }

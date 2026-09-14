@@ -152,4 +152,11 @@ public class ActorResolver {
 
 	}
 
+	public boolean isManagedActorEntity(Entity entity) {
+		if (entity == null) throw new IllegalArgumentException("entity cannot be null");
+
+		PersistentDataContainer entityPDC = entity.getPersistentDataContainer();
+		return entityPDC.has(actorDefinitionIDKey, PersistentDataType.STRING);
+	}
+
 }

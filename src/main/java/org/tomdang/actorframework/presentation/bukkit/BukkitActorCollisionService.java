@@ -9,6 +9,8 @@ import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 public class BukkitActorCollisionService {
 
 	private final Team passThroughTeam;
+	private final Team packetNpcPassThroughTeam;
+	private final Team packetNpcSolidTeam;
 
 	public BukkitActorCollisionService(Scoreboard scoreboard) {
 		if (scoreboard == null) throw new IllegalArgumentException("Scoreboard cannot be null");
@@ -22,6 +24,19 @@ public class BukkitActorCollisionService {
 				Team.Option.COLLISION_RULE,
 				Team.OptionStatus.NEVER
 		);
+
+		this.packetNpcPassThroughTeam = getOrCreateTeam(scoreboard, "tb_npc_pass");
+		this.packetNpcPassThroughTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+		this.packetNpcPassThroughTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+
+		this.packetNpcSolidTeam = getOrCreateTeam(scoreboard, "tb_npc_solid");
+		this.packetNpcSolidTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
+		this.packetNpcSolidTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+	}
+
+	private Team getOrCreateTeam(Scoreboard scoreboard, String teamName) {
+		Team team = scoreboard.getTeam(teamName);
+		return team == null ? scoreboard.registerNewTeam(teamName) : team;
 	}
 
 	public void applyCollisionPolicy(Entity entity, ActorCollisionPolicy collisionPolicy) {
@@ -57,16 +72,20 @@ public class BukkitActorCollisionService {
 		if (scoreboardEntry.isBlank()) throw new IllegalArgumentException("scoreboardEntry cannot be blank");
 		if (collisionPolicy == null) throw new IllegalArgumentException("collisionPolicy cannot be null");
 
+		packetNpcPassThroughTeam.removeEntry(scoreboardEntry);
+		packetNpcSolidTeam.removeEntry(scoreboardEntry);
+
 		switch (collisionPolicy) {
-			case PASS_THROUGH -> passThroughTeam.addEntry(scoreboardEntry);
-			case SOLID -> passThroughTeam.removeEntry(scoreboardEntry);
+			case PASS_THROUGH -> packetNpcPassThroughTeam.addEntry(scoreboardEntry);
+			case SOLID -> packetNpcSolidTeam.addEntry(scoreboardEntry);
 		}
 	}
 
 	public void removeCollisionEntry(String scoreboardEntry) {
 		if (scoreboardEntry == null) throw new IllegalArgumentException("scoreboardEntry cannot be null");
 		if (scoreboardEntry.isBlank()) throw new IllegalArgumentException("scoreboardEntry cannot be blank");
-		passThroughTeam.removeEntry(scoreboardEntry);
+		packetNpcPassThroughTeam.removeEntry(scoreboardEntry);
+		packetNpcSolidTeam.removeEntry(scoreboardEntry);
 	}
 
 }

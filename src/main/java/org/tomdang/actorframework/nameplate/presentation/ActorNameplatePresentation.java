@@ -16,4 +16,6 @@ public interface ActorNameplatePresentation {
 
 	boolean removeNameplate(UUID instanceUUID);
 
+	void clearViewer(UUID viewerUUID);
+
 }

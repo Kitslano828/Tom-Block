@@ -155,19 +155,23 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 		List<ActorNameplateViewerHandle> viewerHandles = actorNameplatePresentationRegistry.findActorHandles(instance.getInstanceID());
 		if (viewerHandles.isEmpty()) return;
 
-		for (ActorNameplateViewerHandle viewerHandle : viewerHandles) {
-			if (viewerHandle.inMovingState() != isMoving) throw new UnsupportedOperationException("that movement-state transitions have not been implemented.");
-		}
-
 		List<NameplateLineTeleport> lineTeleports = new ArrayList<>();
+		List<NameplateTransition> transitions = new ArrayList<>();
 
 		for (ActorNameplateViewerHandle viewerHandle : viewerHandles) {
 			UUID viewerUUID = viewerHandle.actorNameplateViewerKey().viewerUUID();
 			Player viewer = server.getPlayer(viewerUUID);
 			if (viewer == null) continue;
-			for (ActorNameplateLinePresentationHandle lineHandle : viewerHandle.linePresentationHandles()) {
-				NmsActorNameplateLine runtimeLine = nmsActorNameplateLineRegistry.get(lineHandle.presentationUUID());
-				if (runtimeLine == null) throw new IllegalStateException("line does not exist");
+
+			List<NmsActorNameplateLine> runtimeLines = resolveRuntimeLines(viewerHandle);
+			if (viewerHandle.inMovingState() != isMoving) {
+				transitions.add(new NameplateTransition(viewer, viewerHandle, runtimeLines));
+				continue;
+			}
+
+			for (int index = 0; index < viewerHandle.linePresentationHandles().size(); index++) {
+				ActorNameplateLinePresentationHandle lineHandle = viewerHandle.linePresentationHandles().get(index);
+				NmsActorNameplateLine runtimeLine = runtimeLines.get(index);
 				Location location = newLocation.clone();
 				location.setY(location.getY() + lineHandle.verticalOffset());
 				if (!Double.isFinite(location.getY())) throw new IllegalStateException("cloned y location is not finite");
@@ -177,6 +181,41 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 
 		for (NameplateLineTeleport lineTeleport : lineTeleports) {
 			nmsActorNameplateViewer.teleport(lineTeleport.viewer, lineTeleport.runtimeLine, lineTeleport.destination);
+		}
+
+		for (NameplateTransition transition : transitions) {
+			replaceNameplateForViewer(transition, instance, newLocation, isMoving);
+		}
+	}
+
+	private void replaceNameplateForViewer(NameplateTransition transition, ActorInstance instance, Location newLocation, boolean isMoving) {
+		PreparedNameplate preparedNameplate = prepareNameplate(
+				transition.viewer(),
+				instance,
+				newLocation,
+				isMoving,
+				transition.oldHandle().actorNameplateViewerKey()
+		);
+
+		try {
+			for (NmsActorNameplateLine oldRuntimeLine : transition.oldRuntimeLines()) {
+				nmsActorNameplateViewer.hide(transition.viewer(), oldRuntimeLine);
+			}
+			actorNameplatePresentationRegistry.replaceHandle(preparedNameplate.viewerHandle());
+		} catch (RuntimeException transitionException) {
+			rollbackShow(transition.viewer(), preparedNameplate.runtimeLines(), transitionException);
+			for (NmsActorNameplateLine oldRuntimeLine : transition.oldRuntimeLines()) {
+				try {
+					nmsActorNameplateViewer.show(transition.viewer(), oldRuntimeLine);
+				} catch (RuntimeException restoreException) {
+					transitionException.addSuppressed(restoreException);
+				}
+			}
+			throw transitionException;
+		}
+
+		for (NmsActorNameplateLine oldRuntimeLine : transition.oldRuntimeLines()) {
+			nmsActorNameplateLineRegistry.remove(oldRuntimeLine.getPresentationUUID());
 		}
 	}
 
@@ -225,6 +264,31 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 		return true;
 	}
 
+	@Override
+	public void clearViewer(UUID viewerUUID) {
+		if (viewerUUID == null) throw new IllegalArgumentException("viewerUUID cannot be null");
+
+		List<ActorNameplateViewerHandle> viewerHandles = actorNameplatePresentationRegistry.findViewerHandles(viewerUUID);
+		for (ActorNameplateViewerHandle viewerHandle : viewerHandles) {
+			for (NmsActorNameplateLine runtimeLine : resolveRuntimeLines(viewerHandle)) {
+				nmsActorNameplateLineRegistry.remove(runtimeLine.getPresentationUUID());
+			}
+			actorNameplatePresentationRegistry.removeHandle(viewerHandle.actorNameplateViewerKey());
+		}
+	}
+
+	private List<NmsActorNameplateLine> resolveRuntimeLines(ActorNameplateViewerHandle viewerHandle) {
+		List<NmsActorNameplateLine> runtimeLines = new ArrayList<>();
+		for (ActorNameplateLinePresentationHandle lineHandle : viewerHandle.linePresentationHandles()) {
+			NmsActorNameplateLine runtimeLine = nmsActorNameplateLineRegistry.get(lineHandle.presentationUUID());
+			if (runtimeLine == null) {
+				throw new IllegalStateException("Runtime line missing for presentation UUID: " + lineHandle.presentationUUID());
+			}
+			runtimeLines.add(runtimeLine);
+		}
+		return List.copyOf(runtimeLines);
+	}
+
 	private void rollbackShow(Player viewer, List<NmsActorNameplateLine> registeredRuntimeLines, RuntimeException originalException) {
 		for (int index = registeredRuntimeLines.size() - 1; index >= 0; index--) {
 			NmsActorNameplateLine runtimeLine = registeredRuntimeLines.get(index);
@@ -249,6 +313,16 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 
 	private record NameplateLineHide(Player viewer, NmsActorNameplateLine runtimeLine) {
 
+	}
+
+	private record NameplateTransition(
+			Player viewer,
+			ActorNameplateViewerHandle oldHandle,
+			List<NmsActorNameplateLine> oldRuntimeLines
+	) {
+		private NameplateTransition {
+			oldRuntimeLines = List.copyOf(oldRuntimeLines);
+		}
 	}
 
 	private record PreparedNameplate(

@@ -40,20 +40,30 @@ public class ActorFollowService {
 		if (player == null) throw new IllegalStateException("Player is null");
 		if (!player.isOnline()) throw new IllegalStateException("Player is not online");
 
+		boolean[] wasMoving = {false};
 		actorMovementTaskService.start(instance.getInstanceID(), () -> {
 					Player playerFollowing = Bukkit.getPlayer(playerUUID);
-					if (playerFollowing == null) return true;
-					if (!playerFollowing.isOnline()) return true;
+					if (playerFollowing == null || !playerFollowing.isOnline()) {
+						stopNameplateMovement(instance, wasMoving);
+						return true;
+					}
 
 					Location currentLocation = actorPresentationService.getPresentationLocation(instance);
 					Location currentPlayerLocation = playerFollowing.getLocation();
 
-					if (!currentLocation.getWorld().equals(currentPlayerLocation.getWorld())) return true;
+					if (!currentLocation.getWorld().equals(currentPlayerLocation.getWorld())) {
+						stopNameplateMovement(instance, wasMoving);
+						return true;
+					}
 
 					double distance = currentLocation.distance(currentPlayerLocation);
 
 					if (distance <= distanceFromPlayer) {
 						// The actor does not move, but following remains active so it can resume when the player moves away.
+						if (wasMoving[0]) {
+							actorPresentationService.movePresentation(instance, currentLocation, false);
+							wasMoving[0] = false;
+						}
 						return false;
 					}
 
@@ -63,11 +73,19 @@ public class ActorFollowService {
 
 					Location next = linearMovementStepCalculator.calculateNextLocation(currentLocation, currentPlayerLocation, stepDistance);
 					Location rotatedLocation = horizontalFacingCalculator.rotateLocation(next, currentPlayerLocation);
-					actorPresentationService.movePresentation(instance, rotatedLocation);
+					actorPresentationService.movePresentation(instance, rotatedLocation, true);
+					wasMoving[0] = true;
 
 					return false;
 				}
 		);
+	}
+
+	private void stopNameplateMovement(ActorInstance instance, boolean[] wasMoving) {
+		if (!wasMoving[0]) return;
+		Location currentLocation = actorPresentationService.getPresentationLocation(instance);
+		actorPresentationService.movePresentation(instance, currentLocation, false);
+		wasMoving[0] = false;
 	}
 
 }

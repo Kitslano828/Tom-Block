@@ -352,16 +352,30 @@ class NmsActorNameplatePresentationTest {
 	}
 
 	@Test
-	void updateNameplateRejectsMovementTransitionBeforeResolvingViewers() {
+	void updateNameplateReplacesLinesWhenMovementStateChanges() {
 		UpdateFixture fixture = new UpdateFixture();
-		fixture.registerPresentation(mock(Player.class), false, List.of(runtimeLine(601)), List.of(2.3));
+		Player viewer = mock(Player.class);
+		NmsActorNameplateLine stationaryLine = runtimeLine(601);
+		ActorNameplateViewerKey key = fixture.registerPresentation(viewer, false, List.of(stationaryLine), List.of(2.3));
+		ActorNameplateLine nameLine = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"), true);
+		ActorNameplateLinePlacement placement = new ActorNameplateLinePlacement(nameLine, 2.3);
+		NmsActorNameplateLine movingLine = runtimeLine(602);
+		ActorDefinition definition = mock(ActorDefinition.class);
+		when(fixture.instance.getActorDefinition()).thenReturn(definition);
+		when(definition.getActorNameplate()).thenReturn(new ActorNameplate(List.of(nameLine)));
+		when(fixture.layoutCalculator.calculateLinePlacements(anyList(), eq(fixture.layout))).thenReturn(List.of(placement));
+		when(fixture.lineFactory.create(any(Location.class), eq(placement))).thenReturn(movingLine);
 		Location location = new Location(mock(World.class), 1.0, 2.0, 3.0);
 
-		assertThrows(UnsupportedOperationException.class, () ->
-				fixture.presentation.updateNameplate(fixture.instance, location, true)
-		);
+		fixture.presentation.updateNameplate(fixture.instance, location, true);
 
-		verifyNoInteractions(fixture.server, fixture.nameplateViewer);
+		verify(fixture.nameplateViewer).show(viewer, movingLine);
+		verify(fixture.nameplateViewer).hide(viewer, stationaryLine);
+		ActorNameplateViewerHandle replacement = fixture.presentationRegistry.lookup(key);
+		assertTrue(replacement.inMovingState());
+		assertEquals(movingLine.getPresentationUUID(), replacement.linePresentationHandles().getFirst().presentationUUID());
+		assertNull(fixture.runtimeRegistry.get(stationaryLine.getPresentationUUID()));
+		assertSame(movingLine, fixture.runtimeRegistry.get(movingLine.getPresentationUUID()));
 	}
 
 	@Test
@@ -376,6 +390,27 @@ class NmsActorNameplatePresentationTest {
 		verify(fixture.server).getPlayer(any(UUID.class));
 		verifyNoInteractions(fixture.nameplateViewer);
 		assertSame(runtimeLine, fixture.runtimeRegistry.get(runtimeLine.getPresentationUUID()));
+	}
+
+	@Test
+	void clearViewerRemovesHandlesAndRuntimeLinesWithoutSendingPackets() {
+		UpdateFixture fixture = new UpdateFixture();
+		Player viewer = mock(Player.class);
+		NmsActorNameplateLine runtimeLine = runtimeLine(750);
+		ActorNameplateViewerKey key = fixture.registerPresentation(viewer, false, List.of(runtimeLine), List.of(2.3));
+
+		fixture.presentation.clearViewer(key.viewerUUID());
+
+		assertNull(fixture.presentationRegistry.lookup(key));
+		assertNull(fixture.runtimeRegistry.get(runtimeLine.getPresentationUUID()));
+		verifyNoInteractions(fixture.nameplateViewer);
+	}
+
+	@Test
+	void clearViewerRejectsNullViewerId() {
+		UpdateFixture fixture = new UpdateFixture();
+
+		assertThrows(IllegalArgumentException.class, () -> fixture.presentation.clearViewer(null));
 	}
 
 	@Test
@@ -565,6 +600,9 @@ class NmsActorNameplatePresentationTest {
 		private final Server server = mock(Server.class);
 		private final UUID instanceUUID = UUID.randomUUID();
 		private final ActorInstance instance = mock(ActorInstance.class);
+		private final ActorNameplateLayoutCalculator layoutCalculator = mock(ActorNameplateLayoutCalculator.class);
+		private final NmsActorNameplateLineFactory lineFactory = mock(NmsActorNameplateLineFactory.class);
+		private final ActorNameplateLayout layout = new ActorNameplateLayout(2.3, 0.3);
 		private final NmsActorNameplatePresentation presentation;
 
 		private UpdateFixture() {
@@ -572,10 +610,10 @@ class NmsActorNameplatePresentationTest {
 			presentation = new NmsActorNameplatePresentation(
 					presentationRegistry,
 					runtimeRegistry,
-					mock(ActorNameplateLayoutCalculator.class),
-					mock(NmsActorNameplateLineFactory.class),
+					layoutCalculator,
+					lineFactory,
 					nameplateViewer,
-					new ActorNameplateLayout(2.3, 0.3),
+					layout,
 					server
 			);
 		}
