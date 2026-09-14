@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.tomdang.actorframework.audience.ActorAudienceScope;
 import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.combat.ActorDamagePolicy;
+import org.tomdang.actorframework.nameplate.ActorNameplate;
 
 public class ActorDefinition {
 
@@ -21,11 +22,13 @@ public class ActorDefinition {
 	private final ActorDamagePolicy damagePolicy;
 	@Getter
 	private final ActorCollisionPolicy actorCollisionPolicy;
+	@Getter
+	private final ActorNameplate actorNameplate;
 
 
 	public ActorDefinition(String actorID, String displayName, ActorAudienceScope actorAudienceScope,
 						   String presentationTypeID, String interactionID, ActorDamagePolicy damagePolicy,
-						   ActorCollisionPolicy actorCollisionPolicy
+						   ActorCollisionPolicy actorCollisionPolicy, ActorNameplate actorNameplate
 	) {
 		if (actorID == null) throw new IllegalArgumentException("actor id cannot be null");
 		if (displayName == null) throw new IllegalArgumentException("Name cannot be null");
@@ -39,6 +42,7 @@ public class ActorDefinition {
 		}
 		if (damagePolicy == null) throw new IllegalArgumentException("Damage policy cannot be null");
 		if (actorCollisionPolicy == null) throw new IllegalArgumentException("Actor Collision Policy cannot be null");
+		if (actorNameplate == null) throw new IllegalArgumentException("ActorNamePlate cannot be null");
 
 		this.actorID = actorID;
 		this.displayName = displayName;
@@ -47,6 +51,7 @@ public class ActorDefinition {
 		this.interactionID = interactionID;
 		this.damagePolicy = damagePolicy;
 		this.actorCollisionPolicy = actorCollisionPolicy;
+		this.actorNameplate = actorNameplate;
 	}
 
 	public boolean hasInteraction() {

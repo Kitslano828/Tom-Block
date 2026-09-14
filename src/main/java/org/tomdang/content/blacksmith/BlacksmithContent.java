@@ -1,7 +1,9 @@
 package org.tomdang.content.blacksmith;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.tomdang.actorframework.audience.ActorAudienceKey;
@@ -12,6 +14,9 @@ import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.interaction.ActorInteractionRegistry;
 import org.tomdang.actorframework.interaction.LookAtPlayerInteraction;
 import org.tomdang.actorframework.movement.ActorLookService;
+import org.tomdang.actorframework.nameplate.ActorNameplate;
+import org.tomdang.actorframework.nameplate.ActorNameplateLine;
+import org.tomdang.actorframework.nameplate.ActorNameplateLineRole;
 import org.tomdang.actorframework.registry.ActorRegistry;
 import org.tomdang.actorframework.spawn.ActorSpawnPoint;
 import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
@@ -30,6 +35,7 @@ import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 import org.tomdang.hud.glyph.HudGlyph;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +86,11 @@ public class BlacksmithContent {
 		OpenForgeDialogueAction openForgeDialogueAction = new OpenForgeDialogueAction();
 		dialogueChoiceActionRegistry.registerAction("OPEN_FORGE", openForgeDialogueAction);
 
+		ActorNameplateLine nameplateLine  = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"),true);
+		List<ActorNameplateLine> lines = new ArrayList<>();
+		lines.add(nameplateLine);
+		ActorNameplate basicBlacksmithNameplate = new ActorNameplate(lines);
+
 		ActorDefinition blacksmithActor = new ActorDefinition(
 				"BLACKSMITH",
 				"Blacksmith",
@@ -87,7 +98,8 @@ public class BlacksmithContent {
 				"VILLAGER",
 				"BLACKSMITH_INTERACTION",
 				ActorDamagePolicy.PROTECTED,
-				ActorCollisionPolicy.PASS_THROUGH
+				ActorCollisionPolicy.PASS_THROUGH,
+				basicBlacksmithNameplate
 		);
 		actorRegistry.registerActor(blacksmithActor);
 
@@ -98,7 +110,8 @@ public class BlacksmithContent {
 				"PLAYER_NPC",
 				"BLACKSMITH_INTERACTION",
 				ActorDamagePolicy.PROTECTED,
-				ActorCollisionPolicy.PASS_THROUGH
+				ActorCollisionPolicy.PASS_THROUGH,
+				basicBlacksmithNameplate
 		);
 		actorRegistry.registerActor(packetSmith);
 
@@ -152,8 +165,28 @@ public class BlacksmithContent {
 		LookAtPlayerInteraction lookInteraction = new LookAtPlayerInteraction(actorLookService, interaction);
 		actorInteractionRegistry.registerInteraction("BLACKSMITH_DIALOGUE_INTERACTION", lookInteraction);
 
-		ActorDefinition actorDefinition = new ActorDefinition("TALKING_BLACKSMITH", "Talking Blacksmith", ActorAudienceScope.GLOBAL,
-				"VILLAGER", "BLACKSMITH_DIALOGUE_INTERACTION", ActorDamagePolicy.PROTECTED, ActorCollisionPolicy.PASS_THROUGH);
+		ActorNameplateLine talkingSmithNamePlateLine1 = new ActorNameplateLine(ActorNameplateLineRole.STATUS, Component.text("QUEST").color(TextColor.fromHexString("#EFBF04")).decoration(TextDecoration.BOLD, true), false);
+		ActorNameplateLine talkingSmithNamePlateLine2 = new ActorNameplateLine(ActorNameplateLineRole.NAME, Component.text("Blacksmith"), true);
+		ActorNameplateLine talkingSmithNamePlateLine3 = new ActorNameplateLine(ActorNameplateLineRole.INTERACTION, Component.text("CLICK"), false);
+
+		List<ActorNameplateLine> talkingSmithLines = new ArrayList<>();
+		talkingSmithLines.add(talkingSmithNamePlateLine1);
+		talkingSmithLines.add(talkingSmithNamePlateLine2);
+		talkingSmithLines.add(talkingSmithNamePlateLine3);
+
+		ActorNameplate talkingSmithNameplate = new ActorNameplate(talkingSmithLines);
+
+		ActorDefinition actorDefinition = new ActorDefinition(
+				"TALKING_BLACKSMITH",
+				"Talking Blacksmith",
+				ActorAudienceScope.GLOBAL,
+				"VILLAGER",
+				"BLACKSMITH_DIALOGUE_INTERACTION",
+				ActorDamagePolicy.PROTECTED,
+				ActorCollisionPolicy.PASS_THROUGH,
+				talkingSmithNameplate
+		);
+
 		actorRegistry.registerActor(actorDefinition);
 		dialogueThemeRegistry.bindSource("TALKING_BLACKSMITH", "BLACKSMITH_THEME");
 
