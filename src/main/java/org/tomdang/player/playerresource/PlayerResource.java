@@ -5,8 +5,6 @@ import lombok.Getter;
 public class PlayerResource {
 	@Getter
 	private double current;
-	@Getter
-	private double maximum = 100;
 
 	public void addCurrent(double amount, double effectiveMaximum) {
 		if (amount < 0) throw new IllegalArgumentException("Amount needs to be a positive number");
@@ -30,14 +28,6 @@ public class PlayerResource {
 	public void restoreFull(double effectiveMaximum) {
 		if (effectiveMaximum < 0 ) throw new IllegalArgumentException("Effective Maximum needs to be positive");
 		this.current = effectiveMaximum;
-	}
-
-	public void setMaximum(double amount) {
-		if (amount < 0) throw new IllegalArgumentException("amount cannot be negative");
-		this.maximum = amount;
-		if (this.current > amount) {
-			this.current = amount;
-		}
 	}
 
 	public void setCurrent(double amount) {

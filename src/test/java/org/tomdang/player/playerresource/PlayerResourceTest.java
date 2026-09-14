@@ -8,11 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class PlayerResourceTest {
 
 	@Test
-	void newResourceStartsEmptyWithDefaultMaximum() {
+	void newResourceStartsEmpty() {
 		PlayerResource resource = new PlayerResource();
 
 		assertEquals(0.0, resource.getCurrent(), 0.000001);
-		assertEquals(100, resource.getMaximum(), 0.000001);
 	}
 
 	@Test
@@ -56,14 +55,6 @@ public class PlayerResourceTest {
 				IllegalArgumentException.class,
 				() -> resource.removeCurrent(-10.0)
 		);
-	}
-
-	@Test
-	void settingNegativeMaximumIsRejected() {
-		PlayerResource resource = new PlayerResource();
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> resource.setMaximum(-15.0));
 	}
 
 	@Test
