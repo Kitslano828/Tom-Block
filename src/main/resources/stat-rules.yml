@@ -1,0 +1,21 @@
+stat-rules:
+  MAX_HEALTH:
+    cap: null
+  MAX_ENERGY:
+    cap: null
+  DEFENSE:
+    cap: null
+  STRENGTH:
+    cap: null
+  DAMAGE:
+    cap: null
+  CRIT_CHANCE:
+    cap: null
+  CRIT_DAMAGE:
+    cap: null
+  MINING_FORTUNE:
+    cap: null
+  MINING_SPEED:
+    cap: null
+  ABILITY_HASTE:
+    cap: null
