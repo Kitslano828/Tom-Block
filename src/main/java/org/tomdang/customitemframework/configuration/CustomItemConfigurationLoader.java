@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomItemConfigurationLoader {
+	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
 
 	public List<CustomItemDefinition> loadDefinitions(Reader reader) {
 		if (reader == null) throw new IllegalArgumentException("reader cannot be null");
@@ -41,7 +42,9 @@ public class CustomItemConfigurationLoader {
 			Rarity rarity = parseEnum(Rarity.class, rarityValue, id, "rarity");
 			ItemCategory category = parseEnum(ItemCategory.class, categoryValue, id, "category");
 
-			definitions.add(new CustomItemDefinition(id, material, displayName, rarity, category));
+			definitions.add(new CustomItemDefinition(
+					id, material, displayName, rarity, category, statLoader.load(section, id)
+			));
 		}
 
 		return definitions;

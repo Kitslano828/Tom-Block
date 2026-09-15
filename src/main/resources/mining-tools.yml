@@ -4,8 +4,9 @@ mining-tools:
     display-name: "Wooden Pickaxe"
     rarity: COMMON
     breaking-power: 1
-    mining-speed: 15.0
-    fortune: 3.0
+    stats:
+      mining-speed: 15.0
+      mining-fortune: 3.0
     abilities: []
 
   STONE_PICKAXE:
@@ -13,8 +14,9 @@ mining-tools:
     display-name: "Stone Pickaxe"
     rarity: COMMON
     breaking-power: 1
-    mining-speed: 30.0
-    fortune: 5.0
+    stats:
+      mining-speed: 30.0
+      mining-fortune: 5.0
     abilities: []
 
   GOLDEN_PICKAXE:
@@ -22,8 +24,9 @@ mining-tools:
     display-name: "Golden Pickaxe"
     rarity: COMMON
     breaking-power: 0
-    mining-speed: 60.0
-    fortune: 6.0
+    stats:
+      mining-speed: 60.0
+      mining-fortune: 6.0
     abilities: []
 
   IRON_PICKAXE:
@@ -31,8 +34,9 @@ mining-tools:
     display-name: "Iron Pickaxe"
     rarity: COMMON
     breaking-power: 2
-    mining-speed: 45.0
-    fortune: 5.0
+    stats:
+      mining-speed: 45.0
+      mining-fortune: 5.0
     abilities: []
 
   DIAMOND_PICKAXE:
@@ -40,8 +44,9 @@ mining-tools:
     display-name: "Diamond Pickaxe"
     rarity: COMMON
     breaking-power: 3
-    mining-speed: 60.0
-    fortune: 8.0
+    stats:
+      mining-speed: 60.0
+      mining-fortune: 8.0
     abilities: []
 
   NETHERITE_PICKAXE:
@@ -49,7 +54,20 @@ mining-tools:
     display-name: "Netherite Pickaxe"
     rarity: UNCOMMON
     breaking-power: 3
-    mining-speed: 85.0
-    fortune: 11.0
+    stats:
+      mining-speed: 85.0
+      mining-fortune: 11.0
+    abilities:
+      - MINING_SPREAD_ABILITY
+
+  SUPER_PICKAXE:
+    material: PRISMARINE_SHARD
+    display-name: "Divan's Drill"
+    rarity: MYTHIC
+    breaking-power: 15
+    stats:
+      damage: 500.0
+      mining-speed: 85.0
+      mining-fortune: 11.0
     abilities:
       - MINING_SPREAD_ABILITY

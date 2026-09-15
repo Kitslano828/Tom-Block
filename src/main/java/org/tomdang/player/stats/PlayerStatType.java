@@ -9,9 +9,11 @@ public enum PlayerStatType {
 	MAX_ENERGY("maxEnergy", "Maximum Energy", PlayerStatCategory.UTILITY, 100.0, 0.0),
 	DEFENSE("defense", "Defense", PlayerStatCategory.COMBAT, 0.0, 0.0),
 	STRENGTH("strength", "Strength", PlayerStatCategory.COMBAT, 0.0, 0.0),
+	DAMAGE("damage", "Damage", PlayerStatCategory.COMBAT, 0.0, 0.0),
 
 	// Mining Stats
-	MINING_FORTUNE("mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0.0, 0.0);
+	MINING_FORTUNE("mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0.0, 0.0),
+	MINING_SPEED("mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0.0, 0.0);
 
 	@Getter
 	private final String storageKey;

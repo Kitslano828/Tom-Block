@@ -3,13 +3,14 @@ package org.tomdang.player.playerresource;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.tomdang.combat.weapons.Weapon;
-import org.tomdang.customarmorframework.ArmorBonuses;
-import org.tomdang.customarmorframework.CustomArmorService;
-import org.tomdang.mining.miningtool.MiningTool;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
+import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.stats.modifier.PlayerStatModifier;
+import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
+import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +25,7 @@ class PlayerStatsServiceTest {
 	private Player player;
 	private PlayerProfile profile;
 	private PlayerProfileService profileService;
-	private CustomArmorService armorService;
+	private PlayerStatModifierProvider statModifierProvider;
 	private PlayerStatsService statsService;
 
 	@BeforeEach
@@ -37,31 +38,42 @@ class PlayerStatsServiceTest {
 		profileService = new PlayerProfileService();
 		profileService.addPlayerToMap(profile);
 
-		armorService = mock(CustomArmorService.class);
-		when(armorService.calculateBonusStats(player)).thenReturn(armorBonuses(0, 0));
+		statModifierProvider = mock(PlayerStatModifierProvider.class);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of());
 
-		statsService = new PlayerStatsService(profileService, armorService);
+		statsService = new PlayerStatsService(
+				profileService,
+				statModifierProvider,
+				new PlayerStatModifierCalculator()
+		);
 	}
 
 	@Test
 	void healthIncludesProfileMaximumAndArmorBonus() {
 		profile.setMaximumHealth(125);
-		when(armorService.calculateBonusStats(player)).thenReturn(armorBonuses(35, 0));
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.MAX_HEALTH, "equipment:armor:health", 35)
+		));
 
 		assertEquals(160, statsService.getTotalHealthStat(player), 0.000001);
 	}
 
 	@Test
-	void energyUsesProfileMaximum() {
+	void energyIncludesProfileMaximumAndItemBonus() {
 		profile.setMaximumEnergy(140);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.MAX_ENERGY, "equipment:main-hand:energy", 10)
+		));
 
-		assertEquals(140, statsService.getTotalEnergy(player), 0.000001);
+		assertEquals(150, statsService.getTotalEnergy(player), 0.000001);
 	}
 
 	@Test
 	void defenseIncludesProfileAndArmorBonus() {
 		profile.setDefense(24);
-		when(armorService.calculateBonusStats(player)).thenReturn(armorBonuses(0, 16));
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.DEFENSE, "equipment:armor:defense", 16)
+		));
 
 		assertEquals(40, statsService.getTotalDefense(player), 0.000001);
 	}
@@ -69,33 +81,60 @@ class PlayerStatsServiceTest {
 	@Test
 	void miningFortuneIncludesProfileAndToolBonus() {
 		profile.setMiningFortune(12);
-		MiningTool tool = mock(MiningTool.class);
-		when(tool.getFortune()).thenReturn(8.0);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.MINING_FORTUNE, "equipment:main-hand:fortune", 8)
+		));
 
-		assertEquals(20, statsService.getTotalMiningFortune(player, tool), 0.000001);
+		assertEquals(20, statsService.getTotalMiningFortune(player), 0.000001);
 	}
 
 	@Test
 	void miningFortuneUsesProfileValueWhenNoToolIsEquipped() {
 		profile.setMiningFortune(12);
 
-		assertEquals(12, statsService.getTotalMiningFortune(player, null), 0.000001);
+		assertEquals(12, statsService.getTotalMiningFortune(player), 0.000001);
 	}
 
 	@Test
 	void strengthIncludesProfileAndWeaponBonus() {
 		profile.setStrength(18);
-		Weapon weapon = mock(Weapon.class);
-		when(weapon.getStrength()).thenReturn(7.0);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.STRENGTH, "equipment:main-hand:strength", 7)
+		));
 
-		assertEquals(25, statsService.getTotalStrength(player, weapon), 0.000001);
+		assertEquals(25, statsService.getTotalStrength(player), 0.000001);
 	}
 
 	@Test
 	void strengthUsesProfileValueWhenNoWeaponIsEquipped() {
 		profile.setStrength(18);
 
-		assertEquals(18, statsService.getTotalStrength(player, null), 0.000001);
+		assertEquals(18, statsService.getTotalStrength(player), 0.000001);
+	}
+
+	@Test
+	void genericStatLookupSupportsNewStatsWithoutAnotherServiceDependency() {
+		profile.getStats().set(PlayerStatType.DAMAGE, 3);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.DAMAGE, "equipment:main-hand:damage", 17),
+				modifier(PlayerStatType.MINING_SPEED, "equipment:main-hand:mining-speed", 45)
+		));
+
+		assertEquals(20, statsService.getTotalDamage(player), 0.000001);
+		assertEquals(45, statsService.getTotalMiningSpeed(player), 0.000001);
+	}
+
+	@Test
+	void healthAndDefenseIgnoreEachOthersArmorModifiers() {
+		profile.setMaximumHealth(125);
+		profile.setDefense(24);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.MAX_HEALTH, "equipment:armor:health", 35),
+				modifier(PlayerStatType.DEFENSE, "equipment:armor:defense", 16)
+		));
+
+		assertEquals(160, statsService.getTotalHealthStat(player), 0.000001);
+		assertEquals(40, statsService.getTotalDefense(player), 0.000001);
 	}
 
 	@Test
@@ -118,15 +157,19 @@ class PlayerStatsServiceTest {
 	}
 
 	@Test
-	void nullDependenciesAreRejected() {
-		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(null, armorService));
-		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(profileService, null));
+	void nullStatTypeIsRejected() {
+		assertThrows(IllegalArgumentException.class, () -> statsService.getTotalStat(player, null));
 	}
 
-	private ArmorBonuses armorBonuses(double health, double defense) {
-		ArmorBonuses bonuses = new ArmorBonuses();
-		bonuses.setHealthBonus(health);
-		bonuses.setDefenseBonus(defense);
-		return bonuses;
+	@Test
+	void nullDependenciesAreRejected() {
+		PlayerStatModifierCalculator calculator = new PlayerStatModifierCalculator();
+		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(null, statModifierProvider, calculator));
+		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(profileService, null, calculator));
+		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(profileService, statModifierProvider, null));
+	}
+
+	private PlayerStatModifier modifier(PlayerStatType statType, String sourceId, double amount) {
+		return new PlayerStatModifier(statType, sourceId, amount);
 	}
 }

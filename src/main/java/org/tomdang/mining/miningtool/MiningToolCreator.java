@@ -1,17 +1,14 @@
 package org.tomdang.mining.miningtool;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.tomdang.combat.customcombatability.CustomCombatAbility;
 import org.tomdang.customabilityframework.abilitylore.AbilityLoreRenderer;
 import org.tomdang.customabilityframework.customability.CustomAbility;
 import org.tomdang.customitemframework.CustomItemCreator;
-import org.tomdang.mining.customminingability.CustomMiningAbility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +35,7 @@ public class MiningToolCreator extends CustomItemCreator {
 		// Empty strings don't hold style attributes, but forcing no-italics prevents spacing bugs
 		lore.add(Component.empty());
 
-		lore.add(mm.deserialize("<gray>Mining Speed: <gold>" + (int)miningTool.getMiningSpeed()).decoration(TextDecoration.ITALIC, false));
-		lore.add(mm.deserialize("<gray>Mining Fortune: <gold>" + (int)miningTool.getFortune()).decoration(TextDecoration.ITALIC, false));
+		lore.addAll(renderStatLore(miningTool));
 
 		lore.add(Component.empty());
 

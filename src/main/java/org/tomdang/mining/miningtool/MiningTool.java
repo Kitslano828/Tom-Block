@@ -5,33 +5,34 @@ import org.bukkit.Material;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
+
+import java.util.Map;
 
 public class MiningTool extends CustomItem {
 	@Getter
 	private final int breakingPower;
-	@Getter
-	private final double miningSpeed;
-	@Getter
-	private final double fortune;
-	// Rarity will come later
 
 	public MiningTool(Material material, int breakingPower, double miningSpeed,
 	                  double fortune, String id, Rarity rarity, String displayName, ItemCategory itemCategory) {
-
-		super(id, material, displayName, rarity, itemCategory);
-		this.breakingPower = breakingPower;
-		this.miningSpeed = miningSpeed;
-		this.fortune = fortune;
+		this(material, breakingPower, id, rarity, displayName, itemCategory, new CustomItemStatModifiers(Map.of(
+				PlayerStatType.MINING_SPEED, miningSpeed,
+				PlayerStatType.MINING_FORTUNE, fortune
+		)));
 	}
 
-	// Theoretical description
-	/*
-	ID: starter_pickaxe
-	Display name: Starter Pickaxe
-	Material: WOODEN_PICKAXE
-	[DARK GREEN] Breaking power: 1
-	[GRAY] Fortune: 3
-	[GRAY] Mining speed: 15
-	Description: A simple pickaxe for new miners.
-	 */
+	public MiningTool(Material material, int breakingPower, String id, Rarity rarity, String displayName,
+	                  ItemCategory itemCategory, CustomItemStatModifiers statModifiers) {
+		super(id, material, displayName, rarity, itemCategory, statModifiers);
+		this.breakingPower = breakingPower;
+	}
+
+	public double getMiningSpeed() {
+		return getStatModifiers().get(PlayerStatType.MINING_SPEED);
+	}
+
+	public double getFortune() {
+		return getStatModifiers().get(PlayerStatType.MINING_FORTUNE);
+	}
 }

@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +32,18 @@ class WeaponConfigurationLoaderTest {
 				    material: IRON_SWORD
 				    display-name: "Test Weapon"
 				    rarity: COMMON
-				    damage: 10.0
-				    strength: 2.0
+				    stats:
+				      damage: 10.0
+				      strength: 2.0
+				      mining-fortune: 4.0
 				    abilities: []
 				"""));
 
 		WeaponDefinition definition = findDefinition(definitions, "TEST_WEAPON");
 		assertEquals(Material.IRON_SWORD, definition.material());
 		assertEquals("Test Weapon", definition.displayName());
+		assertEquals(10, definition.statModifiers().get(PlayerStatType.DAMAGE));
+		assertEquals(4, definition.statModifiers().get(PlayerStatType.MINING_FORTUNE));
 	}
 
 	@Test

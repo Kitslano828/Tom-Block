@@ -1,93 +1,63 @@
 package org.tomdang.player.playerresource;
 
 import org.bukkit.entity.Player;
-import org.tomdang.combat.weapons.Weapon;
-import org.tomdang.customarmorframework.CustomArmorService;
-import org.tomdang.mining.miningtool.MiningTool;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
+import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.stats.modifier.PlayerStatModifier;
+import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
+import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
+
+import java.util.Collection;
 
 public class PlayerStatsService {
 
 	private final PlayerProfileService playerProfileService;
-	private final CustomArmorService customArmorService;
+	private final PlayerStatModifierProvider statModifierProvider;
+	private final PlayerStatModifierCalculator playerStatModifierCalculator;
 
-	public PlayerStatsService(PlayerProfileService playerProfileService, CustomArmorService customArmorService) {
+	public PlayerStatsService(PlayerProfileService playerProfileService, PlayerStatModifierProvider statModifierProvider, PlayerStatModifierCalculator playerStatModifierCalculator) {
 		if (playerProfileService == null) throw new IllegalArgumentException("playerProfileService cannot be null");
-		if (customArmorService == null) throw new IllegalArgumentException("customArmorService cannot be null");
+		if (statModifierProvider == null) throw new IllegalArgumentException("statModifierProvider cannot be null");
+		if (playerStatModifierCalculator == null) throw new IllegalArgumentException("playerStatModifierCalculator cannot be null");
 		this.playerProfileService = playerProfileService;
-		this.customArmorService = customArmorService;
+		this.statModifierProvider = statModifierProvider;
+		this.playerStatModifierCalculator = playerStatModifierCalculator;
 	}
 
 	public double getTotalHealthStat(Player player) {
-		PlayerProfile playerProfile = requireProfile(player);
-
-		double totalHealthStat;
-
-		double playerHealthStat = playerProfile.getMaximumHealth();
-		double armorHealthStat = customArmorService.calculateBonusStats(player).getHealthBonus();
-		// Add more for accessories and other stuff
-
-		totalHealthStat = playerHealthStat + armorHealthStat;
-
-		return totalHealthStat;
+		return getTotalStat(player, PlayerStatType.MAX_HEALTH);
 	}
 
 	public double getTotalEnergy(Player player) {
-		PlayerProfile playerProfile = requireProfile(player);
-
-		double totalEnergyStat;
-
-		double playerEnergyStat = playerProfile.getMaximumEnergy();
-
-		totalEnergyStat = playerEnergyStat;
-
-		return totalEnergyStat;
+		return getTotalStat(player, PlayerStatType.MAX_ENERGY);
 	}
 
 	public double getTotalDefense(Player player) {
-
-		PlayerProfile playerProfile = requireProfile(player);
-
-		double totalDefenseStat;
-
-		double playerDefenseStat = playerProfile.getDefense();
-		double armorDefenseStat = customArmorService.calculateBonusStats(player).getDefenseBonus();
-		// Add more for accessories
-
-		totalDefenseStat = playerDefenseStat + armorDefenseStat;
-
-		return totalDefenseStat;
+		return getTotalStat(player, PlayerStatType.DEFENSE);
 	}
 
-	public double getTotalMiningFortune(Player player, MiningTool miningtool) {
-		PlayerProfile playerProfile = requireProfile(player);
-		double totalMiningFortuneStat;
-
-		double playerMiningFortune = playerProfile.getMiningFortune();
-		double toolMiningFortune = miningtool == null ? 0 : miningtool.getFortune();
-
-		totalMiningFortuneStat = playerMiningFortune + toolMiningFortune;
-
-		return totalMiningFortuneStat;
+	public double getTotalMiningFortune(Player player) {
+		return getTotalStat(player, PlayerStatType.MINING_FORTUNE);
 	}
 
-	public double getTotalStrength(Player player, Weapon weapon) {
+	public double getTotalStrength(Player player) {
+		return getTotalStat(player, PlayerStatType.STRENGTH);
+	}
+
+	public double getTotalDamage(Player player) {
+		return getTotalStat(player, PlayerStatType.DAMAGE);
+	}
+
+	public double getTotalMiningSpeed(Player player) {
+		return getTotalStat(player, PlayerStatType.MINING_SPEED);
+	}
+
+	public double getTotalStat(Player player, PlayerStatType statType) {
+		if (statType == null) throw new IllegalArgumentException("statType cannot be null");
 		PlayerProfile playerProfile = requireProfile(player);
-		double totalStrength;
-
-		double weaponStrength;
-
-		double playerStrength = playerProfile.getStrength();
-		if (weapon == null) {
-			weaponStrength = 0;
-		} else {
-			weaponStrength = weapon.getStrength();
-		}
-
-		totalStrength = playerStrength + weaponStrength;
-
-		return totalStrength;
+		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
+		return playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers);
 	}
 
 	private PlayerProfile requireProfile(Player player) {

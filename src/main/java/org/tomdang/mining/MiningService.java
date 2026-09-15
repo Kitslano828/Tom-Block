@@ -104,7 +104,7 @@ public class MiningService implements AbilityMiningHandler {
 	}
 
 	// Drops before Mining Fortune
-	public void givePlayerDrops(Player player, MiningBlock block, MiningTool miningTool) {
+	public void givePlayerDrops(Player player, MiningBlock block) {
 		for (MiningDrop miningDrop : block.getBlockDrops()) {
 			if (miningDrop.rollForDrop()) {
 				ItemStack droppedItem = customItemStackFactory.createCustomItemStack(
@@ -114,7 +114,7 @@ public class MiningService implements AbilityMiningHandler {
 				giveOrDropItem(player, droppedItem);
 
 				if (miningDrop.isAffectedByFortune()) {
-					handleMiningFortune(player, miningDrop, miningTool);
+					handleMiningFortune(player, miningDrop);
 				} else {
 					player.sendMessage("§b§l★YOU DROPPED A RARE ITEM! " + miningDrop.getItem().getDisplayName());
 				}
@@ -122,8 +122,8 @@ public class MiningService implements AbilityMiningHandler {
 		}
 	}
 
-	public void handleMiningFortune(Player player, MiningDrop drop, MiningTool miningTool) {
-		double totalFortune = playerStatsService.getTotalMiningFortune(player, miningTool);
+	public void handleMiningFortune(Player player, MiningDrop drop) {
+		double totalFortune = playerStatsService.getTotalMiningFortune(player);
 		int guaranteedDrops = miningFortune.guaranteedDrops(totalFortune);
 
 		// 1. Process guaranteed fortune drops
@@ -177,7 +177,7 @@ public class MiningService implements AbilityMiningHandler {
 	private void processMinedBlock(Player player, PlayerProfile playerProfile, Block worldBlock, MiningBlock blockDefinition, MiningTool miningTool) {
 		scheduleBlockRegeneration(worldBlock, blockDefinition);
 		updateMiningXP(playerProfile, player, blockDefinition);
-		givePlayerDrops(player, blockDefinition, miningTool);
+		givePlayerDrops(player, blockDefinition);
 	}
 
 	private void notifyActiveMiningAbilities(Player player, PlayerProfile playerProfile, Block block, MiningBlock blockDefinition, MiningTool miningTool) {

@@ -3,16 +3,15 @@ package org.tomdang.bootstrap;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.NamespacedKey;
 import org.tomdang.TomBlock;
 import org.tomdang.combat.CombatService;
 import org.tomdang.combat.combatlevel.CombatLevel;
+import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.customcombatability.AbilityDamageService;
 import org.tomdang.combat.customcombatability.abilities.MagicBoltAbility;
 import org.tomdang.combat.customcombatability.abilities.WindDashAbility;
 import org.tomdang.combat.weapons.WeaponCreator;
 import org.tomdang.combat.weapons.WeaponRegistry;
-import org.tomdang.combat.weapons.WeaponResolver;
 import org.tomdang.combat.weapons.configuration.WeaponConfigurationLoader;
 import org.tomdang.combat.weapons.configuration.WeaponDefinition;
 import org.tomdang.combat.weapons.configuration.WeaponDefinitionRegistrar;
@@ -43,7 +42,7 @@ public class CombatBootStrap {
 	private final WeaponCreator weaponCreator;
 
 
-	public CombatBootStrap(TomBlock instance, NamespacedKey customItemIDKey, WeaponCreator weaponCreator,
+	public CombatBootStrap(TomBlock instance, WeaponCreator weaponCreator,
 						   CustomItemRegistry customItemRegistry, CustomAbilityRegistry customAbilityRegistry,
 						   PlayerProfileService playerProfileService, PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 						   CustomMobResolver customMobResolver, CustomMobHealthService customMobHealthService
@@ -86,18 +85,12 @@ public class CombatBootStrap {
 		);
 		weaponDefinitionRegistrar.registerWeaponDefinitions(weaponDefinitions);
 
-		WeaponResolver weaponResolver = new WeaponResolver(
-				customItemIDKey,
-				customItemRegistry,
-				weaponRegistry
-		);
-
 		combatService = new CombatService(playerProfileService,
-				weaponResolver,
 				customMobResolver,
 				playerStatsService,
 				playerResourceService,
-				customMobHealthService
+				customMobHealthService,
+				new PlayerDamageCalculator()
 		);
 	}
 

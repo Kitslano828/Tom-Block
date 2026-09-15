@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.mining.configuration.miningtool.MiningToolConfigurationLoader;
 import org.tomdang.mining.configuration.miningtool.MiningToolDefinition;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.StringReader;
 import java.util.List;
@@ -26,8 +27,10 @@ class MiningToolConfigurationLoaderTest {
 				    display-name: "Test Pickaxe"
 				    rarity: RARE
 				    breaking-power: 3
-				    mining-speed: 60.5
-				    fortune: 8.5
+				    stats:
+				      mining-speed: 60.5
+				      mining-fortune: 8.5
+				      strength: 2.5
 				    abilities:
 				      - MINING_SPREAD_ABILITY
 				""");
@@ -41,6 +44,7 @@ class MiningToolConfigurationLoaderTest {
 		assertEquals(3, definition.breakingPower());
 		assertEquals(60.5, definition.miningSpeed());
 		assertEquals(8.5, definition.fortune());
+		assertEquals(2.5, definition.statModifiers().get(PlayerStatType.STRENGTH));
 		assertEquals(List.of("MINING_SPREAD_ABILITY"), definition.abilityIDs());
 	}
 

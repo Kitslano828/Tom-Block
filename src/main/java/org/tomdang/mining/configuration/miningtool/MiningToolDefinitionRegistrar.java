@@ -39,7 +39,8 @@ public class MiningToolDefinitionRegistrar {
 		}
 
 		for (MiningToolDefinition definition : definitions) {
-			MiningTool miningTool = new MiningTool(definition.material(), definition.breakingPower(), definition.miningSpeed(), definition.fortune(), definition.id(), definition.rarity(),definition.displayName(), ItemCategory.MINING_TOOL);
+			MiningTool miningTool = new MiningTool(definition.material(), definition.breakingPower(), definition.id(),
+					definition.rarity(), definition.displayName(), ItemCategory.MINING_TOOL, definition.statModifiers());
 			for (String abilityID : definition.abilityIDs()) {
 				CustomAbility ability = customAbilityRegistry.getCustomAbility(abilityID);
 				miningTool.addAbility(ability);

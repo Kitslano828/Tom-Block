@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.StringReader;
 import java.util.List;
@@ -27,6 +28,7 @@ class CustomItemConfigurationLoaderTest {
 		assertEquals("Raw Iron", definition.displayName());
 		assertEquals(Rarity.COMMON, definition.rarity());
 		assertEquals(ItemCategory.MATERIAL, definition.itemCategory());
+		assertEquals(3, definition.statModifiers().get(PlayerStatType.MINING_FORTUNE));
 	}
 
 	@Test
@@ -120,6 +122,8 @@ class CustomItemConfigurationLoaderTest {
 				    display-name: "Raw Iron"
 				    rarity: COMMON
 				    category: MATERIAL
+				    stats:
+				      mining-fortune: 3
 				""";
 	}
 }

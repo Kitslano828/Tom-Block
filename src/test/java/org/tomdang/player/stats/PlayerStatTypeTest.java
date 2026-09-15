@@ -32,8 +32,18 @@ class PlayerStatTypeTest {
 	}
 
 	@Test
+	void damageDefinitionMatchesCurrentItemBehavior() {
+		assertDefinition(PlayerStatType.DAMAGE, "damage", "Damage", PlayerStatCategory.COMBAT, 0, 0);
+	}
+
+	@Test
 	void miningFortuneDefinitionMatchesCurrentProfileBehavior() {
 		assertDefinition(PlayerStatType.MINING_FORTUNE, "mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0, 0);
+	}
+
+	@Test
+	void miningSpeedDefinitionMatchesCurrentItemBehavior() {
+		assertDefinition(PlayerStatType.MINING_SPEED, "mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0, 0);
 	}
 
 	@Test

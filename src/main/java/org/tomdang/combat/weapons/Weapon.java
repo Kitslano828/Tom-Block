@@ -1,21 +1,15 @@
 package org.tomdang.combat.weapons;
 
-import lombok.Getter;
 import org.bukkit.Material;
-import org.tomdang.customabilityframework.customability.CustomAbility;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class Weapon extends CustomItem {
-
-	@Getter
-	private final double damage;
-	@Getter
-	private final double strength;
 
 	// For Later:
 	/*
@@ -26,8 +20,22 @@ public class Weapon extends CustomItem {
 
 	public Weapon(String id, Material material, String displayName, Rarity rarity, ItemCategory itemCategory,
 				  double damage, double strength) {
-		super(id, material, displayName, rarity, itemCategory);
-		this.damage = damage;
-		this.strength = strength;
+		this(id, material, displayName, rarity, itemCategory, new CustomItemStatModifiers(Map.of(
+				PlayerStatType.DAMAGE, damage,
+				PlayerStatType.STRENGTH, strength
+		)));
+	}
+
+	public Weapon(String id, Material material, String displayName, Rarity rarity, ItemCategory itemCategory,
+				  CustomItemStatModifiers statModifiers) {
+		super(id, material, displayName, rarity, itemCategory, statModifiers);
+	}
+
+	public double getDamage() {
+		return getStatModifiers().get(PlayerStatType.DAMAGE);
+	}
+
+	public double getStrength() {
+		return getStatModifiers().get(PlayerStatType.STRENGTH);
 	}
 }

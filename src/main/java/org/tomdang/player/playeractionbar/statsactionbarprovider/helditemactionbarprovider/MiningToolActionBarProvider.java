@@ -22,7 +22,7 @@ public class MiningToolActionBarProvider implements ActionBarProvider {
 
 	@Override
 	public Component render(PlayerActionBarContext context) {
-		return Component.text("⛏ " +(int)playerStatsService.getTotalMiningFortune(context.getPlayer(), (MiningTool) context.getHeldCustomItem()), NamedTextColor.GREEN);
+		return Component.text("⛏ " +(int)playerStatsService.getTotalMiningFortune(context.getPlayer()), NamedTextColor.GREEN);
 	}
 
 	@Override

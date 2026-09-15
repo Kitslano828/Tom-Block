@@ -6,6 +6,9 @@ import org.bukkit.entity.Player;
 import org.tomdang.TomBlock;
 import org.tomdang.customarmorframework.CustomArmorResolver;
 import org.tomdang.customarmorframework.CustomArmorService;
+import org.tomdang.customarmorframework.stats.ArmorStatModifierProvider;
+import org.tomdang.customitemframework.CustomItemResolver;
+import org.tomdang.customitemframework.stats.HeldItemStatModifierProvider;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playeractionbar.ActionBarRegistry;
@@ -16,8 +19,11 @@ import org.tomdang.player.playerhealthdisplay.PlayerHealthDisplayService;
 import org.tomdang.player.playerresource.PlayerResourceRegenerationService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
+import org.tomdang.player.stats.modifier.CompositePlayerStatModifierProvider;
+import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 
 import java.io.File;
+import java.util.List;
 
 public class PlayerBootStrap {
 
@@ -39,11 +45,22 @@ public class PlayerBootStrap {
 	@Getter
 	private final ActionBarSuppressionService actionBarSuppressionService;
 
-	public PlayerBootStrap(TomBlock instance, File playerFile, CustomArmorResolver customArmorResolver) {
+	public PlayerBootStrap(TomBlock instance, File playerFile, CustomArmorResolver customArmorResolver,
+	                      CustomItemResolver customItemResolver) {
 		playerProfileService = new PlayerProfileService();
 		playerProfileStorage = new PlayerProfileStorage(playerFile);
 		customArmorService = new CustomArmorService(customArmorResolver);
-		playerStatsService = new PlayerStatsService(playerProfileService, customArmorService);
+		ArmorStatModifierProvider armorStatModifierProvider = new ArmorStatModifierProvider(customArmorService);
+		HeldItemStatModifierProvider heldItemStatModifierProvider = new HeldItemStatModifierProvider(customItemResolver);
+		CompositePlayerStatModifierProvider statModifierProvider = new CompositePlayerStatModifierProvider(
+				List.of(armorStatModifierProvider, heldItemStatModifierProvider)
+		);
+		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator();
+		playerStatsService = new PlayerStatsService(
+				playerProfileService,
+				statModifierProvider,
+				playerStatModifierCalculator
+		);
 		PlayerHealthDisplayService 	playerHealthDisplayService = new PlayerHealthDisplayService(playerProfileService, playerStatsService);
 		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService, playerHealthDisplayService);
 		ActionBarRegistry actionBarRegistry = new ActionBarRegistry(playerStatsService);

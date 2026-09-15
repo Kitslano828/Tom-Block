@@ -6,8 +6,11 @@ import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,6 +31,7 @@ class CustomItemDefinitionRegistrarTest {
 		assertEquals("Raw Iron", item.getDisplayName());
 		assertEquals(Rarity.COMMON, item.getRarity());
 		assertEquals(ItemCategory.MATERIAL, item.getItemCategory());
+		assertEquals(4, item.getStatModifiers().get(PlayerStatType.STRENGTH));
 	}
 
 	@Test
@@ -81,6 +85,7 @@ class CustomItemDefinitionRegistrarTest {
 	}
 
 	private CustomItemDefinition definition(String id, ItemCategory category) {
-		return new CustomItemDefinition(id, Material.RAW_IRON, "Raw Iron", Rarity.COMMON, category);
+		return new CustomItemDefinition(id, Material.RAW_IRON, "Raw Iron", Rarity.COMMON, category,
+				new CustomItemStatModifiers(Map.of(PlayerStatType.STRENGTH, 4.0)));
 	}
 }

@@ -4,13 +4,18 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.configuration.CustomItemStatConfigurationLoader;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 public class MiningToolConfigurationLoader {
+	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
 
 	public List<MiningToolDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -57,17 +62,11 @@ public class MiningToolConfigurationLoader {
 			int breakingPower = section.getInt("breaking-power");
 			if (breakingPower < 0) throw new IllegalArgumentException(id + " has breaking-power lesser than 0");
 
-			if (!section.isSet("mining-speed") || (!section.isDouble("mining-speed") && !section.isInt("mining-speed"))) {
-				throw new IllegalArgumentException(id + " has Missing mining-speed value, or invalid value");
-			}
-			double miningSpeed = section.getDouble("mining-speed");
-			if (miningSpeed < 0) throw new IllegalArgumentException(id + " has mining-speed lesser than 0");
-
-			if (!section.isSet("fortune") || (!section.isDouble("fortune") && !section.isInt("fortune"))) {
-				throw new IllegalArgumentException(id + " has Missing fortune value, or invalid value");
-			}
-			double fortune = section.getDouble("fortune");
-			if (fortune < 0) throw new IllegalArgumentException(id + " has fortune lesser than 0");
+			CustomItemStatModifiers statModifiers = section.isSet("stats")
+					? statLoader.load(section, id)
+					: loadLegacyStats(section, id);
+			statLoader.requireNonNegative(statModifiers, PlayerStatType.MINING_SPEED, id);
+			statLoader.requireNonNegative(statModifiers, PlayerStatType.MINING_FORTUNE, id);
 
 			List<String> abilities = new ArrayList<>();
 			if (section.isSet("abilities") && section.isList("abilities")) {
@@ -105,8 +104,7 @@ public class MiningToolConfigurationLoader {
 					displayName,
 					rarity,
 					breakingPower,
-					miningSpeed,
-					fortune,
+					statModifiers,
 					abilities
 			);
 
@@ -114,6 +112,22 @@ public class MiningToolConfigurationLoader {
 		}
 
 		return definitions;
+	}
+
+	private CustomItemStatModifiers loadLegacyStats(ConfigurationSection section, String id) {
+		EnumMap<PlayerStatType, Double> stats = new EnumMap<>(PlayerStatType.class);
+		stats.put(PlayerStatType.MINING_SPEED, requireLegacyNumber(section, id, "mining-speed"));
+		stats.put(PlayerStatType.MINING_FORTUNE, requireLegacyNumber(section, id, "fortune"));
+		return new CustomItemStatModifiers(stats);
+	}
+
+	private double requireLegacyNumber(ConfigurationSection section, String id, String field) {
+		if (!section.isSet(field) || (!section.isDouble(field) && !section.isInt(field) && !section.isLong(field))) {
+			throw new IllegalArgumentException(id + " has missing " + field + " value, or invalid value");
+		}
+		double amount = section.getDouble(field);
+		if (amount < 0) throw new IllegalArgumentException(id + " has " + field + " lesser than 0");
+		return amount;
 	}
 
 }

@@ -1,14 +1,11 @@
 package org.tomdang.combat.weapons;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.tomdang.combat.customcombatability.CustomCombatAbility;
 import org.tomdang.customabilityframework.abilitylore.AbilityLoreRenderer;
 import org.tomdang.customabilityframework.customability.CustomAbility;
 import org.tomdang.customitemframework.CustomItemCreator;
@@ -28,12 +25,7 @@ public class WeaponCreator extends CustomItemCreator {
 		ItemMeta meta = itemTool.getItemMeta();
 		meta.setMaxStackSize(1);
 
-		// Get the MiniMessage instance for parsing tags
-		MiniMessage mm = MiniMessage.miniMessage();
-
-		// 1. Use mm.deserialize() for tags, and .decoration(TextDecoration.ITALIC, false) to remove default italics
-		lore.add(mm.deserialize("<gray>Damage: <gold>" + (int)weapon.getDamage()).decoration(TextDecoration.ITALIC, false));
-		lore.add(mm.deserialize("<gray>Strength: <gold>" + (int)weapon.getStrength()).decoration(TextDecoration.ITALIC, false));
+		lore.addAll(renderStatLore(weapon));
 
 		lore.add(Component.empty());
 

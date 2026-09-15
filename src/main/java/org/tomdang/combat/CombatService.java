@@ -8,11 +8,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.tomdang.combat.weapons.Weapon;
-import org.tomdang.combat.weapons.WeaponResolver;
-import org.tomdang.customabilityframework.customability.CustomAbility;
+import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
@@ -20,26 +17,28 @@ import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
+import org.tomdang.player.stats.PlayerStatValueFormatter;
 
 public class CombatService {
 
 	private final CustomMobResolver customMobResolver;
 	private final PlayerProfileService playerProfileService;
-	private final WeaponResolver weaponResolver;
 	private final PlayerStatsService playerStatsService;
 	private final PlayerResourceService playerResourceService;
 	private final CustomMobHealthService customMobHealthService;
+	private final PlayerDamageCalculator playerDamageCalculator;
 
-	public CombatService(PlayerProfileService playerProfileService, WeaponResolver weaponResolver,
-	                     CustomMobResolver customMobResolver, PlayerStatsService playerStatsService,
-						 PlayerResourceService playerResourceService, CustomMobHealthService customMobHealthService
+	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
+	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
+	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator
 	) {
+		if (playerDamageCalculator == null) throw new IllegalArgumentException("playerDamageCalculator cannot be null");
 		this.playerProfileService = playerProfileService;
-		this.weaponResolver = weaponResolver;
 		this.customMobResolver = customMobResolver;
 		this.playerStatsService = playerStatsService;
 		this.playerResourceService = playerResourceService;
 		this.customMobHealthService = customMobHealthService;
+		this.playerDamageCalculator = playerDamageCalculator;
 	}
 
 	public void onMobHit(EntityDamageByEntityEvent event) {
@@ -67,39 +66,15 @@ public class CombatService {
 
 		event.setCancelled(true);
 
-		ItemStack heldItem = player.getInventory().getItemInMainHand();
-		Weapon weapon = weaponResolver.getWeapon(heldItem);
-
-		double finalDamage = finalDamage(player, weapon);
+		double finalDamage = finalDamage(player);
 		customMobHealthService.damageMob(player, (LivingEntity) event.getEntity(),finalDamage);
 		event.getDamager().sendMessage("YOU DEALT " + finalDamage + " DAMAGE!");
 	}
 
-	/*
-	public void abilityDamageMob(LivingEntity entity, Player player, CustomAbility ability) {
-		double finalDamage;
-		Weapon weapon = weaponResolver.getWeapon(player.getInventory().getItemInMainHand());
-
-		if (weapon == null) {
-			player.sendMessage("You are not holding a valid weapon!");
-		} else {
-			double weaponPlayerDamage = finalDamage(player, weapon);
-			double abilityDamage = ability.getAbilityDamage();
-			finalDamage = weaponPlayerDamage + abilityDamage;
-			customMobHealthService.damageMob(entity,finalDamage);
-			player.sendMessage("Your " + ability.getAbilityName() + " dealt " + finalDamage + "!");
-		}
-	}
-	*/
-
-	public double finalDamage(Player player, Weapon weapon) {
-		double totalStrength = playerStatsService.getTotalStrength(player, weapon);
-		double multiplier = 1.0 + (totalStrength * 0.002);
-		if (weapon == null) {
-			final int unArmedBaseDamage = 1;
-			return unArmedBaseDamage * multiplier;
-		}
-		return weapon.getDamage() * multiplier;
+	public double finalDamage(Player player) {
+		double totalDamage = playerStatsService.getTotalDamage(player);
+		double totalStrength = playerStatsService.getTotalStrength(player);
+		return playerDamageCalculator.calculateBasicAttack(totalDamage, totalStrength);
 	}
 
 	public void mobHitPlayer(EntityDamageByEntityEvent event) {
@@ -150,7 +125,10 @@ public class CombatService {
 
 		playerResourceService.damagePlayer(player, finalDamage);
 		player.sendMessage("You took " + finalDamage + " damage!" + " Reduced from " + mobDamage + " by your defense!");
-		player.sendMessage("Health: " + playerProfile.getHealth().getCurrent() + " / " + playerStatsService.getTotalHealthStat(player));
+		player.sendMessage("Health: "
+				+ PlayerStatValueFormatter.format(playerProfile.getHealth().getCurrent())
+				+ " / "
+				+ PlayerStatValueFormatter.format(playerStatsService.getTotalHealthStat(player)));
 		if (playerProfile.isDead()) {
 			player.sendMessage("YOU HAVE BEEN KILLED BY " + customMob.getName());
 			player.setHealth(0.0);

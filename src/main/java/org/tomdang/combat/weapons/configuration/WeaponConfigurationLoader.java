@@ -4,14 +4,19 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.configuration.CustomItemStatConfigurationLoader;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 public class WeaponConfigurationLoader {
 
+	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
 
 	public List<WeaponDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -52,18 +57,10 @@ public class WeaponConfigurationLoader {
 				throw new IllegalArgumentException(id + " cannot have a rarity be null or blank");
 			}
 
-			if (!section.isSet("damage") || (!section.isDouble("damage") && !section.isInt("damage"))) {
-				throw new IllegalArgumentException(id + " has Missing damage value, or invalid value");
-			}
-			double damage = section.getDouble("damage");
-			if (damage < 0) throw new IllegalArgumentException(id + " has damage lesser than 0");
-
-
-			if (!section.isSet("strength") || (!section.isDouble("strength") && !section.isInt("strength"))) {
-				throw new IllegalArgumentException(id + " has Missing strength value, or invalid value");
-			}
-			double strength = section.getDouble("strength");
-			if (strength < 0) throw new IllegalArgumentException(id + " has strength lesser than 0");
+			CustomItemStatModifiers statModifiers = section.isSet("stats")
+					? statLoader.load(section, id)
+					: loadLegacyStats(section, id);
+			statLoader.requireNonNegative(statModifiers, PlayerStatType.DAMAGE, id);
 
 
 			List<String> abilities = new ArrayList<>();
@@ -103,8 +100,7 @@ public class WeaponConfigurationLoader {
 					material,
 					displayName,
 					rarity,
-					damage,
-					strength,
+					statModifiers,
 					abilities
 			);
 
@@ -113,6 +109,22 @@ public class WeaponConfigurationLoader {
 		}
 
 		return definitions;
+	}
+
+	private CustomItemStatModifiers loadLegacyStats(ConfigurationSection section, String id) {
+		EnumMap<PlayerStatType, Double> stats = new EnumMap<>(PlayerStatType.class);
+		stats.put(PlayerStatType.DAMAGE, requireLegacyNumber(section, id, "damage"));
+		stats.put(PlayerStatType.STRENGTH, requireLegacyNumber(section, id, "strength"));
+		return new CustomItemStatModifiers(stats);
+	}
+
+	private double requireLegacyNumber(ConfigurationSection section, String id, String field) {
+		if (!section.isSet(field) || (!section.isDouble(field) && !section.isInt(field) && !section.isLong(field))) {
+			throw new IllegalArgumentException(id + " has missing " + field + " value, or invalid value");
+		}
+		double amount = section.getDouble(field);
+		if (amount < 0) throw new IllegalArgumentException(id + " has " + field + " lesser than 0");
+		return amount;
 	}
 
 }
