@@ -87,4 +87,37 @@ class PlayerProfileTest {
 
 		assertEquals(PlayerStatType.STRENGTH.getMinimumValue(), profile.getStrength(), 0.000001);
 	}
+
+	@Test
+	void genericStatSetterPreservesMaximumResourceInvariants() {
+		PlayerProfile profile = new PlayerProfile(UUID.randomUUID());
+		profile.getHealth().setCurrent(200);
+		profile.getEnergy().setCurrent(200);
+
+		profile.setStat(PlayerStatType.MAX_HEALTH, 80);
+		profile.setStat(PlayerStatType.MAX_ENERGY, 70);
+		profile.setStat(PlayerStatType.ABILITY_HASTE, 125);
+
+		assertEquals(80, profile.getHealth().getCurrent(), 0.000001);
+		assertEquals(70, profile.getEnergy().getCurrent(), 0.000001);
+		assertEquals(125, profile.getStats().get(PlayerStatType.ABILITY_HASTE), 0.000001);
+	}
+
+	@Test
+	void resettingAllStatsRestoresDefaultsAndClampsCurrentResources() {
+		PlayerProfile profile = new PlayerProfile(UUID.randomUUID());
+		profile.getStats().set(PlayerStatType.MAX_HEALTH, 300);
+		profile.getStats().set(PlayerStatType.MAX_ENERGY, 250);
+		profile.getStats().set(PlayerStatType.ABILITY_HASTE, 100);
+		profile.getHealth().setCurrent(250);
+		profile.getEnergy().setCurrent(200);
+
+		profile.resetAllStats();
+
+		assertEquals(PlayerStatType.MAX_HEALTH.getDefaultValue(), profile.getHealth().getCurrent(), 0.000001);
+		assertEquals(PlayerStatType.MAX_ENERGY.getDefaultValue(), profile.getEnergy().getCurrent(), 0.000001);
+		for (PlayerStatType statType : PlayerStatType.values()) {
+			assertEquals(statType.getDefaultValue(), profile.getStats().get(statType), 0.000001);
+		}
+	}
 }

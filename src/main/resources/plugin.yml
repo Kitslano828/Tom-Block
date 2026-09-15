@@ -25,8 +25,13 @@ commands:
     description: spawn a custom mob at the sender's location
   stats:
     description: returns a customGUI of the sender's stats
-  setdefense:
-    description: sets the sender's defense stat to the desired double amount
+  setstat:
+    description: sets one of the sender's base stats or resets all base stats
+    usage: /setstat <stat> <amount> or /setstat reset
+  refreshitems:
+    description: refreshes the sender's custom item presentation using current effective stats
+    usage: /refreshitems
+    permission: tomblock.admin.refreshitems
   givecustomarmor:
     description: gives the sender a custom armor from the registry
     aliases:
@@ -47,3 +52,8 @@ commands:
     description: a test command to move an actor instance
   followtest:
     description: a test command to make an actor instance follow the sender
+
+permissions:
+  tomblock.admin.refreshitems:
+    description: allows manual refreshing of custom items for testing
+    default: op

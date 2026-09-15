@@ -5,7 +5,7 @@ import lombok.Getter;
 public enum PlayerStatType {
 
 	// Combat Stats
-	MAX_HEALTH("maxHealth", "Maximum Health", PlayerStatCategory.COMBAT, 100.0, 1.0),
+	MAX_HEALTH("maxHealth", "Health", PlayerStatCategory.COMBAT, 100.0, 1.0),
 	MAX_ENERGY("maxEnergy", "Maximum Energy", PlayerStatCategory.UTILITY, 100.0, 0.0),
 	DEFENSE("defense", "Defense", PlayerStatCategory.COMBAT, 0.0, 0.0),
 	STRENGTH("strength", "Strength", PlayerStatCategory.COMBAT, 0.0, 0.0),
@@ -13,7 +13,10 @@ public enum PlayerStatType {
 
 	// Mining Stats
 	MINING_FORTUNE("mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0.0, 0.0),
-	MINING_SPEED("mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0.0, 0.0);
+	MINING_SPEED("mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0.0, 0.0),
+
+	// stats that affects all
+	ABILITY_HASTE("ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0.0, 0.0);
 
 	@Getter
 	private final String storageKey;

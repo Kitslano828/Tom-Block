@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.tomdang.customitemframework.CustomItemCreator;
+import org.tomdang.customitemframework.lore.ItemLoreContext;
 
 public class CustomArmorCreator extends CustomItemCreator {
 	public CustomArmorCreator(NamespacedKey customItemIdKey) {
@@ -12,7 +13,11 @@ public class CustomArmorCreator extends CustomItemCreator {
 	}
 
 	public ItemStack createItemStack(CustomArmor customArmor) {
-		ItemStack itemArmor = super.createItemStack(customArmor);
+		return createItemStack(customArmor, ItemLoreContext.defaults());
+	}
+
+	public ItemStack createItemStack(CustomArmor customArmor, ItemLoreContext context) {
+		ItemStack itemArmor = super.createItemStack(customArmor, context);
 
 		ItemMeta meta = itemArmor.getItemMeta();
 		if (meta == null) return itemArmor;
@@ -20,8 +25,6 @@ public class CustomArmorCreator extends CustomItemCreator {
 		if (meta instanceof LeatherArmorMeta leatherArmorMeta) {
 			leatherArmorMeta.setColor(customArmor.getColor());
 		}
-
-		meta.lore(renderStatLore(customArmor));
 
 		itemArmor.setItemMeta(meta);
 

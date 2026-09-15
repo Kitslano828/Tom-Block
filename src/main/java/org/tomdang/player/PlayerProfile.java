@@ -97,6 +97,21 @@ public class PlayerProfile {
 		}
 	}
 
+	public void setStat(PlayerStatType statType, double amount) {
+		if (statType == null) throw new IllegalArgumentException("statType cannot be null");
+		switch (statType) {
+			case MAX_HEALTH -> setMaximumHealth(amount);
+			case MAX_ENERGY -> setMaximumEnergy(amount);
+			default -> stats.set(statType, amount);
+		}
+	}
+
+	public void resetAllStats() {
+		stats.resetAll();
+		if (health.getCurrent() > getMaximumHealth()) health.setCurrent(getMaximumHealth());
+		if (energy.getCurrent() > getMaximumEnergy()) energy.setCurrent(getMaximumEnergy());
+	}
+
 	public void increaseMiningLevel(int amount) {
 		this.miningLVL += amount;
 	}

@@ -13,7 +13,7 @@ class PlayerStatTypeTest {
 
 	@Test
 	void maximumHealthDefinitionMatchesCurrentProfileBehavior() {
-		assertDefinition(PlayerStatType.MAX_HEALTH, "maxHealth", "Maximum Health", PlayerStatCategory.COMBAT, 100, 1);
+		assertDefinition(PlayerStatType.MAX_HEALTH, "maxHealth", "Health", PlayerStatCategory.COMBAT, 100, 1);
 	}
 
 	@Test
@@ -44,6 +44,11 @@ class PlayerStatTypeTest {
 	@Test
 	void miningSpeedDefinitionMatchesCurrentItemBehavior() {
 		assertDefinition(PlayerStatType.MINING_SPEED, "mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0, 0);
+	}
+
+	@Test
+	void abilityHasteDefinitionMatchesCooldownBehavior() {
+		assertDefinition(PlayerStatType.ABILITY_HASTE, "ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0, 0);
 	}
 
 	@Test

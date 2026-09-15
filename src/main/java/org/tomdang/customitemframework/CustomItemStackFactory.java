@@ -7,6 +7,7 @@ import org.tomdang.customarmorframework.CustomArmor;
 import org.tomdang.customarmorframework.CustomArmorCreator;
 import org.tomdang.mining.miningtool.MiningTool;
 import org.tomdang.mining.miningtool.MiningToolCreator;
+import org.tomdang.customitemframework.lore.ItemLoreContext;
 
 public class CustomItemStackFactory {
 
@@ -25,12 +26,17 @@ public class CustomItemStackFactory {
 	}
 
 	public ItemStack createCustomItemStack(CustomItem item) {
+		return createCustomItemStack(item, ItemLoreContext.defaults());
+	}
+
+	public ItemStack createCustomItemStack(CustomItem item, ItemLoreContext context) {
 		if (item == null) throw new IllegalArgumentException("Item cannot be null");
+		if (context == null) throw new IllegalArgumentException("context cannot be null");
 		return switch (item) {
-			case MiningTool miningTool -> miningToolCreator.createItemStack(miningTool);
-			case Weapon weapon -> weaponCreator.createItemStack(weapon);
-			case CustomArmor customArmor -> customArmorCreator.createItemStack(customArmor);
-			default -> customItemCreator.createItemStack(item);
+			case MiningTool miningTool -> miningToolCreator.createItemStack(miningTool, context);
+			case Weapon weapon -> weaponCreator.createItemStack(weapon, context);
+			case CustomArmor customArmor -> customArmorCreator.createItemStack(customArmor, context);
+			default -> customItemCreator.createItemStack(item, context);
 		};
 	}
 

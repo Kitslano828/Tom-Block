@@ -20,7 +20,7 @@ public class GameplayAbilityBootStrap {
 				instance,
 				AbilityTrigger.SNEAK,
 				40,
-				Component.text("Jump again while airborne", NamedTextColor.GRAY),
+				Component.text("Jump again!", NamedTextColor.GRAY),
 				0.75
 		));
 	}

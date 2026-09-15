@@ -70,6 +70,20 @@ class HeldItemStatModifierProviderTest {
 	}
 
 	@Test
+	void armorHeldInMainHandDoesNotGrantEquippedArmorStats() {
+		Fixture fixture = fixture(new CustomItem(
+				"RABBIT_BOOTS",
+				Material.LEATHER_BOOTS,
+				"Rabbit Boots",
+				Rarity.COMMON,
+				ItemCategory.ARMOR,
+				new CustomItemStatModifiers(Map.of(PlayerStatType.ABILITY_HASTE, 100.0))
+		));
+
+		assertEquals(0, fixture.provider().getModifiers(fixture.player()).size());
+	}
+
+	@Test
 	void nullDependencyAndPlayerAreRejected() {
 		CustomItemResolver resolver = mock(CustomItemResolver.class);
 		HeldItemStatModifierProvider provider = new HeldItemStatModifierProvider(resolver);

@@ -3,6 +3,7 @@ package org.tomdang.customitemframework.stats;
 import org.bukkit.entity.Player;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.CustomItemResolver;
+import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
@@ -27,6 +28,7 @@ public class HeldItemStatModifierProvider implements PlayerStatModifierProvider 
 
 		CustomItem customItem = customItemResolver.getCustomItem(player.getInventory().getItemInMainHand());
 		if (customItem == null) return List.of();
+		if (customItem.getItemCategory() == ItemCategory.ARMOR) return List.of();
 
 		List<PlayerStatModifier> modifiers = new ArrayList<>();
 		for (Map.Entry<PlayerStatType, Double> entry : customItem.getStatModifiers().asMap().entrySet()) {

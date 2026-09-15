@@ -33,6 +33,7 @@ import org.tomdang.customabilityframework.activeability.ActiveAbilityService;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.customitemframework.CustomItemStackFactory;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobdrops.MobRewardService;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
@@ -124,11 +125,19 @@ public class TomBlock extends JavaPlugin {
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
 		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
+		ItemRefreshBootStrap itemRefreshBootStrap = new ItemRefreshBootStrap(
+				customItemResolver,
+				customItemStackFactory,
+				playerStatsService
+		);
+		PlayerInventoryItemRefreshService playerInventoryItemRefreshService =
+				itemRefreshBootStrap.getPlayerInventoryItemRefreshService();
 
 		AbilityBootStrap abilityBootStrap = new AbilityBootStrap(
 				customItemResolver,
 				customArmorService,
-				playerResourceService
+				playerResourceService,
+				playerStatsService
 		);
 
 		CustomAbilityRegistry customAbilityRegistry = abilityBootStrap.getCustomAbilityRegistry();
@@ -276,7 +285,8 @@ public class TomBlock extends JavaPlugin {
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
 				actorBootStrap.getActorLifecycleService(),
-				actorBootStrap.getActorFollowService()
+				actorBootStrap.getActorFollowService(),
+				playerInventoryItemRefreshService
 		);
 
 		new ListenerRegistrar(

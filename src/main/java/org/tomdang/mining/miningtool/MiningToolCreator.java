@@ -6,11 +6,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.tomdang.customabilityframework.abilitylore.AbilityLoreRenderer;
-import org.tomdang.customabilityframework.customability.CustomAbility;
 import org.tomdang.customitemframework.CustomItemCreator;
+import org.tomdang.customitemframework.lore.ItemLoreContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MiningToolCreator extends CustomItemCreator {
@@ -20,40 +18,19 @@ public class MiningToolCreator extends CustomItemCreator {
 	}
 
 	public ItemStack createItemStack(MiningTool miningTool) {
-		ItemStack itemTool = super.createItemStack(miningTool);
-		List<Component> lore = new ArrayList<>();
+		return createItemStack(miningTool, ItemLoreContext.defaults());
+	}
+
+	public ItemStack createItemStack(MiningTool miningTool, ItemLoreContext context) {
+		ItemStack itemTool = super.createItemStack(miningTool, context);
 
 		ItemMeta meta = itemTool.getItemMeta();
-		if (meta == null) return itemTool; // Quick defensive check for safety
+		if (meta == null) return itemTool;
 
-		// Initialize MiniMessage instance
 		MiniMessage mm = MiniMessage.miniMessage();
-
-		// Parse the tag strings using deserialize() and explicitly strip out Minecraft's default italics
-		lore.add(mm.deserialize("<dark_gray>Breaking Power: " + miningTool.getBreakingPower()).decoration(TextDecoration.ITALIC, false));
-
-		// Empty strings don't hold style attributes, but forcing no-italics prevents spacing bugs
-		lore.add(Component.empty());
-
-		lore.addAll(renderStatLore(miningTool));
-
-		lore.add(Component.empty());
-
-		AbilityLoreRenderer abilityLoreRenderer = new AbilityLoreRenderer();
-
-		for (CustomAbility ability : miningTool.getCustomAbilities()) {
-			List<Component> abilityLore = abilityLoreRenderer.convertCustomAbilityToLore(ability);
-			lore.addAll(abilityLore);
-		}
-
-		lore.add(Component.empty());
-
-		// Fixed: Added a space string " " between the Rarity name and Item Category so they don't mash together
-		lore.add(Component.text(miningTool.getRarity() + " " + miningTool.getItemCategory())
-				.color(miningTool.getRarity().getColor())
-				.decoration(TextDecoration.ITALIC, false));
-
-		meta.lore(lore);
+		Component breakingPowerLore = mm.deserialize("<dark_gray>Breaking Power: " + miningTool.getBreakingPower())
+				.decoration(TextDecoration.ITALIC, false);
+		meta.lore(renderLore(miningTool, List.of(breakingPowerLore), context));
 		itemTool.setItemMeta(meta);
 
 		return itemTool;

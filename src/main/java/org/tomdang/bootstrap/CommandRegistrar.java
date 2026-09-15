@@ -8,12 +8,13 @@ import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
 import org.tomdang.actorframework.movement.ActorFollowService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
 import org.tomdang.combat.command.GetWeapon;
-import org.tomdang.combat.command.SetDefense;
 import org.tomdang.combat.weapons.WeaponRegistry;
 import org.tomdang.crafting.command.ForgeCommand;
 import org.tomdang.customarmorframework.CustomArmorRegistry;
 import org.tomdang.customarmorframework.CustomArmorService;
 import org.tomdang.customarmorframework.command.GiveCustomArmor;
+import org.tomdang.customitemframework.command.RefreshItemsCommand;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
 import org.tomdang.custommobframework.CustomMobRegistry;
 import org.tomdang.custommobframework.command.SpawnCustomMob;
 import org.tomdang.dialogueframework.DialogueController;
@@ -27,6 +28,7 @@ import org.tomdang.mining.miningtool.MiningToolRegistry;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.command.HealCommand;
 import org.tomdang.player.command.PlayerStatsCommand;
+import org.tomdang.player.command.SetStatCommand;
 import org.tomdang.player.command.energy.RecoverEnergy;
 import org.tomdang.player.command.energy.UseEnergy;
 import org.tomdang.player.playerresource.PlayerResourceService;
@@ -41,7 +43,8 @@ public class CommandRegistrar {
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
 	                        DialogueController dialogueController, PlayerNpcLifecycleService playerNpcLifecycleService,
 	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
-	                        ActorFollowService actorFollowService
+	                        ActorFollowService actorFollowService,
+	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -71,8 +74,12 @@ public class CommandRegistrar {
 		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerProfileService, playerStatsService);
 		instance.getCommand("stats").setExecutor(playerStatsCommand);
 
-		SetDefense setDefense = new SetDefense(playerProfileService);
-		instance.getCommand("setdefense").setExecutor(setDefense);
+		SetStatCommand setStatCommand = new SetStatCommand(playerProfileService);
+		instance.getCommand("setstat").setExecutor(setStatCommand);
+		instance.getCommand("setstat").setTabCompleter(setStatCommand);
+
+		RefreshItemsCommand refreshItemsCommand = new RefreshItemsCommand(playerInventoryItemRefreshService);
+		instance.getCommand("refreshitems").setExecutor(refreshItemsCommand);
 
 		GiveCustomArmor giveCustomArmor = new GiveCustomArmor(customArmorRegistry);
 		instance.getCommand("givecustomarmor").setExecutor(giveCustomArmor);
