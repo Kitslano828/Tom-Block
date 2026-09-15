@@ -20,6 +20,16 @@ public class PlayerDamageCalculator {
 		return Math.max(0, finalDamage);
 	}
 
+	public PlayerAttackResult calculateBasicAttack(double effectiveDamage, double effectiveStrength,
+			double effectiveCriticalDamage, boolean critical) {
+		requireFinite(effectiveCriticalDamage, "effectiveCriticalDamage");
+		double normalDamage = calculateBasicAttack(effectiveDamage, effectiveStrength);
+		double multiplier = critical ? 1.0 + Math.max(0, effectiveCriticalDamage) / 100.0 : 1.0;
+		double damage = normalDamage * multiplier;
+		if (!Double.isFinite(damage)) throw new IllegalStateException("calculated critical damage must be finite");
+		return new PlayerAttackResult(damage, critical);
+	}
+
 	private void requireFinite(double value, String name) {
 		if (!Double.isFinite(value)) throw new IllegalArgumentException(name + " must be finite");
 	}

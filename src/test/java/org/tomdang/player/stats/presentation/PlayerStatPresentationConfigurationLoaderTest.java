@@ -102,7 +102,11 @@ class PlayerStatPresentationConfigurationLoaderTest {
 				  MAX_ENERGY:
 				""" + entry("⚡", "#00AA00", "Energy", "EMERALD") + """
 				  ABILITY_HASTE:
-				""" + entry("⧖", "#B0AD0C", "Haste", "CLOCK");
+				""" + entry("⧖", "#B0AD0C", "Haste", "CLOCK") + """
+				  CRIT_CHANCE:
+				""" + entry("✦", "#A855F7", "Critical chance", "AMETHYST_SHARD") + """
+				  CRIT_DAMAGE:
+				""" + entry("★", "#EF4444", "Critical damage", "FIRE_CHARGE");
 	}
 
 	private static String entry(String symbol, String color, String description, String material) {

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PlayerDamageCalculatorTest {
 
@@ -39,5 +41,19 @@ class PlayerDamageCalculatorTest {
 		assertThrows(IllegalArgumentException.class, () -> calculator.calculateBasicAttack(Double.NaN, 0));
 		assertThrows(IllegalArgumentException.class,
 				() -> calculator.calculateBasicAttack(1, Double.POSITIVE_INFINITY));
+	}
+
+	@Test
+	void criticalDamageAppliesPercentageAfterNormalDamage() {
+		PlayerAttackResult result = calculator.calculateBasicAttack(500, 100, 50, true);
+		assertEquals(900, result.damage(), 0.000001);
+		assertTrue(result.critical());
+	}
+
+	@Test
+	void nonCriticalAttackIgnoresCriticalDamageStat() {
+		PlayerAttackResult result = calculator.calculateBasicAttack(500, 100, 250, false);
+		assertEquals(600, result.damage(), 0.000001);
+		assertFalse(result.critical());
 	}
 }

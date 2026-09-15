@@ -128,6 +128,18 @@ class PlayerStatsServiceTest {
 	}
 
 	@Test
+	void criticalStatsIncludeProfileAndEquipmentContributions() {
+		profile.getStats().set(PlayerStatType.CRIT_CHANCE, 10);
+		profile.getStats().set(PlayerStatType.CRIT_DAMAGE, 50);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.CRIT_CHANCE, "equipment:crit-chance", 15),
+				modifier(PlayerStatType.CRIT_DAMAGE, "equipment:crit-damage", 25)
+		));
+		assertEquals(25, statsService.getTotalCritChance(player), 0.000001);
+		assertEquals(75, statsService.getTotalCritDamage(player), 0.000001);
+	}
+
+	@Test
 	void completeEvaluationCollectsModifiersOnceAndBuildsBreakdownsAndSnapshot() {
 		profile.setMaximumHealth(125);
 		PlayerStatModifier boots = new PlayerStatModifier(

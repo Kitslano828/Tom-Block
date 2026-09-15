@@ -10,6 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.util.Vector;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
+import org.tomdang.combat.damage.CriticalHitRoller;
+import org.tomdang.combat.damage.RandomCriticalHitRoller;
+import org.tomdang.combat.damage.PlayerAttackResult;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
@@ -27,18 +30,29 @@ public class CombatService {
 	private final PlayerResourceService playerResourceService;
 	private final CustomMobHealthService customMobHealthService;
 	private final PlayerDamageCalculator playerDamageCalculator;
+	private final CriticalHitRoller criticalHitRoller;
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator
 	) {
+		this(playerProfileService, customMobResolver, playerStatsService, playerResourceService,
+				customMobHealthService, playerDamageCalculator, new RandomCriticalHitRoller());
+	}
+
+	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
+	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
+	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
+	                     CriticalHitRoller criticalHitRoller) {
 		if (playerDamageCalculator == null) throw new IllegalArgumentException("playerDamageCalculator cannot be null");
+		if (criticalHitRoller == null) throw new IllegalArgumentException("criticalHitRoller cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.customMobResolver = customMobResolver;
 		this.playerStatsService = playerStatsService;
 		this.playerResourceService = playerResourceService;
 		this.customMobHealthService = customMobHealthService;
 		this.playerDamageCalculator = playerDamageCalculator;
+		this.criticalHitRoller = criticalHitRoller;
 	}
 
 	public void onMobHit(EntityDamageByEntityEvent event) {
@@ -66,15 +80,23 @@ public class CombatService {
 
 		event.setCancelled(true);
 
-		double finalDamage = finalDamage(player);
-		customMobHealthService.damageMob(player, (LivingEntity) event.getEntity(),finalDamage);
-		event.getDamager().sendMessage("YOU DEALT " + finalDamage + " DAMAGE!");
+		PlayerAttackResult result = attackResult(player);
+		customMobHealthService.damageMob(player, (LivingEntity) event.getEntity(), result.damage());
+		String prefix = result.critical() ? "CRITICAL HIT! " : "";
+		event.getDamager().sendMessage(prefix + "YOU DEALT " + PlayerStatValueFormatter.format(result.damage()) + " DAMAGE!");
 	}
 
 	public double finalDamage(Player player) {
+		return attackResult(player).damage();
+	}
+
+	public PlayerAttackResult attackResult(Player player) {
 		double totalDamage = playerStatsService.getTotalDamage(player);
 		double totalStrength = playerStatsService.getTotalStrength(player);
-		return playerDamageCalculator.calculateBasicAttack(totalDamage, totalStrength);
+		double criticalChance = playerStatsService.getTotalCritChance(player);
+		double criticalDamage = playerStatsService.getTotalCritDamage(player);
+		boolean critical = criticalHitRoller.isCritical(criticalChance);
+		return playerDamageCalculator.calculateBasicAttack(totalDamage, totalStrength, criticalDamage, critical);
 	}
 
 	public void mobHitPlayer(EntityDamageByEntityEvent event) {

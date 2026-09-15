@@ -55,6 +55,14 @@ public class PlayerStatsService {
 		return getTotalStat(player, PlayerStatType.DAMAGE);
 	}
 
+	public double getTotalCritChance(Player player) {
+		return getTotalStat(player, PlayerStatType.CRIT_CHANCE);
+	}
+
+	public double getTotalCritDamage(Player player) {
+		return getTotalStat(player, PlayerStatType.CRIT_DAMAGE);
+	}
+
 	public double getTotalMiningSpeed(Player player) {
 		return getTotalStat(player, PlayerStatType.MINING_SPEED);
 	}

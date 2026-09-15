@@ -28,7 +28,7 @@ stat-presentations:
     visible: false
 
   MINING_FORTUNE:
-    symbol: "⛏❀"
+    symbol: "❀"
     color: "#EDC140"
     description: "Increases the amount of drops received while mining."
     material: GOLDEN_PICKAXE
@@ -53,4 +53,18 @@ stat-presentations:
     color: "#B0AD0C"
     description: "Reduces ability cooldowns."
     material: CLOCK
+    visible: true
+
+  CRIT_CHANCE:
+    symbol: "✦"
+    color: "#A855F7"
+    description: "Chance for a hit to be critical"
+    material: AMETHYST_SHARD
+    visible: true
+
+  CRIT_DAMAGE:
+    symbol: "★"
+    color: "#EF4444"
+    description: "Damage dealt on top of base damage."
+    material: FIRE_CHARGE
     visible: true

@@ -3,6 +3,7 @@ package org.tomdang.combat;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
+import org.tomdang.combat.damage.PlayerAttackResult;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
 import org.tomdang.player.PlayerProfileService;
@@ -14,6 +15,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class CombatServiceTest {
+	@Test
+	void attackResultUsesCriticalStatsAndInjectedRoller() {
+		Player player = mock(Player.class);
+		PlayerStatsService statsService = mock(PlayerStatsService.class);
+		when(statsService.getTotalDamage(player)).thenReturn(500.0);
+		when(statsService.getTotalStrength(player)).thenReturn(100.0);
+		when(statsService.getTotalCritChance(player)).thenReturn(25.0);
+		when(statsService.getTotalCritDamage(player)).thenReturn(50.0);
+		CombatService service = new CombatService(mock(PlayerProfileService.class), mock(CustomMobResolver.class),
+				statsService, mock(PlayerResourceService.class), mock(CustomMobHealthService.class),
+				new PlayerDamageCalculator(), chance -> true);
+
+		PlayerAttackResult result = service.attackResult(player);
+		assertEquals(900, result.damage(), 0.000001);
+		assertEquals(true, result.critical());
+	}
 
 	@Test
 	void finalDamageUsesEffectiveStatsWithoutResolvingAnItemCategory() {
