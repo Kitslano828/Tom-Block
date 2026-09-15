@@ -309,7 +309,8 @@ public class TomBlock extends JavaPlugin {
 				playerNpcLifecycleService,
 				playerNpcActorVisibilityService,
 				nmsPlayerNpcInteractionInterceptor,
-				actorNameplatePresentation
+				actorNameplatePresentation,
+				playerInventoryItemRefreshService
 				);
 
 		playerBootStrap.start();

@@ -69,5 +69,6 @@ mining-tools:
       damage: 500.0
       mining-speed: 2500.0
       mining-fortune: 1530.0
+      ability-haste: 50.0
     abilities:
       - MINING_SPREAD_ABILITY

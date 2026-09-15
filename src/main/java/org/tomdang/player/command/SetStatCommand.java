@@ -11,6 +11,8 @@ import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.PlayerStatValueFormatter;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshResult;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,10 +22,14 @@ import java.util.Locale;
 public class SetStatCommand implements CommandExecutor, TabCompleter {
 
 	private final PlayerProfileService playerProfileService;
+	private final PlayerInventoryItemRefreshService itemRefreshService;
 
-	public SetStatCommand(PlayerProfileService playerProfileService) {
+	public SetStatCommand(PlayerProfileService playerProfileService,
+	                      PlayerInventoryItemRefreshService itemRefreshService) {
 		if (playerProfileService == null) throw new IllegalArgumentException("playerProfileService cannot be null");
+		if (itemRefreshService == null) throw new IllegalArgumentException("itemRefreshService cannot be null");
 		this.playerProfileService = playerProfileService;
+		this.itemRefreshService = itemRefreshService;
 	}
 
 	@Override
@@ -43,6 +49,7 @@ public class SetStatCommand implements CommandExecutor, TabCompleter {
 		if (args.length == 1 && args[0].equalsIgnoreCase("reset")) {
 			profile.resetAllStats();
 			player.sendMessage("Reset all base stats to their default values.");
+			refreshItemLore(player);
 			return true;
 		}
 
@@ -78,7 +85,15 @@ public class SetStatCommand implements CommandExecutor, TabCompleter {
 		profile.setStat(statType, amount);
 		player.sendMessage("Set base " + statType.getDisplayName() + " to "
 				+ PlayerStatValueFormatter.format(amount) + ".");
+		refreshItemLore(player);
 		return true;
+	}
+
+	private void refreshItemLore(Player player) {
+		PlayerInventoryItemRefreshResult result = itemRefreshService.refresh(player);
+		if (result.failed() > 0) {
+			player.sendMessage("Some custom items could not be refreshed: " + result.failed() + " failed.");
+		}
 	}
 
 	@Override

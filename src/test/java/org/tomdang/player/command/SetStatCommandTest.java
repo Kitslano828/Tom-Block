@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshResult;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +31,7 @@ class SetStatCommandTest {
 
 		assertEquals(125.5, fixture.profile().getStats().get(PlayerStatType.ABILITY_HASTE), 0.000001);
 		verify(fixture.player()).sendMessage("Set base Ability Haste to 125.5.");
+		verify(fixture.refreshService()).refresh(fixture.player());
 	}
 
 	@Test
@@ -53,6 +57,7 @@ class SetStatCommandTest {
 			assertEquals(statType.getDefaultValue(), fixture.profile().getStats().get(statType), 0.000001);
 		}
 		verify(fixture.player()).sendMessage("Reset all base stats to their default values.");
+		verify(fixture.refreshService()).refresh(fixture.player());
 	}
 
 	@Test
@@ -66,6 +71,7 @@ class SetStatCommandTest {
 		fixture.command().onCommand(fixture.player(), fixture.bukkitCommand(), "setstat", new String[]{"defense", "-1"});
 
 		assertEquals(originalDefense, fixture.profile().getStats().get(PlayerStatType.DEFENSE), 0.000001);
+		verify(fixture.refreshService(), never()).refresh(fixture.player());
 	}
 
 	@Test
@@ -85,12 +91,14 @@ class SetStatCommandTest {
 	@Test
 	void consoleSenderIsRejectedWithoutProfileLookup() {
 		PlayerProfileService profileService = mock(PlayerProfileService.class);
+		PlayerInventoryItemRefreshService refreshService = mock(PlayerInventoryItemRefreshService.class);
 		CommandSender sender = mock(CommandSender.class);
 
-		new SetStatCommand(profileService).onCommand(sender, mock(Command.class), "setstat",
+		new SetStatCommand(profileService, refreshService).onCommand(sender, mock(Command.class), "setstat",
 				new String[]{"defense", "10"});
 
 		verify(sender).sendMessage("This command can only be used by a player.");
+		verify(refreshService, never()).refresh(org.mockito.ArgumentMatchers.any());
 	}
 
 	@Test
@@ -106,8 +114,23 @@ class SetStatCommandTest {
 	}
 
 	@Test
-	void nullProfileServiceIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> new SetStatCommand(null));
+	void nullDependenciesAreRejected() {
+		PlayerProfileService profileService = mock(PlayerProfileService.class);
+		PlayerInventoryItemRefreshService refreshService = mock(PlayerInventoryItemRefreshService.class);
+		assertThrows(IllegalArgumentException.class, () -> new SetStatCommand(null, refreshService));
+		assertThrows(IllegalArgumentException.class, () -> new SetStatCommand(profileService, null));
+	}
+
+	@Test
+	void reportsItemRefreshFailuresAfterSuccessfulMutation() {
+		Fixture fixture = fixture();
+		when(fixture.refreshService().refresh(fixture.player()))
+				.thenReturn(new PlayerInventoryItemRefreshResult(41, 2, 38, 1));
+
+		fixture.command().onCommand(fixture.player(), fixture.bukkitCommand(), "setstat",
+				new String[]{"ability-haste", "100"});
+
+		verify(fixture.player()).sendMessage("Some custom items could not be refreshed: 1 failed.");
 	}
 
 	private Fixture fixture() {
@@ -117,9 +140,13 @@ class SetStatCommandTest {
 		PlayerProfile profile = new PlayerProfile(uuid);
 		PlayerProfileService profileService = mock(PlayerProfileService.class);
 		when(profileService.getPlayerProfileFromMap(uuid)).thenReturn(profile);
-		return new Fixture(player, profile, mock(Command.class), new SetStatCommand(profileService));
+		PlayerInventoryItemRefreshService refreshService = mock(PlayerInventoryItemRefreshService.class);
+		when(refreshService.refresh(player)).thenReturn(new PlayerInventoryItemRefreshResult(0, 0, 0, 0));
+		return new Fixture(player, profile, mock(Command.class), refreshService,
+				new SetStatCommand(profileService, refreshService));
 	}
 
-	private record Fixture(Player player, PlayerProfile profile, Command bukkitCommand, SetStatCommand command) {
+	private record Fixture(Player player, PlayerProfile profile, Command bukkitCommand,
+	                       PlayerInventoryItemRefreshService refreshService, SetStatCommand command) {
 	}
 }

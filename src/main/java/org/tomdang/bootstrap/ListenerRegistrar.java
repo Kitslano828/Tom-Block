@@ -21,6 +21,9 @@ import org.tomdang.customabilityframework.trigger.AbilityTriggerResolver;
 import org.tomdang.customarmorframework.listener.PlayerEquipArmorListener;
 import org.tomdang.custommobframework.custommobdrops.MobRewardService;
 import org.tomdang.custommobframework.custommobspawn.CustomMobRespawnService;
+import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
+import org.tomdang.customitemframework.refresh.PlayerItemRefreshScheduler;
+import org.tomdang.customitemframework.refresh.listener.PlayerHeldItemRefreshListener;
 import org.tomdang.dialogueframework.DialogueController;
 import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.listener.DialogueSneakListener;
@@ -47,8 +50,13 @@ public class ListenerRegistrar {
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
 							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor,
-							 ActorNameplatePresentation actorNameplatePresentation
+							 ActorNameplatePresentation actorNameplatePresentation,
+							 PlayerInventoryItemRefreshService playerInventoryItemRefreshService
 	){
+		PlayerItemRefreshScheduler itemRefreshScheduler = new PlayerItemRefreshScheduler(
+				instance,
+				playerInventoryItemRefreshService
+		);
 		PlayerConnectionListener playerConnectionListener = new PlayerConnectionListener(
 				playerProfileService,
 				playerProfileStorage,
@@ -61,7 +69,12 @@ public class ListenerRegistrar {
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
 		MobDeathListener mobDeathListener = new MobDeathListener(mobRewardService, customMobRespawnService);
 		PlayerMenuListener playerMenuListener = new PlayerMenuListener();
-		PlayerEquipArmorListener playerEquipArmorListener = new PlayerEquipArmorListener(playerResourceService);
+		PlayerEquipArmorListener playerEquipArmorListener = new PlayerEquipArmorListener(
+				playerResourceService,
+				itemRefreshScheduler
+		);
+		PlayerHeldItemRefreshListener playerHeldItemRefreshListener =
+				new PlayerHeldItemRefreshListener(itemRefreshScheduler);
 		PlayerInteractListener playerInteractListener = new PlayerInteractListener(
 				customAbilityService,
 				new AbilityTriggerResolver()
@@ -84,6 +97,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(mobDeathListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerMenuListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerEquipArmorListener, instance);
+		instance.getServer().getPluginManager().registerEvents(playerHeldItemRefreshListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerRegainHealthListener, instance);
 		instance.getServer().getPluginManager().registerEvents(forgeCloseListener, instance);
 		instance.getServer().getPluginManager().registerEvents(forgeDragListener, instance);

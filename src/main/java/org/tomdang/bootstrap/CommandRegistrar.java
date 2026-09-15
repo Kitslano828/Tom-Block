@@ -74,7 +74,7 @@ public class CommandRegistrar {
 		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerProfileService, playerStatsService);
 		instance.getCommand("stats").setExecutor(playerStatsCommand);
 
-		SetStatCommand setStatCommand = new SetStatCommand(playerProfileService);
+		SetStatCommand setStatCommand = new SetStatCommand(playerProfileService, playerInventoryItemRefreshService);
 		instance.getCommand("setstat").setExecutor(setStatCommand);
 		instance.getCommand("setstat").setTabCompleter(setStatCommand);
 
