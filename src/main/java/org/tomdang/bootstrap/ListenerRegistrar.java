@@ -36,6 +36,11 @@ import org.tomdang.player.listener.PlayerConnectionListener;
 import org.tomdang.player.listener.PlayerRegainHealthListener;
 import org.tomdang.player.playerdata.PlayerProfileStorage;
 import org.tomdang.player.playerresource.PlayerResourceService;
+import org.tomdang.player.playerresource.PlayerStatsService;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
+import org.tomdang.player.stats.presentation.PlayerStatsCategoryMenuConfiguration;
+import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
+import org.tomdang.player.stats.presentation.PlayerStatsBreakdownMenuConfiguration;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
@@ -51,7 +56,12 @@ public class ListenerRegistrar {
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
 							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor,
 							 ActorNameplatePresentation actorNameplatePresentation,
-							 PlayerInventoryItemRefreshService playerInventoryItemRefreshService
+							 PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
+							 PlayerStatsService playerStatsService,
+							 PlayerStatPresentationRegistry playerStatPresentationRegistry,
+							 PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
+							 PlayerStatsCategoryMenuConfiguration playerStatsCategoryMenuConfiguration,
+							 PlayerStatsBreakdownMenuConfiguration playerStatsBreakdownMenuConfiguration
 	){
 		PlayerItemRefreshScheduler itemRefreshScheduler = new PlayerItemRefreshScheduler(
 				instance,
@@ -68,7 +78,8 @@ public class ListenerRegistrar {
 		MobHitListener mobHitListener = new MobHitListener(combatService);
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
 		MobDeathListener mobDeathListener = new MobDeathListener(mobRewardService, customMobRespawnService);
-		PlayerMenuListener playerMenuListener = new PlayerMenuListener();
+		PlayerMenuListener playerMenuListener = new PlayerMenuListener(playerStatsService, playerStatPresentationRegistry,
+				playerStatsOverviewConfiguration, playerStatsCategoryMenuConfiguration, playerStatsBreakdownMenuConfiguration);
 		PlayerEquipArmorListener playerEquipArmorListener = new PlayerEquipArmorListener(
 				playerResourceService,
 				itemRefreshScheduler

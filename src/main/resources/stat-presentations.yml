@@ -25,7 +25,7 @@ stat-presentations:
     color: "#FF5555"
     description: "Determines the base damage dealt by your attacks."
     material: IRON_SWORD
-    visible: true
+    visible: false
 
   MINING_FORTUNE:
     symbol: "⛏❀"

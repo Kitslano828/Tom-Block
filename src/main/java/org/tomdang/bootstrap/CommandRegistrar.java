@@ -33,6 +33,8 @@ import org.tomdang.player.command.energy.RecoverEnergy;
 import org.tomdang.player.command.energy.UseEnergy;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
+import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
 import org.tomdang.playernpc.command.NmsPlayerNpcTestCommand;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 
@@ -44,7 +46,9 @@ public class CommandRegistrar {
 	                        DialogueController dialogueController, PlayerNpcLifecycleService playerNpcLifecycleService,
 	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
 	                        ActorFollowService actorFollowService,
-	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService
+	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
+	                        PlayerStatPresentationRegistry playerStatPresentationRegistry,
+	                        PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -71,7 +75,7 @@ public class CommandRegistrar {
 		instance.getCommand("spawncustommob").setExecutor(spawnCustomMob);
 		instance.getCommand("spawncustommob").setTabCompleter(spawnCustomMob);
 
-		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerProfileService, playerStatsService);
+		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerStatsService, playerStatPresentationRegistry, playerStatsOverviewConfiguration);
 		instance.getCommand("stats").setExecutor(playerStatsCommand);
 
 		SetStatCommand setStatCommand = new SetStatCommand(playerProfileService, playerInventoryItemRefreshService);

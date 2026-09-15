@@ -1,0 +1,85 @@
+stats-overview:
+  title: "Your Stats"
+  size: 54
+  close-button:
+    material: BARRIER
+    name: "Close"
+    color: "#FF5555"
+    slot: 49
+  categories:
+    COMBAT:
+      name: "Combat Stats"
+      color: "#FF5555"
+      description: "Combat related stats"
+      material: IRON_SWORD
+      slot: 21
+    MINING:
+      name: "Mining Stats"
+      color: "#EDC140"
+      description: "Mining related stats"
+      material: DIAMOND_PICKAXE
+      slot: 22
+    FORAGING:
+      name: "Foraging Stats"
+      color: "#55AA00"
+      description: "Foraging related stats"
+      material: DIAMOND_AXE
+      slot: 23
+    FISHING:
+      name: "Fishing Stats"
+      color: "#55FFFF"
+      description: "Fishing related stats"
+      material: FISHING_ROD
+      slot: 30
+    FARMING:
+      name: "Farming Stats"
+      color: "#FFFF55"
+      description: "Farming related stats"
+      material: GOLDEN_HOE
+      slot: 31
+    UTILITY:
+      name: "Utility Stats"
+      color: "#B0AD0C"
+      description: "General-purpose stats"
+      material: CLOCK
+      slot: 32
+
+category-menu:
+  title-format: "{category}"
+  size: 54
+  back-button:
+    material: ARROW
+    name: "Back"
+    color: "#FFFF55"
+    slot: 48
+  close-button:
+    material: BARRIER
+    name: "Close"
+    color: "#FF5555"
+    slot: 49
+
+breakdown-menu:
+  title-format: "{stat} Breakdown"
+  size: 54
+  summary-slot: 4
+  empty:
+    material: GRAY_DYE
+    name: "No additional contributors"
+    color: "#AAAAAA"
+  back-button:
+    material: ARROW
+    name: "Back"
+    color: "#FFFF55"
+    slot: 48
+  close-button:
+    material: BARRIER
+    name: "Close"
+    color: "#FF5555"
+    slot: 49
+  sources:
+    HELD_ITEM: { name: "Held Item", material: IRON_SWORD, color: "#55FFFF" }
+    ARMOR: { name: "Armor", material: IRON_CHESTPLATE, color: "#55FFFF" }
+    PERMANENT_BONUS: { name: "Permanent Bonus", material: NETHER_STAR, color: "#55FF55" }
+    TEMPORARY_BUFF: { name: "Temporary Buff", material: POTION, color: "#FF55FF" }
+    SKILL: { name: "Skill", material: EXPERIENCE_BOTTLE, color: "#FFFF55" }
+    OTHER: { name: "Other", material: PAPER, color: "#AAAAAA" }

@@ -287,7 +287,9 @@ public class TomBlock extends JavaPlugin {
 				actorBootStrap.getLinearActorMovementService(),
 				actorBootStrap.getActorLifecycleService(),
 				actorBootStrap.getActorFollowService(),
-				playerInventoryItemRefreshService
+				playerInventoryItemRefreshService,
+				playerStatPresentationBootStrap.getRegistry(),
+				playerStatPresentationBootStrap.getOverviewConfiguration()
 		);
 
 		new ListenerRegistrar(
@@ -311,7 +313,12 @@ public class TomBlock extends JavaPlugin {
 				playerNpcActorVisibilityService,
 				nmsPlayerNpcInteractionInterceptor,
 				actorNameplatePresentation,
-				playerInventoryItemRefreshService
+				playerInventoryItemRefreshService,
+				playerStatsService,
+				playerStatPresentationBootStrap.getRegistry(),
+				playerStatPresentationBootStrap.getOverviewConfiguration(),
+				playerStatPresentationBootStrap.getCategoryMenuConfiguration(),
+				playerStatPresentationBootStrap.getBreakdownMenuConfiguration()
 				);
 
 		playerBootStrap.start();
