@@ -50,7 +50,7 @@ stat-presentations:
 
   ABILITY_HASTE:
     symbol: "⏳"
-    color: "#B0AD0C"
+    color: "#FFFFFF"
     description: "Reduces ability cooldowns."
     material: CLOCK
     visible: true
@@ -70,8 +70,8 @@ stat-presentations:
     visible: true
 
   ATTACK_SPEED:
-    symbol: "⚔️"
+    symbol: "⚔"
     color: "#EBCD13"
-    description: "Rate of attack"
+    description: "Reduces the cooldown of a melee attack."
     material: ECHO_SHARD
     visible: true

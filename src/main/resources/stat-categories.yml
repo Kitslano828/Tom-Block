@@ -24,7 +24,7 @@ stats-overview:
       slot: 22
     FORAGING:
       name: "Foraging Stats"
-      color: "#55AA00"
+      color: "#002E07"
       description: "Foraging related stats"
       material: DIAMOND_AXE
       border-material: GREEN_STAINED_GLASS_PANE

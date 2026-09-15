@@ -17,6 +17,7 @@ import org.tomdang.combat.attackspeed.AttackReadinessCalculation;
 import org.tomdang.combat.attackspeed.AttackReadinessDamageScaler;
 import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
 import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
+import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
@@ -42,17 +43,19 @@ public class CombatService {
 	private final PlayerAttackReadinessService attackReadinessService;
 	private final AttackReadinessDamageScaler readinessDamageScaler;
 	private final HeldItemCombatResolver heldItemCombatResolver;
+	private final PlayerCombatHitPublisher hitPublisher;
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
 	                     PlayerAttackReadinessService attackReadinessService,
 	                     AttackReadinessDamageScaler readinessDamageScaler,
-	                     HeldItemCombatResolver heldItemCombatResolver
+	                     HeldItemCombatResolver heldItemCombatResolver,
+	                     PlayerCombatHitPublisher hitPublisher
 	) {
 		this(playerProfileService, customMobResolver, playerStatsService, playerResourceService,
 				customMobHealthService, playerDamageCalculator, new RandomCriticalHitRoller(),
-				attackReadinessService, readinessDamageScaler, heldItemCombatResolver);
+				attackReadinessService, readinessDamageScaler, heldItemCombatResolver, hitPublisher);
 	}
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
@@ -60,12 +63,14 @@ public class CombatService {
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
 	                     CriticalHitRoller criticalHitRoller, PlayerAttackReadinessService attackReadinessService,
 	                     AttackReadinessDamageScaler readinessDamageScaler,
-	                     HeldItemCombatResolver heldItemCombatResolver) {
+	                     HeldItemCombatResolver heldItemCombatResolver,
+	                     PlayerCombatHitPublisher hitPublisher) {
 		if (playerDamageCalculator == null) throw new IllegalArgumentException("playerDamageCalculator cannot be null");
 		if (criticalHitRoller == null) throw new IllegalArgumentException("criticalHitRoller cannot be null");
 		if (attackReadinessService == null) throw new IllegalArgumentException("attackReadinessService cannot be null");
 		if (readinessDamageScaler == null) throw new IllegalArgumentException("readinessDamageScaler cannot be null");
 		if (heldItemCombatResolver == null) throw new IllegalArgumentException("heldItemCombatResolver cannot be null");
+		if (hitPublisher == null) throw new IllegalArgumentException("hitPublisher cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.customMobResolver = customMobResolver;
 		this.playerStatsService = playerStatsService;
@@ -76,6 +81,7 @@ public class CombatService {
 		this.attackReadinessService = attackReadinessService;
 		this.readinessDamageScaler = readinessDamageScaler;
 		this.heldItemCombatResolver = heldItemCombatResolver;
+		this.hitPublisher = hitPublisher;
 	}
 
 	public void onMobHit(EntityDamageByEntityEvent event) {
@@ -104,6 +110,7 @@ public class CombatService {
 		event.setCancelled(true);
 		PlayerCombatHitContext context = createHitContext(player, (LivingEntity) event.getEntity());
 		customMobHealthService.damageMob(player, context.target(), context.damage());
+		hitPublisher.publish(context);
 		String prefix = context.critical() ? "CRITICAL HIT! " : "";
 		event.getDamager().sendMessage(prefix + "YOU DEALT "
 				+ PlayerStatValueFormatter.format(context.damage()) + " DAMAGE!");

@@ -16,6 +16,7 @@ import org.tomdang.combat.configuration.CombatTimingConfiguration;
 import org.tomdang.combat.configuration.CombatTimingConfigurationLoader;
 import org.tomdang.combat.combatlevel.CombatLevel;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
+import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.combat.customcombatability.AbilityDamageService;
 import org.tomdang.combat.customcombatability.abilities.MagicBoltAbility;
 import org.tomdang.combat.customcombatability.abilities.WindDashAbility;
@@ -54,6 +55,8 @@ public class CombatBootStrap {
 	private final PlayerAttackReadinessService playerAttackReadinessService;
 	@Getter
 	private final PlayerAttackIndicatorService playerAttackIndicatorService;
+	@Getter
+	private final PlayerCombatHitPublisher playerCombatHitPublisher;
 
 
 	public CombatBootStrap(TomBlock instance, WeaponCreator weaponCreator,
@@ -113,6 +116,7 @@ public class CombatBootStrap {
 				new AttackRecoveryCalculator()
 		);
 		playerAttackIndicatorService.start();
+		playerCombatHitPublisher = new PlayerCombatHitPublisher(instance.getLogger());
 
 		combatService = new CombatService(playerProfileService,
 				customMobResolver,
@@ -122,7 +126,8 @@ public class CombatBootStrap {
 				new PlayerDamageCalculator(),
 				playerAttackReadinessService,
 				new AttackReadinessDamageScaler(),
-				heldItemCombatResolver
+				heldItemCombatResolver,
+				playerCombatHitPublisher
 		);
 	}
 

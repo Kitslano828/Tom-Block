@@ -14,6 +14,7 @@ import org.tomdang.combat.weapons.Weapon;
 import org.tomdang.customitemframework.combat.CombatWeightClass;
 import org.tomdang.customitemframework.combat.CombatDamageType;
 import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
+import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
@@ -30,6 +31,7 @@ import org.tomdang.player.stats.PlayerStatType;
 import java.util.UUID;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -54,7 +57,7 @@ class CombatServiceTest {
 		CombatService service = new CombatService(mock(PlayerProfileService.class), mock(CustomMobResolver.class),
 				statsService, mock(PlayerResourceService.class), mock(CustomMobHealthService.class),
 				new PlayerDamageCalculator(), chance -> true, readinessService(() -> 0),
-				new AttackReadinessDamageScaler(), heldResolver(mock(CustomItemResolver.class)));
+				new AttackReadinessDamageScaler(), heldResolver(mock(CustomItemResolver.class)), hitPublisher());
 
 		PlayerAttackResult result = service.attackResult(player);
 		assertEquals(900, result.damage(), 0.000001);
@@ -77,7 +80,8 @@ class CombatServiceTest {
 				new PlayerDamageCalculator(),
 				readinessService(() -> 0),
 				new AttackReadinessDamageScaler(),
-				heldResolver(mock(CustomItemResolver.class))
+				heldResolver(mock(CustomItemResolver.class)),
+				hitPublisher()
 		);
 
 		assertEquals(600, service.finalDamage(player), 0.000001);
@@ -99,7 +103,8 @@ class CombatServiceTest {
 				new PlayerDamageCalculator(),
 				readinessService(() -> 0),
 				new AttackReadinessDamageScaler(),
-				heldResolver(mock(CustomItemResolver.class))
+				heldResolver(mock(CustomItemResolver.class)),
+				hitPublisher()
 		);
 
 		assertEquals(1, service.finalDamage(player), 0.000001);
@@ -133,7 +138,7 @@ class CombatServiceTest {
 				mock(PlayerProfileService.class), resolver, statsService,
 				mock(PlayerResourceService.class), healthService, new PlayerDamageCalculator(),
 				criticalHitRoller, readinessService(tick::get), new AttackReadinessDamageScaler(),
-				heldResolver(mock(CustomItemResolver.class))
+				heldResolver(mock(CustomItemResolver.class)), hitPublisher()
 		);
 
 		service.damageMob(event);
@@ -167,7 +172,7 @@ class CombatServiceTest {
 		CombatService service = new CombatService(mock(PlayerProfileService.class), mock(CustomMobResolver.class),
 				statsService, mock(PlayerResourceService.class), mock(CustomMobHealthService.class),
 				new PlayerDamageCalculator(), chance -> false, readinessService(() -> 100),
-				new AttackReadinessDamageScaler(), heldResolver(itemResolver));
+				new AttackReadinessDamageScaler(), heldResolver(itemResolver), hitPublisher());
 
 		PlayerCombatHitContext context = service.createHitContext(player, target);
 
@@ -176,6 +181,38 @@ class CombatServiceTest {
 		assertEquals(CombatDamageType.BLUNT, context.damageType().orElseThrow());
 		assertEquals(30, context.readiness().effectiveRecoveryTicks());
 		assertEquals(true, context.fullyCharged());
+	}
+
+	@Test
+	void successfulCustomMobDamageIsPublishedAfterHealthIsChanged() {
+		Player player = mock(Player.class);
+		when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+		PlayerInventory inventory = mock(PlayerInventory.class);
+		when(player.getInventory()).thenReturn(inventory);
+		when(inventory.getItemInMainHand()).thenReturn(mock(ItemStack.class));
+		LivingEntity target = mock(LivingEntity.class);
+		EntityDamageByEntityEvent event = mock(EntityDamageByEntityEvent.class);
+		when(event.getDamager()).thenReturn(player);
+		when(event.getEntity()).thenReturn(target);
+		CustomMobResolver mobResolver = mock(CustomMobResolver.class);
+		when(mobResolver.getCustomMob(target)).thenReturn(mock(CustomMob.class));
+		CustomMobHealthService healthService = mock(CustomMobHealthService.class);
+		PlayerCombatHitPublisher publisher = mock(PlayerCombatHitPublisher.class);
+		PlayerStatsService statsService = mock(PlayerStatsService.class);
+		when(statsService.getTotalDamage(player)).thenReturn(10.0);
+
+		CombatService service = new CombatService(
+				mock(PlayerProfileService.class), mobResolver, statsService,
+				mock(PlayerResourceService.class), healthService, new PlayerDamageCalculator(),
+				chance -> false, readinessService(() -> 100), new AttackReadinessDamageScaler(),
+				heldResolver(mock(CustomItemResolver.class)), publisher
+		);
+
+		service.damageMob(event);
+
+		var ordered = inOrder(healthService, publisher);
+		ordered.verify(healthService).damageMob(eq(player), eq(target), anyDouble());
+		ordered.verify(publisher).publish(org.mockito.ArgumentMatchers.any(PlayerCombatHitContext.class));
 	}
 
 	private PlayerAttackReadinessService readinessService(java.util.function.LongSupplier tick) {
@@ -188,5 +225,9 @@ class CombatServiceTest {
 
 	private HeldItemCombatResolver heldResolver(CustomItemResolver itemResolver) {
 		return new HeldItemCombatResolver(itemResolver, timingConfiguration());
+	}
+
+	private PlayerCombatHitPublisher hitPublisher() {
+		return new PlayerCombatHitPublisher(Logger.getLogger("CombatServiceTest"));
 	}
 }
