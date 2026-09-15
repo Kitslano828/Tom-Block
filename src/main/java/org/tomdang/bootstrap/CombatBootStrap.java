@@ -5,6 +5,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.tomdang.TomBlock;
 import org.tomdang.combat.CombatService;
+import org.bukkit.Bukkit;
+import org.tomdang.combat.attackspeed.AttackCooldownCalculator;
+import org.tomdang.combat.attackspeed.PlayerAttackCooldownService;
+import org.tomdang.combat.configuration.CombatTimingConfiguration;
+import org.tomdang.combat.configuration.CombatTimingConfigurationLoader;
 import org.tomdang.combat.combatlevel.CombatLevel;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.customcombatability.AbilityDamageService;
@@ -40,6 +45,8 @@ public class CombatBootStrap {
 	private final WeaponRegistry weaponRegistry;
 	@Getter
 	private final WeaponCreator weaponCreator;
+	@Getter
+	private final PlayerAttackCooldownService playerAttackCooldownService;
 
 
 	public CombatBootStrap(TomBlock instance, WeaponCreator weaponCreator,
@@ -84,14 +91,34 @@ public class CombatBootStrap {
 				customAbilityRegistry
 		);
 		weaponDefinitionRegistrar.registerWeaponDefinitions(weaponDefinitions);
+		CombatTimingConfiguration timingConfiguration = loadTimingConfiguration(instance);
+		playerAttackCooldownService = new PlayerAttackCooldownService(
+				new AttackCooldownCalculator(),
+				Bukkit::getCurrentTick
+		);
 
 		combatService = new CombatService(playerProfileService,
 				customMobResolver,
 				playerStatsService,
 				playerResourceService,
 				customMobHealthService,
-				new PlayerDamageCalculator()
+				new PlayerDamageCalculator(),
+				playerAttackCooldownService,
+				timingConfiguration
 		);
+	}
+
+	private CombatTimingConfiguration loadTimingConfiguration(TomBlock instance) {
+		try (InputStream configurationStream = instance.getResource("combat.yml")) {
+			if (configurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain combat.yml");
+			}
+			return new CombatTimingConfigurationLoader().load(
+					new InputStreamReader(configurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled combat.yml resource", exception);
+		}
 	}
 
 }

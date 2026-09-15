@@ -8,14 +8,14 @@ stat-presentations:
 
   DEFENSE:
     symbol: "❈"
-    color: "#55FFFF"
+    color: "#3FD43D"
     description: "Reduces incoming damage before it reaches your health."
     material: IRON_CHESTPLATE
     visible: true
 
   STRENGTH:
     symbol: "❁"
-    color: "#FF5555"
+    color: "#D43D3D"
     description: "Increases damage dealt by attacks that scale with Strength."
     material: BLAZE_POWDER
     visible: true
@@ -64,7 +64,14 @@ stat-presentations:
 
   CRIT_DAMAGE:
     symbol: "★"
-    color: "#EF4444"
+    color: "#AD0A0A"
     description: "Damage dealt on top of base damage."
     material: FIRE_CHARGE
+    visible: true
+
+  ATTACK_SPEED:
+    symbol: "🗲"
+    color: "#EBCD13"
+    description: "Rate of attack"
+    material: ECHO_SHARD
     visible: true

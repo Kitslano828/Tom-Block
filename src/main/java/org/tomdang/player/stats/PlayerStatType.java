@@ -12,6 +12,7 @@ public enum PlayerStatType {
 	DAMAGE("damage", "Damage", PlayerStatCategory.COMBAT, 0.0, 0.0),
 	CRIT_CHANCE("crit-chance", "Critical Chance", PlayerStatCategory.COMBAT, 2.5, 0.0),
 	CRIT_DAMAGE("crit-damage", "Critical Damage", PlayerStatCategory.COMBAT, 50.0, 0.0),
+	ATTACK_SPEED("attack-speed", "Attack Speed", PlayerStatCategory.COMBAT, 100.0, 0.0),
 
 	// Mining Stats
 	MINING_FORTUNE("mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0.0, 0.0),

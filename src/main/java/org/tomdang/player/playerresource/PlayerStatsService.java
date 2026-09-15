@@ -15,6 +15,7 @@ import java.util.List;
 import org.tomdang.player.stats.evaluation.PlayerStatBreakdown;
 import org.tomdang.player.stats.evaluation.PlayerStatContribution;
 import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
+import org.tomdang.player.stats.evaluation.PlayerStatCalculation;
 
 public class PlayerStatsService {
 
@@ -96,11 +97,14 @@ public class PlayerStatsService {
 				));
 			}
 
+			PlayerStatCalculation calculation = playerStatModifierCalculator.calculateResult(
+					playerProfile.getStats(), statType, modifiers
+			);
 			breakdowns.put(statType, new PlayerStatBreakdown(
 					statType,
 					playerProfile.getStats().get(statType),
 					contributions,
-					playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers)
+					calculation
 			));
 		}
 		return new PlayerStatEvaluation(breakdowns);

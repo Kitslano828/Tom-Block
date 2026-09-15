@@ -52,6 +52,11 @@ class PlayerStatTypeTest {
 	}
 
 	@Test
+	void attackSpeedDefinitionUsesNormalSpeedAsItsBaseline() {
+		assertDefinition(PlayerStatType.ATTACK_SPEED, "attack-speed", "Attack Speed", PlayerStatCategory.COMBAT, 100, 0);
+	}
+
+	@Test
 	void storageKeysAreUnique() {
 		Set<String> storageKeys = Arrays.stream(PlayerStatType.values())
 				.map(PlayerStatType::getStorageKey)

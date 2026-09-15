@@ -27,6 +27,10 @@ class PlayerStatRuleConfigurationLoaderTest {
 				() -> assertEquals(250, rules.getFirst().getCap().getAsDouble()),
 				() -> assertEquals(PlayerStatType.MAX_HEALTH, rules.get(1).getStatType()),
 				() -> assertFalse(rules.get(1).getCap().isPresent()),
+				() -> assertEquals(250,
+						rules.stream()
+								.filter(rule -> rule.getStatType() == PlayerStatType.ATTACK_SPEED)
+								.findFirst().orElseThrow().getCap().orElseThrow()),
 				() -> assertThrows(UnsupportedOperationException.class,
 						() -> rules.add(new PlayerStatRule(PlayerStatType.DAMAGE, OptionalDouble.empty())))
 		);
@@ -88,6 +92,8 @@ class PlayerStatRuleConfigurationLoaderTest {
 				    cap: null
 				  ABILITY_HASTE:
 				    cap: null
+				  ATTACK_SPEED:
+				    cap: 250
 				""";
 	}
 }

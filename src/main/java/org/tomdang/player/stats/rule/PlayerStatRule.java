@@ -15,7 +15,7 @@ public class PlayerStatRule {
 	public PlayerStatRule(PlayerStatType statType, OptionalDouble cap) {
 		if (statType == null) {
 			throw new IllegalArgumentException("statType cannot be null");
-		}g
+		}
 		if (cap == null) {
 			throw new IllegalArgumentException("cap OptionalDouble cannot be null");
 		}

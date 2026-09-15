@@ -21,6 +21,7 @@ import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.modifier.CompositePlayerStatModifierProvider;
 import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
+import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
 
 import java.io.File;
 import java.util.List;
@@ -46,7 +47,8 @@ public class PlayerBootStrap {
 	private final ActionBarSuppressionService actionBarSuppressionService;
 
 	public PlayerBootStrap(TomBlock instance, File playerFile, CustomArmorResolver customArmorResolver,
-	                      CustomItemResolver customItemResolver) {
+	                      CustomItemResolver customItemResolver, PlayerStatRuleRegistry statRuleRegistry) {
+		if (statRuleRegistry == null) throw new IllegalArgumentException("statRuleRegistry cannot be null");
 		playerProfileService = new PlayerProfileService();
 		playerProfileStorage = new PlayerProfileStorage(playerFile);
 		customArmorService = new CustomArmorService(customArmorResolver);
@@ -55,7 +57,7 @@ public class PlayerBootStrap {
 		CompositePlayerStatModifierProvider statModifierProvider = new CompositePlayerStatModifierProvider(
 				List.of(armorStatModifierProvider, heldItemStatModifierProvider)
 		);
-		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator();
+		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator(statRuleRegistry);
 		playerStatsService = new PlayerStatsService(
 				playerProfileService,
 				statModifierProvider,

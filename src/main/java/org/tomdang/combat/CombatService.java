@@ -13,6 +13,9 @@ import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.damage.CriticalHitRoller;
 import org.tomdang.combat.damage.RandomCriticalHitRoller;
 import org.tomdang.combat.damage.PlayerAttackResult;
+import org.tomdang.combat.attackspeed.PlayerAttackCooldownResult;
+import org.tomdang.combat.attackspeed.PlayerAttackCooldownService;
+import org.tomdang.combat.configuration.CombatTimingConfiguration;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
@@ -21,6 +24,7 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.PlayerStatValueFormatter;
+import org.tomdang.player.stats.PlayerStatType;
 
 public class CombatService {
 
@@ -31,21 +35,28 @@ public class CombatService {
 	private final CustomMobHealthService customMobHealthService;
 	private final PlayerDamageCalculator playerDamageCalculator;
 	private final CriticalHitRoller criticalHitRoller;
+	private final PlayerAttackCooldownService attackCooldownService;
+	private final CombatTimingConfiguration timingConfiguration;
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
-	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator
+	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
+	                     PlayerAttackCooldownService attackCooldownService, CombatTimingConfiguration timingConfiguration
 	) {
 		this(playerProfileService, customMobResolver, playerStatsService, playerResourceService,
-				customMobHealthService, playerDamageCalculator, new RandomCriticalHitRoller());
+				customMobHealthService, playerDamageCalculator, new RandomCriticalHitRoller(),
+				attackCooldownService, timingConfiguration);
 	}
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
-	                     CriticalHitRoller criticalHitRoller) {
+	                     CriticalHitRoller criticalHitRoller, PlayerAttackCooldownService attackCooldownService,
+	                     CombatTimingConfiguration timingConfiguration) {
 		if (playerDamageCalculator == null) throw new IllegalArgumentException("playerDamageCalculator cannot be null");
 		if (criticalHitRoller == null) throw new IllegalArgumentException("criticalHitRoller cannot be null");
+		if (attackCooldownService == null) throw new IllegalArgumentException("attackCooldownService cannot be null");
+		if (timingConfiguration == null) throw new IllegalArgumentException("timingConfiguration cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.customMobResolver = customMobResolver;
 		this.playerStatsService = playerStatsService;
@@ -53,6 +64,8 @@ public class CombatService {
 		this.customMobHealthService = customMobHealthService;
 		this.playerDamageCalculator = playerDamageCalculator;
 		this.criticalHitRoller = criticalHitRoller;
+		this.attackCooldownService = attackCooldownService;
+		this.timingConfiguration = timingConfiguration;
 	}
 
 	public void onMobHit(EntityDamageByEntityEvent event) {
@@ -79,6 +92,12 @@ public class CombatService {
 		}
 
 		event.setCancelled(true);
+		PlayerAttackCooldownResult cooldownResult = attackCooldownService.tryStart(
+				player.getUniqueId(),
+				timingConfiguration.defaultBasicAttackCooldownTicks(),
+				playerStatsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED)
+		);
+		if (cooldownResult != PlayerAttackCooldownResult.STARTED) return;
 
 		PlayerAttackResult result = attackResult(player);
 		customMobHealthService.damageMob(player, (LivingEntity) event.getEntity(), result.damage());

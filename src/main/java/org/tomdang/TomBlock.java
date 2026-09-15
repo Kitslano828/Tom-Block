@@ -116,7 +116,14 @@ public class TomBlock extends JavaPlugin {
 		CustomMobHealthService customMobHealthService = mobBootStrap.getCustomMobHealthService();
 
 		final File file = new File(getDataFolder(), "playerprofiles.yml");
-		playerBootStrap = new PlayerBootStrap(this, file, customArmorResolver, customItemResolver);
+		PlayerStatRuleBootStrap playerStatRuleBootStrap = new PlayerStatRuleBootStrap(this);
+		playerBootStrap = new PlayerBootStrap(
+				this,
+				file,
+				customArmorResolver,
+				customItemResolver,
+				playerStatRuleBootStrap.getRegistry()
+		);
 
 		PlayerProfileService playerProfileService = playerBootStrap.getPlayerProfileService();
 		PlayerProfileStorage playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
@@ -303,6 +310,7 @@ public class TomBlock extends JavaPlugin {
 				combatBootStrap.getCombatService(),
 				mobBootStrap.getCustomMobRespawnService(),
 				craftingService,
+				combatBootStrap.getPlayerAttackCooldownService(),
 				actorResolver,
 				actorInteractionService,
 				actorDamageService,

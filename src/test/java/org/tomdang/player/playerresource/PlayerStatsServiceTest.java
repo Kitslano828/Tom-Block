@@ -11,9 +11,12 @@ import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
 import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
+import org.tomdang.player.stats.rule.PlayerStatRule;
+import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,7 +50,7 @@ class PlayerStatsServiceTest {
 		statsService = new PlayerStatsService(
 				profileService,
 				statModifierProvider,
-				new PlayerStatModifierCalculator()
+				new PlayerStatModifierCalculator(uncappedRegistry())
 		);
 	}
 
@@ -167,6 +170,27 @@ class PlayerStatsServiceTest {
 	}
 
 	@Test
+	void configuredCapLimitsEffectiveValueButPreservesRawBreakdown() {
+		PlayerStatRuleRegistry rules = registryWithCap(PlayerStatType.DEFENSE, 250);
+		statsService = new PlayerStatsService(
+				profileService,
+				statModifierProvider,
+				new PlayerStatModifierCalculator(rules)
+		);
+		profile.setDefense(100);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(
+				modifier(PlayerStatType.DEFENSE, "equipment:armor:defense", 200)
+		));
+
+		PlayerStatEvaluation evaluation = statsService.evaluate(player);
+
+		assertEquals(250, statsService.getTotalDefense(player), 0.000001);
+		assertEquals(300, evaluation.getBreakdown(PlayerStatType.DEFENSE).rawValue(), 0.000001);
+		assertEquals(250, evaluation.getBreakdown(PlayerStatType.DEFENSE).effectiveValue(), 0.000001);
+		assertTrue(evaluation.getBreakdown(PlayerStatType.DEFENSE).capped());
+	}
+
+	@Test
 	void evaluationRejectsInvalidModifierCollections() {
 		when(statModifierProvider.getModifiers(player)).thenReturn(null);
 		assertThrows(IllegalStateException.class, () -> statsService.evaluate(player));
@@ -214,7 +238,7 @@ class PlayerStatsServiceTest {
 
 	@Test
 	void nullDependenciesAreRejected() {
-		PlayerStatModifierCalculator calculator = new PlayerStatModifierCalculator();
+		PlayerStatModifierCalculator calculator = new PlayerStatModifierCalculator(uncappedRegistry());
 		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(null, statModifierProvider, calculator));
 		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(profileService, null, calculator));
 		assertThrows(IllegalArgumentException.class, () -> new PlayerStatsService(profileService, statModifierProvider, null));
@@ -222,5 +246,20 @@ class PlayerStatsServiceTest {
 
 	private PlayerStatModifier modifier(PlayerStatType statType, String sourceId, double amount) {
 		return new PlayerStatModifier(statType, sourceId, amount);
+	}
+
+	private static PlayerStatRuleRegistry uncappedRegistry() {
+		return registryWithCap(null, 0);
+	}
+
+	private static PlayerStatRuleRegistry registryWithCap(PlayerStatType cappedType, double cap) {
+		PlayerStatRuleRegistry registry = new PlayerStatRuleRegistry();
+		for (PlayerStatType statType : PlayerStatType.values()) {
+			registry.register(new PlayerStatRule(
+					statType,
+					statType == cappedType ? OptionalDouble.of(cap) : OptionalDouble.empty()
+			));
+		}
+		return registry;
 	}
 }

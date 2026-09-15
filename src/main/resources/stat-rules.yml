@@ -19,3 +19,5 @@ stat-rules:
     cap: null
   ABILITY_HASTE:
     cap: null
+  ATTACK_SPEED:
+    cap: 250

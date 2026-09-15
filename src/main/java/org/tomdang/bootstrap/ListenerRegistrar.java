@@ -11,6 +11,8 @@ import org.tomdang.combat.CombatService;
 import org.tomdang.combat.listener.MobDeathListener;
 import org.tomdang.combat.listener.MobHitListener;
 import org.tomdang.combat.listener.PlayerRespawnListener;
+import org.tomdang.combat.listener.PlayerAttackCooldownListener;
+import org.tomdang.combat.attackspeed.PlayerAttackCooldownService;
 import org.tomdang.crafting.CraftingService;
 import org.tomdang.crafting.gui.listener.ForgeCloseListener;
 import org.tomdang.crafting.gui.listener.ForgeDragListener;
@@ -52,6 +54,7 @@ public class ListenerRegistrar {
 	                         PlayerProfileStorage playerProfileStorage, PlayerResourceService playerResourceService,
 	                         CustomAbilityService customAbilityService, MobRewardService mobRewardService, MiningService miningService,
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
+	                         PlayerAttackCooldownService playerAttackCooldownService,
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
 							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor,
@@ -77,6 +80,8 @@ public class ListenerRegistrar {
 		MiningListener miningListener = new MiningListener(miningService);
 		MobHitListener mobHitListener = new MobHitListener(combatService);
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
+		PlayerAttackCooldownListener playerAttackCooldownListener =
+				new PlayerAttackCooldownListener(playerAttackCooldownService);
 		MobDeathListener mobDeathListener = new MobDeathListener(mobRewardService, customMobRespawnService);
 		PlayerMenuListener playerMenuListener = new PlayerMenuListener(playerStatsService, playerStatPresentationRegistry,
 				playerStatsOverviewConfiguration, playerStatsCategoryMenuConfiguration, playerStatsBreakdownMenuConfiguration);
@@ -105,6 +110,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(miningListener,instance);
 		instance.getServer().getPluginManager().registerEvents(mobHitListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerRespawnListener, instance);
+		instance.getServer().getPluginManager().registerEvents(playerAttackCooldownListener, instance);
 		instance.getServer().getPluginManager().registerEvents(mobDeathListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerMenuListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerEquipArmorListener, instance);

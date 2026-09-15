@@ -3,9 +3,12 @@ package org.tomdang.player.stats.modifier;
 import org.junit.jupiter.api.Test;
 import org.tomdang.player.stats.PlayerStatBlock;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.stats.rule.PlayerStatRule;
+import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PlayerStatModifierCalculatorTest {
 
 	private static final double DELTA = 0.000001;
-	private final PlayerStatModifierCalculator calculator = new PlayerStatModifierCalculator();
+	private final PlayerStatModifierCalculator calculator = new PlayerStatModifierCalculator(uncappedRegistry());
 
 	@Test
 	void emptyModifiersReturnBaseValue() {
@@ -62,6 +65,25 @@ class PlayerStatModifierCalculatorTest {
 	}
 
 	@Test
+	void calculationResultRetainsRawAndEffectiveValues() {
+		PlayerStatRuleRegistry registry = uncappedRegistry(PlayerStatType.DEFENSE, OptionalDouble.of(25));
+		PlayerStatModifierCalculator cappedCalculator = new PlayerStatModifierCalculator(registry);
+		PlayerStatBlock stats = new PlayerStatBlock();
+		stats.set(PlayerStatType.DEFENSE, 10);
+
+		var result = cappedCalculator.calculateResult(
+				stats,
+				PlayerStatType.DEFENSE,
+				List.of(modifier(PlayerStatType.DEFENSE, "armor:chestplate", 30))
+		);
+
+		assertEquals(40, result.rawValue(), DELTA);
+		assertEquals(25, result.effectiveValue(), DELTA);
+		assertEquals(25, result.cap().orElseThrow(), DELTA);
+		org.junit.jupiter.api.Assertions.assertTrue(result.capped());
+	}
+
+	@Test
 	void calculationDoesNotChangeBaseStatsOrModifierCollection() {
 		PlayerStatBlock stats = new PlayerStatBlock();
 		stats.set(PlayerStatType.STRENGTH, 10);
@@ -105,5 +127,20 @@ class PlayerStatModifierCalculatorTest {
 
 	private PlayerStatModifier modifier(PlayerStatType statType, String sourceId, double amount) {
 		return new PlayerStatModifier(statType, sourceId, amount);
+	}
+
+	private static PlayerStatRuleRegistry uncappedRegistry() {
+		return uncappedRegistry(null, OptionalDouble.empty());
+	}
+
+	private static PlayerStatRuleRegistry uncappedRegistry(PlayerStatType cappedType, OptionalDouble cap) {
+		PlayerStatRuleRegistry registry = new PlayerStatRuleRegistry();
+		for (PlayerStatType statType : PlayerStatType.values()) {
+			registry.register(new PlayerStatRule(
+					statType,
+					statType == cappedType ? cap : OptionalDouble.empty()
+			));
+		}
+		return registry;
 	}
 }
