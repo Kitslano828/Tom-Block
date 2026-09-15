@@ -1,6 +1,7 @@
 stats-overview:
   title: "Your Stats"
   size: 54
+  border-material: BLACK_STAINED_GLASS_PANE
   close-button:
     material: BARRIER
     name: "Close"
@@ -12,36 +13,42 @@ stats-overview:
       color: "#FF5555"
       description: "Combat related stats"
       material: IRON_SWORD
+      border-material: RED_STAINED_GLASS_PANE
       slot: 21
     MINING:
       name: "Mining Stats"
       color: "#EDC140"
       description: "Mining related stats"
       material: DIAMOND_PICKAXE
+      border-material: YELLOW_STAINED_GLASS_PANE
       slot: 22
     FORAGING:
       name: "Foraging Stats"
       color: "#55AA00"
       description: "Foraging related stats"
       material: DIAMOND_AXE
+      border-material: GREEN_STAINED_GLASS_PANE
       slot: 23
     FISHING:
       name: "Fishing Stats"
       color: "#55FFFF"
       description: "Fishing related stats"
       material: FISHING_ROD
+      border-material: LIGHT_BLUE_STAINED_GLASS_PANE
       slot: 30
     FARMING:
       name: "Farming Stats"
       color: "#FFFF55"
       description: "Farming related stats"
       material: GOLDEN_HOE
+      border-material: YELLOW_STAINED_GLASS_PANE
       slot: 31
     UTILITY:
       name: "Utility Stats"
       color: "#B0AD0C"
       description: "General-purpose stats"
       material: CLOCK
+      border-material: YELLOW_STAINED_GLASS_PANE
       slot: 32
 
 category-menu:

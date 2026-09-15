@@ -15,6 +15,7 @@ public class PlayerStatsOverviewConfigurationLoader {
 		ConfigurationSection root = section(YamlConfiguration.loadConfiguration(reader), "stats-overview", "Root");
 		String title = text(root, "title", "Stats overview");
 		int size = integer(root, "size", "Stats overview");
+		Material borderMaterial = material(text(root, "border-material", "Stats overview"), "Stats overview");
 		ConfigurationSection close = section(root, "close-button", "Stats overview");
 		Material closeMaterial = material(text(close, "material", "Close button"), "Close button");
 		String closeName = text(close, "name", "Close button");
@@ -36,12 +37,12 @@ public class PlayerStatsOverviewConfigurationLoader {
 			if (!occupiedSlots.add(slot)) throw new IllegalArgumentException("Menu slot " + slot + " is used more than once");
 			categories.add(new PlayerStatCategoryPresentation(category, text(entry, "name", context),
 					color(text(entry, "color", context), context), text(entry, "description", context),
-					material(text(entry, "material", context), context), slot, optionalBoolean(entry, "visible", true, context)));
+					material(text(entry, "material", context), context), material(text(entry, "border-material", context), context), slot, optionalBoolean(entry, "visible", true, context)));
 		}
 		Set<PlayerStatCategory> missing = EnumSet.allOf(PlayerStatCategory.class);
 		missing.removeAll(seen);
 		if (!missing.isEmpty()) throw new IllegalArgumentException("Missing category presentations: " + missing);
-		return new PlayerStatsOverviewConfiguration(title, size, closeMaterial, closeName, closeColor, closeSlot, categories);
+		return new PlayerStatsOverviewConfiguration(title, size, borderMaterial, closeMaterial, closeName, closeColor, closeSlot, categories);
 	}
 
 	private ConfigurationSection section(ConfigurationSection parent, String key, String context) {

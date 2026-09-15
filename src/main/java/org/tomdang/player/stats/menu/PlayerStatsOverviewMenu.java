@@ -21,6 +21,7 @@ public class PlayerStatsOverviewMenu implements InventoryHolder {
 		if (configuration == null || registry == null || evaluation == null) throw new IllegalArgumentException("menu inputs cannot be null");
 		closeSlot = configuration.closeSlot();
 		inventory = Bukkit.createInventory(this, configuration.size(), Component.text(configuration.title()));
+		new StatsMenuBorderRenderer().render(inventory, configuration.borderMaterial());
 		PlayerStatMenuItemFactory factory = new PlayerStatMenuItemFactory();
 		PlayerStatCategoryMenuItemRenderer renderer = new PlayerStatCategoryMenuItemRenderer();
 		for (PlayerStatCategoryPresentation category : configuration.categories()) {

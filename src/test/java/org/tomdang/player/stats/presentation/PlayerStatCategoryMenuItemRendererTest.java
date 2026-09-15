@@ -21,7 +21,7 @@ class PlayerStatCategoryMenuItemRendererTest {
 		registry.register(stat(PlayerStatType.STRENGTH, "❁"));
 		registry.register(stat(PlayerStatType.MAX_HEALTH, "❤"));
 		PlayerStatCategoryPresentation category = new PlayerStatCategoryPresentation(PlayerStatCategory.COMBAT,
-				"Combat Stats", TextColor.color(0xFF5555), "Combat description", Material.IRON_SWORD, 21, true);
+				"Combat Stats", TextColor.color(0xFF5555), "Combat description", Material.IRON_SWORD, Material.RED_STAINED_GLASS_PANE, 21, true);
 
 		PlayerStatMenuItemDefinition result = new PlayerStatCategoryMenuItemRenderer().render(category, registry, evaluation());
 

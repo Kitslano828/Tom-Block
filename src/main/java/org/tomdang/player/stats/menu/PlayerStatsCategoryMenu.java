@@ -29,10 +29,11 @@ public class PlayerStatsCategoryMenu implements InventoryHolder {
 		backSlot = configuration.backSlot();
 		closeSlot = configuration.closeSlot();
 		inventory = Bukkit.createInventory(this, configuration.size(), Component.text(configuration.titleFor(categoryPresentation.displayName())));
+		new StatsMenuBorderRenderer().render(inventory, categoryPresentation.borderMaterial());
 		PlayerStatMenuItemFactory factory = new PlayerStatMenuItemFactory();
 		PlayerStatMenuItemRenderer renderer = new PlayerStatMenuItemRenderer();
 		List<PlayerStatPresentation> stats = registry.getVisibleByCategory(category);
-		List<Integer> slots = new CenteredStatSlotCalculator().calculate(stats.size());
+		List<Integer> slots = new BorderedMenuSlotCalculator().contentSlots(stats.size());
 		for (int index = 0; index < stats.size(); index++) {
 			PlayerStatPresentation stat = stats.get(index);
 			int slot = slots.get(index);

@@ -17,11 +17,13 @@ class PlayerStatsOverviewConfigurationLoaderTest {
 		assertAll(
 				() -> assertEquals("Your Stats", result.title()),
 				() -> assertEquals(54, result.size()),
+				() -> assertEquals(Material.BLACK_STAINED_GLASS_PANE, result.borderMaterial()),
 				() -> assertEquals(49, result.closeSlot()),
 				() -> assertEquals(Material.BARRIER, result.closeMaterial()),
 				() -> assertEquals(PlayerStatCategory.COMBAT, result.categories().getFirst().category()),
 				() -> assertEquals(PlayerStatCategory.UTILITY, result.categories().getLast().category()),
 				() -> assertEquals(21, result.categories().getFirst().slot()),
+				() -> assertEquals(Material.BLACK_STAINED_GLASS_PANE, result.categories().getFirst().borderMaterial()),
 				() -> assertTrue(result.categories().getFirst().visible())
 		);
 	}
@@ -54,6 +56,7 @@ class PlayerStatsOverviewConfigurationLoaderTest {
 				stats-overview:
 				  title: "Your Stats"
 				  size: 54
+				  border-material: BLACK_STAINED_GLASS_PANE
 				  close-button:
 				    material: BARRIER
 				    name: "Close"
@@ -80,6 +83,7 @@ class PlayerStatsOverviewConfigurationLoaderTest {
 				      color: "#FF5555"
 				      description: "%s description"
 				      material: %s
+				      border-material: BLACK_STAINED_GLASS_PANE
 				      slot: %d
 				""".formatted(name, name, material, slot);
 	}

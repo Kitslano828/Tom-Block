@@ -49,7 +49,7 @@ stat-presentations:
     visible: true
 
   ABILITY_HASTE:
-    symbol: "⧖"
+    symbol: "⏳"
     color: "#B0AD0C"
     description: "Reduces ability cooldowns."
     material: CLOCK

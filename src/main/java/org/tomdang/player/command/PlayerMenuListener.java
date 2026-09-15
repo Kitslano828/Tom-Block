@@ -76,6 +76,6 @@ public class PlayerMenuListener implements Listener {
 	}
 
 	private void openBreakdown(Player player, PlayerStatType statType) {
-		player.openInventory(new PlayerStatBreakdownMenu(statType, registry, breakdownConfiguration, statsService.evaluate(player)).getInventory());
+		player.openInventory(new PlayerStatBreakdownMenu(statType, overviewConfiguration.category(statType.getCategory()).borderMaterial(), registry, breakdownConfiguration, statsService.evaluate(player)).getInventory());
 	}
 }

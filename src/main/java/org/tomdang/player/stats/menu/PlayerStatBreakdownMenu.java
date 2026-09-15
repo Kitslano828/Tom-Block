@@ -19,15 +19,16 @@ public class PlayerStatBreakdownMenu implements InventoryHolder {
 	private final int backSlot;
 	private final int closeSlot;
 
-	public PlayerStatBreakdownMenu(PlayerStatType statType, PlayerStatPresentationRegistry registry,
+	public PlayerStatBreakdownMenu(PlayerStatType statType, org.bukkit.Material borderMaterial, PlayerStatPresentationRegistry registry,
 			PlayerStatsBreakdownMenuConfiguration configuration, PlayerStatEvaluation evaluation) {
-		if (statType == null || registry == null || configuration == null || evaluation == null) throw new IllegalArgumentException("menu inputs cannot be null");
+		if (statType == null || borderMaterial == null || registry == null || configuration == null || evaluation == null) throw new IllegalArgumentException("menu inputs cannot be null");
 		PlayerStatPresentation statPresentation = registry.get(statType);
 		PlayerStatBreakdown breakdown = evaluation.getBreakdown(statType);
 		category = statType.getCategory();
 		backSlot = configuration.backSlot();
 		closeSlot = configuration.closeSlot();
 		inventory = Bukkit.createInventory(this, configuration.size(), Component.text(configuration.titleFor(statType.getDisplayName())));
+		new StatsMenuBorderRenderer().render(inventory, borderMaterial);
 		PlayerStatMenuItemFactory factory = new PlayerStatMenuItemFactory();
 		PlayerStatBreakdownItemRenderer renderer = new PlayerStatBreakdownItemRenderer();
 		inventory.setItem(configuration.summarySlot(), factory.create(renderer.renderSummary(statPresentation, breakdown)));
