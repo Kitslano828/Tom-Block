@@ -58,5 +58,7 @@ armor:
       maxHealth: 300.0
       defense: 150.0
       ability-haste: 100.0
+    stat-cap-modifiers:
+      attack-speed: 50.0
     abilities:
       - DOUBLE_JUMP

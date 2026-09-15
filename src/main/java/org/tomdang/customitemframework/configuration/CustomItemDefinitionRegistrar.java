@@ -39,7 +39,8 @@ public class CustomItemDefinitionRegistrar {
 					definition.displayName(),
 					definition.rarity(),
 					definition.itemCategory(),
-					definition.statModifiers()
+					definition.statModifiers(),
+					definition.statCapModifiers()
 			);
 			customItemRegistry.addItemToRegistry(item);
 		}

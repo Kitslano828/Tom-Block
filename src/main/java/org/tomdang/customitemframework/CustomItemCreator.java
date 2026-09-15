@@ -9,17 +9,28 @@ import org.bukkit.persistence.PersistentDataType;
 import org.tomdang.customitemframework.lore.CustomItemLoreRenderer;
 import org.tomdang.customitemframework.lore.ItemLoreContext;
 import org.tomdang.customitemframework.stats.CustomItemStatLoreRenderer;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 import java.util.Collection;
 import java.util.List;
 
 public class CustomItemCreator {
 	private final NamespacedKey customItemIdKey;
-	private final CustomItemStatLoreRenderer statLoreRenderer = new CustomItemStatLoreRenderer();
-	private final CustomItemLoreRenderer itemLoreRenderer = new CustomItemLoreRenderer();
+	private final CustomItemStatLoreRenderer statLoreRenderer;
+	private final CustomItemLoreRenderer itemLoreRenderer;
 
 	public CustomItemCreator(NamespacedKey customItemIdKey) {
+		this(customItemIdKey, null);
+	}
+
+	public CustomItemCreator(NamespacedKey customItemIdKey, PlayerStatPresentationRegistry presentations) {
 		this.customItemIdKey = customItemIdKey;
+		statLoreRenderer = presentations == null
+				? new CustomItemStatLoreRenderer()
+				: new CustomItemStatLoreRenderer(presentations);
+		itemLoreRenderer = presentations == null
+				? new CustomItemLoreRenderer()
+				: new CustomItemLoreRenderer(presentations);
 	}
 
 	public ItemStack createItemStack(CustomItem customItem) {

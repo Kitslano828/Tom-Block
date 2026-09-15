@@ -89,7 +89,12 @@ public class TomBlock extends JavaPlugin {
 		NamespacedKey actorAudienceIDKey = new NamespacedKey(this,"actor_audience_id");
 		NamespacedKey actorSpawnPointIDKey = new NamespacedKey(this, "actor_spawn_point_id");
 
-		ItemBootStrap itemBootStrap = new ItemBootStrap(this, customItemIdKey);
+		PlayerStatPresentationBootStrap playerStatPresentationBootStrap = new PlayerStatPresentationBootStrap(this);
+		ItemBootStrap itemBootStrap = new ItemBootStrap(
+				this,
+				customItemIdKey,
+				playerStatPresentationBootStrap.getRegistry()
+		);
 
 		CustomItemRegistry customItemRegistry = itemBootStrap.getCustomItemRegistry();
 		CustomItemCreator customItemCreator = itemBootStrap.getCustomItemCreator();
@@ -97,8 +102,8 @@ public class TomBlock extends JavaPlugin {
 		CustomArmorRegistry customArmorRegistry = itemBootStrap.getCustomArmorRegistry();
 		CustomArmorResolver customArmorResolver = itemBootStrap.getCustomArmorResolver();
 		CustomArmorCreator customArmorCreator = itemBootStrap.getCustomArmorCreator();
-		WeaponCreator weaponCreator = new WeaponCreator(customItemIdKey);
-		MiningToolCreator miningToolCreator = new MiningToolCreator(customItemIdKey);
+		WeaponCreator weaponCreator = new WeaponCreator(customItemIdKey, playerStatPresentationBootStrap.getRegistry());
+		MiningToolCreator miningToolCreator = new MiningToolCreator(customItemIdKey, playerStatPresentationBootStrap.getRegistry());
 		CustomItemStackFactory customItemStackFactory = new CustomItemStackFactory(
 				customItemCreator,
 				weaponCreator,
@@ -128,7 +133,6 @@ public class TomBlock extends JavaPlugin {
 		PlayerProfileService playerProfileService = playerBootStrap.getPlayerProfileService();
 		PlayerProfileStorage playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
 		PlayerStatsService playerStatsService = playerBootStrap.getPlayerStatsService();
-		PlayerStatPresentationBootStrap playerStatPresentationBootStrap = new PlayerStatPresentationBootStrap(this);
 		PlayerResourceService playerResourceService = playerBootStrap.getPlayerResourceService();
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();

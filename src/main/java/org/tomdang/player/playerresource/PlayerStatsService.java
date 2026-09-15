@@ -16,20 +16,31 @@ import org.tomdang.player.stats.evaluation.PlayerStatBreakdown;
 import org.tomdang.player.stats.evaluation.PlayerStatContribution;
 import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
 import org.tomdang.player.stats.evaluation.PlayerStatCalculation;
+import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifier;
+import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifierProvider;
 
 public class PlayerStatsService {
 
 	private final PlayerProfileService playerProfileService;
 	private final PlayerStatModifierProvider statModifierProvider;
 	private final PlayerStatModifierCalculator playerStatModifierCalculator;
+	private final PlayerStatCapModifierProvider statCapModifierProvider;
 
 	public PlayerStatsService(PlayerProfileService playerProfileService, PlayerStatModifierProvider statModifierProvider, PlayerStatModifierCalculator playerStatModifierCalculator) {
+		this(playerProfileService, statModifierProvider, playerStatModifierCalculator, player -> List.of());
+	}
+
+	public PlayerStatsService(PlayerProfileService playerProfileService, PlayerStatModifierProvider statModifierProvider,
+	                          PlayerStatModifierCalculator playerStatModifierCalculator,
+	                          PlayerStatCapModifierProvider statCapModifierProvider) {
 		if (playerProfileService == null) throw new IllegalArgumentException("playerProfileService cannot be null");
 		if (statModifierProvider == null) throw new IllegalArgumentException("statModifierProvider cannot be null");
 		if (playerStatModifierCalculator == null) throw new IllegalArgumentException("playerStatModifierCalculator cannot be null");
+		if (statCapModifierProvider == null) throw new IllegalArgumentException("statCapModifierProvider cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.statModifierProvider = statModifierProvider;
 		this.playerStatModifierCalculator = playerStatModifierCalculator;
+		this.statCapModifierProvider = statCapModifierProvider;
 	}
 
 	public double getTotalHealthStat(Player player) {
@@ -72,15 +83,21 @@ public class PlayerStatsService {
 		if (statType == null) throw new IllegalArgumentException("statType cannot be null");
 		PlayerProfile playerProfile = requireProfile(player);
 		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
-		return playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers);
+		Collection<PlayerStatCapModifier> capModifiers = statCapModifierProvider.getModifiers(player);
+		return playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers, capModifiers);
 	}
 
 	public PlayerStatEvaluation evaluate(Player player) {
 		PlayerProfile playerProfile = requireProfile(player);
 		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
+		Collection<PlayerStatCapModifier> capModifiers = statCapModifierProvider.getModifiers(player);
 		if (modifiers == null) throw new IllegalStateException("stat modifiers cannot be null");
 		if (modifiers.stream().anyMatch(java.util.Objects::isNull)) {
 			throw new IllegalStateException("stat modifiers cannot contain null elements");
+		}
+		if (capModifiers == null) throw new IllegalStateException("stat cap modifiers cannot be null");
+		if (capModifiers.stream().anyMatch(java.util.Objects::isNull)) {
+			throw new IllegalStateException("stat cap modifiers cannot contain null elements");
 		}
 
 		EnumMap<PlayerStatType, PlayerStatBreakdown> breakdowns = new EnumMap<>(PlayerStatType.class);
@@ -98,7 +115,7 @@ public class PlayerStatsService {
 			}
 
 			PlayerStatCalculation calculation = playerStatModifierCalculator.calculateResult(
-					playerProfile.getStats(), statType, modifiers
+					playerProfile.getStats(), statType, modifiers, capModifiers
 			);
 			breakdowns.put(statType, new PlayerStatBreakdown(
 					statType,

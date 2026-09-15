@@ -6,10 +6,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.tomdang.customitemframework.CustomItemCreator;
 import org.tomdang.customitemframework.lore.ItemLoreContext;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 public class WeaponCreator extends CustomItemCreator {
 	public WeaponCreator(NamespacedKey customItemIdKey) {
 		super(customItemIdKey);
+	}
+
+	public WeaponCreator(NamespacedKey customItemIdKey, PlayerStatPresentationRegistry presentations) {
+		super(customItemIdKey, presentations);
 	}
 
 	public ItemStack createItemStack(Weapon weapon) {

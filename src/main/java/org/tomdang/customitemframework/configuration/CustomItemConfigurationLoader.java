@@ -12,6 +12,7 @@ import java.util.List;
 
 public class CustomItemConfigurationLoader {
 	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
+	private final CustomItemStatCapConfigurationLoader capLoader = new CustomItemStatCapConfigurationLoader();
 
 	public List<CustomItemDefinition> loadDefinitions(Reader reader) {
 		if (reader == null) throw new IllegalArgumentException("reader cannot be null");
@@ -43,7 +44,8 @@ public class CustomItemConfigurationLoader {
 			ItemCategory category = parseEnum(ItemCategory.class, categoryValue, id, "category");
 
 			definitions.add(new CustomItemDefinition(
-					id, material, displayName, rarity, category, statLoader.load(section, id)
+					id, material, displayName, rarity, category,
+					statLoader.load(section, id), capLoader.load(section, id)
 			));
 		}
 

@@ -6,10 +6,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.tomdang.customitemframework.CustomItemCreator;
 import org.tomdang.customitemframework.lore.ItemLoreContext;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 public class CustomArmorCreator extends CustomItemCreator {
 	public CustomArmorCreator(NamespacedKey customItemIdKey) {
 		super(customItemIdKey);
+	}
+
+	public CustomArmorCreator(NamespacedKey customItemIdKey, PlayerStatPresentationRegistry presentations) {
+		super(customItemIdKey, presentations);
 	}
 
 	public ItemStack createItemStack(CustomArmor customArmor) {

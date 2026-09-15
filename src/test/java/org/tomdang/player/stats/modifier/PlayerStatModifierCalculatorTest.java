@@ -5,6 +5,7 @@ import org.tomdang.player.stats.PlayerStatBlock;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.rule.PlayerStatRule;
 import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
+import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +82,45 @@ class PlayerStatModifierCalculatorTest {
 		assertEquals(25, result.effectiveValue(), DELTA);
 		assertEquals(25, result.cap().orElseThrow(), DELTA);
 		org.junit.jupiter.api.Assertions.assertTrue(result.capped());
+	}
+
+	@Test
+	void capModifiersRaiseAndLowerAnExistingConfiguredCap() {
+		PlayerStatRuleRegistry registry = uncappedRegistry(PlayerStatType.ATTACK_SPEED, OptionalDouble.of(250));
+		PlayerStatModifierCalculator cappedCalculator = new PlayerStatModifierCalculator(registry);
+		PlayerStatBlock stats = new PlayerStatBlock();
+		stats.set(PlayerStatType.ATTACK_SPEED, 500);
+
+		var raised = cappedCalculator.calculateResult(
+				stats, PlayerStatType.ATTACK_SPEED, List.of(),
+				List.of(new PlayerStatCapModifier(PlayerStatType.ATTACK_SPEED, "buff:swift", 50))
+		);
+		var lowered = cappedCalculator.calculateResult(
+				stats, PlayerStatType.ATTACK_SPEED, List.of(),
+				List.of(new PlayerStatCapModifier(PlayerStatType.ATTACK_SPEED, "debuff:slow", -25))
+		);
+
+		assertEquals(250, raised.configuredCap().orElseThrow(), DELTA);
+		assertEquals(300, raised.cap().orElseThrow(), DELTA);
+		assertEquals(300, raised.effectiveValue(), DELTA);
+		assertEquals(50, raised.capModifierTotal(), DELTA);
+		assertEquals(225, lowered.cap().orElseThrow(), DELTA);
+		assertEquals(225, lowered.effectiveValue(), DELTA);
+	}
+
+	@Test
+	void capModifiersDoNotCreateACapForAnUncappedStat() {
+		PlayerStatBlock stats = new PlayerStatBlock();
+		stats.set(PlayerStatType.STRENGTH, 500);
+
+		var result = calculator.calculateResult(
+				stats, PlayerStatType.STRENGTH, List.of(),
+				List.of(new PlayerStatCapModifier(PlayerStatType.STRENGTH, "buff:unused", -200))
+		);
+
+		assertEquals(500, result.effectiveValue(), DELTA);
+		org.junit.jupiter.api.Assertions.assertTrue(result.cap().isEmpty());
+		assertEquals(0, result.capModifierTotal(), DELTA);
 	}
 
 	@Test

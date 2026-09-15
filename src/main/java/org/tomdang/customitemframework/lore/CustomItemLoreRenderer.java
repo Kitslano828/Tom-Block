@@ -6,6 +6,8 @@ import org.tomdang.customabilityframework.abilitylore.AbilityLoreRenderer;
 import org.tomdang.customabilityframework.customability.CustomAbility;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.stats.CustomItemStatLoreRenderer;
+import org.tomdang.customitemframework.stats.CustomItemStatCapLoreRenderer;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,17 +18,31 @@ public class CustomItemLoreRenderer {
 
 	private final CustomItemStatLoreRenderer statLoreRenderer;
 	private final AbilityLoreRenderer abilityLoreRenderer;
+	private final CustomItemStatCapLoreRenderer capLoreRenderer;
 
 	public CustomItemLoreRenderer() {
-		this(new CustomItemStatLoreRenderer(), new AbilityLoreRenderer());
+		this(new CustomItemStatLoreRenderer(), new AbilityLoreRenderer(), new CustomItemStatCapLoreRenderer());
+	}
+
+	public CustomItemLoreRenderer(PlayerStatPresentationRegistry presentations) {
+		this(new CustomItemStatLoreRenderer(presentations), new AbilityLoreRenderer(),
+				new CustomItemStatCapLoreRenderer(presentations));
 	}
 
 	public CustomItemLoreRenderer(CustomItemStatLoreRenderer statLoreRenderer,
 	                              AbilityLoreRenderer abilityLoreRenderer) {
+		this(statLoreRenderer, abilityLoreRenderer, new CustomItemStatCapLoreRenderer());
+	}
+
+	public CustomItemLoreRenderer(CustomItemStatLoreRenderer statLoreRenderer,
+	                              AbilityLoreRenderer abilityLoreRenderer,
+	                              CustomItemStatCapLoreRenderer capLoreRenderer) {
 		if (statLoreRenderer == null) throw new IllegalArgumentException("statLoreRenderer cannot be null");
 		if (abilityLoreRenderer == null) throw new IllegalArgumentException("abilityLoreRenderer cannot be null");
+		if (capLoreRenderer == null) throw new IllegalArgumentException("capLoreRenderer cannot be null");
 		this.statLoreRenderer = statLoreRenderer;
 		this.abilityLoreRenderer = abilityLoreRenderer;
+		this.capLoreRenderer = capLoreRenderer;
 	}
 
 	public List<Component> render(CustomItem customItem) {
@@ -52,6 +68,7 @@ public class CustomItemLoreRenderer {
 
 		List<Component> lore = new ArrayList<>(leadingLore);
 		appendSection(lore, statLoreRenderer.render(customItem.getStatModifiers()));
+		appendSection(lore, capLoreRenderer.render(customItem.getStatCapModifiers()));
 
 		List<Component> abilityLore = new ArrayList<>();
 		for (CustomAbility ability : customItem.getCustomAbilities()) {

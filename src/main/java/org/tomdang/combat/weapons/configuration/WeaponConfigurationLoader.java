@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.configuration.CustomItemStatConfigurationLoader;
+import org.tomdang.customitemframework.configuration.CustomItemStatCapConfigurationLoader;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.player.stats.PlayerStatType;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class WeaponConfigurationLoader {
 
 	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
+	private final CustomItemStatCapConfigurationLoader capLoader = new CustomItemStatCapConfigurationLoader();
 
 	public List<WeaponDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -101,6 +103,7 @@ public class WeaponConfigurationLoader {
 					displayName,
 					rarity,
 					statModifiers,
+					capLoader.load(section, id),
 					abilities
 			);
 

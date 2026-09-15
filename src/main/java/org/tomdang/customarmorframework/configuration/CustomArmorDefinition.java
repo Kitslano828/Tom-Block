@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.tomdang.customarmorframework.ArmorSlot;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
 
 import java.util.List;
 
@@ -16,9 +17,17 @@ public record CustomArmorDefinition(
 		ArmorSlot armorSlot,
 		Color color,
 		CustomItemStatModifiers statModifiers,
+		CustomItemStatCapModifiers statCapModifiers,
 		List<String> abilityIDs,
 		String armorSetId
 ) {
+	public CustomArmorDefinition(String id, Material material, String displayName, Rarity rarity,
+	                             ArmorSlot armorSlot, Color color, CustomItemStatModifiers statModifiers,
+	                             List<String> abilityIDs, String armorSetId) {
+		this(id, material, displayName, rarity, armorSlot, color, statModifiers,
+				CustomItemStatCapModifiers.empty(), abilityIDs, armorSetId);
+	}
+
 	public CustomArmorDefinition {
 		abilityIDs = List.copyOf(abilityIDs);
 	}

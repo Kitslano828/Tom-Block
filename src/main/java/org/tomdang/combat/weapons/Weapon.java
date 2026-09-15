@@ -5,6 +5,7 @@ import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
 import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.Map;
@@ -28,7 +29,12 @@ public class Weapon extends CustomItem {
 
 	public Weapon(String id, Material material, String displayName, Rarity rarity, ItemCategory itemCategory,
 				  CustomItemStatModifiers statModifiers) {
-		super(id, material, displayName, rarity, itemCategory, statModifiers);
+		this(id, material, displayName, rarity, itemCategory, statModifiers, CustomItemStatCapModifiers.empty());
+	}
+
+	public Weapon(String id, Material material, String displayName, Rarity rarity, ItemCategory itemCategory,
+	              CustomItemStatModifiers statModifiers, CustomItemStatCapModifiers statCapModifiers) {
+		super(id, material, displayName, rarity, itemCategory, statModifiers, statCapModifiers);
 	}
 
 	public double getDamage() {

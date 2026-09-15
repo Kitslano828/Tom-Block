@@ -22,6 +22,9 @@ import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.modifier.CompositePlayerStatModifierProvider;
 import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
+import org.tomdang.player.stats.modifier.cap.CompositePlayerStatCapModifierProvider;
+import org.tomdang.customitemframework.stats.HeldItemStatCapModifierProvider;
+import org.tomdang.customarmorframework.stats.ArmorStatCapModifierProvider;
 
 import java.io.File;
 import java.util.List;
@@ -58,10 +61,17 @@ public class PlayerBootStrap {
 				List.of(armorStatModifierProvider, heldItemStatModifierProvider)
 		);
 		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator(statRuleRegistry);
+		CompositePlayerStatCapModifierProvider capModifierProvider = new CompositePlayerStatCapModifierProvider(
+				List.of(
+						new ArmorStatCapModifierProvider(customArmorService),
+						new HeldItemStatCapModifierProvider(customItemResolver)
+				)
+		);
 		playerStatsService = new PlayerStatsService(
 				playerProfileService,
 				statModifierProvider,
-				playerStatModifierCalculator
+				playerStatModifierCalculator,
+				capModifierProvider
 		);
 		PlayerHealthDisplayService 	playerHealthDisplayService = new PlayerHealthDisplayService(playerProfileService, playerStatsService);
 		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService, playerHealthDisplayService);

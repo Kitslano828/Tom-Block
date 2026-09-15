@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.customarmorframework.ArmorSlot;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.configuration.CustomItemStatConfigurationLoader;
+import org.tomdang.customitemframework.configuration.CustomItemStatCapConfigurationLoader;
 
 import java.io.File;
 import java.io.Reader;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CustomArmorConfigurationLoader {
 
 	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
+	private final CustomItemStatCapConfigurationLoader capLoader = new CustomItemStatCapConfigurationLoader();
 
 	public List<CustomArmorDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -49,7 +51,7 @@ public class CustomArmorConfigurationLoader {
 
 			definitions.add(new CustomArmorDefinition(
 					id, material, displayName, rarity, slot, color,
-					statLoader.load(section, id), abilityIDs, armorSetId
+					statLoader.load(section, id), capLoader.load(section, id), abilityIDs, armorSetId
 			));
 		}
 		return List.copyOf(definitions);

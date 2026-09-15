@@ -12,11 +12,20 @@ public record PlayerStatBreakdown(
 		List<PlayerStatContribution> contributions,
 		double rawValue,
 		double effectiveValue,
-		OptionalDouble cap
+		OptionalDouble configuredCap,
+		OptionalDouble cap,
+		double capModifierTotal
 ) {
 	public PlayerStatBreakdown(PlayerStatType statType, double baseValue,
 	                           List<PlayerStatContribution> contributions, double effectiveValue) {
-		this(statType, baseValue, contributions, effectiveValue, effectiveValue, OptionalDouble.empty());
+		this(statType, baseValue, contributions, effectiveValue, effectiveValue,
+				OptionalDouble.empty(), OptionalDouble.empty(), 0);
+	}
+
+	public PlayerStatBreakdown(PlayerStatType statType, double baseValue,
+	                           List<PlayerStatContribution> contributions, double rawValue,
+	                           double effectiveValue, OptionalDouble cap) {
+		this(statType, baseValue, contributions, rawValue, effectiveValue, cap, cap, 0);
 	}
 
 	public PlayerStatBreakdown(PlayerStatType statType, double baseValue,
@@ -27,7 +36,9 @@ public record PlayerStatBreakdown(
 				contributions,
 				requireMatchingCalculation(statType, calculation).rawValue(),
 				calculation.effectiveValue(),
-				calculation.cap()
+				calculation.configuredCap(),
+				calculation.cap(),
+				calculation.capModifierTotal()
 		);
 	}
 
@@ -43,10 +54,15 @@ public record PlayerStatBreakdown(
 		}
 		if (!Double.isFinite(rawValue)) throw new IllegalArgumentException("rawValue must be finite");
 		if (!Double.isFinite(effectiveValue)) throw new IllegalArgumentException("effectiveValue must be finite");
+		if (configuredCap == null) throw new IllegalArgumentException("configuredCap cannot be null");
 		if (cap == null) throw new IllegalArgumentException("cap cannot be null");
+		if (configuredCap.isPresent() && !Double.isFinite(configuredCap.getAsDouble())) {
+			throw new IllegalArgumentException("configuredCap must be finite when present");
+		}
 		if (cap.isPresent() && !Double.isFinite(cap.getAsDouble())) {
 			throw new IllegalArgumentException("cap must be finite when present");
 		}
+		if (!Double.isFinite(capModifierTotal)) throw new IllegalArgumentException("capModifierTotal must be finite");
 		contributions = List.copyOf(contributions);
 	}
 

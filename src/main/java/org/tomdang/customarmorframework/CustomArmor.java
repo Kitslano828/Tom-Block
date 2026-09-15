@@ -7,6 +7,7 @@ import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
 import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.Map;
@@ -38,7 +39,15 @@ public class CustomArmor extends CustomItem {
 	public CustomArmor(String id, Material material, String displayName, Rarity rarity,
 	                   ItemCategory itemCategory, ArmorSlot armorSlot, Color color,
 	                   CustomItemStatModifiers statModifiers, String armorSetId) {
-		super(id, material, displayName, rarity, itemCategory, statModifiers);
+		this(id, material, displayName, rarity, itemCategory, armorSlot, color,
+				statModifiers, CustomItemStatCapModifiers.empty(), armorSetId);
+	}
+
+	public CustomArmor(String id, Material material, String displayName, Rarity rarity,
+	                   ItemCategory itemCategory, ArmorSlot armorSlot, Color color,
+	                   CustomItemStatModifiers statModifiers, CustomItemStatCapModifiers statCapModifiers,
+	                   String armorSetId) {
+		super(id, material, displayName, rarity, itemCategory, statModifiers, statCapModifiers);
 		if (armorSlot == null) throw new IllegalArgumentException("armorSlot cannot be null");
 		if (color == null) throw new IllegalArgumentException("color cannot be null");
 		this.armorSlot = armorSlot;

@@ -12,6 +12,7 @@ import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.customitemframework.configuration.CustomItemConfigurationLoader;
 import org.tomdang.customitemframework.configuration.CustomItemDefinition;
 import org.tomdang.customitemframework.configuration.CustomItemDefinitionRegistrar;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,9 +35,10 @@ public class ItemBootStrap {
 	@Getter
 	private final CustomArmorResolver customArmorResolver;
 
-	public ItemBootStrap(TomBlock instance, NamespacedKey customIDKey) {
+	public ItemBootStrap(TomBlock instance, NamespacedKey customIDKey,
+	                     PlayerStatPresentationRegistry statPresentations) {
 		customItemRegistry = new CustomItemRegistry();
-		customItemCreator = new CustomItemCreator(customIDKey);
+		customItemCreator = new CustomItemCreator(customIDKey, statPresentations);
 		customItemResolver = new CustomItemResolver(customIDKey, customItemRegistry);
 
 		CustomItemConfigurationLoader configurationLoader = new CustomItemConfigurationLoader();
@@ -53,7 +55,7 @@ public class ItemBootStrap {
 		}
 		new CustomItemDefinitionRegistrar(customItemRegistry).registerDefinitions(definitions);
 
-		customArmorCreator = new CustomArmorCreator(customIDKey);
+		customArmorCreator = new CustomArmorCreator(customIDKey, statPresentations);
 		customArmorRegistry = new CustomArmorRegistry(customArmorCreator, customItemRegistry);
 		customArmorResolver = new CustomArmorResolver(customIDKey, customItemRegistry, customArmorRegistry);
 	}

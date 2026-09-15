@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.tomdang.customitemframework.CustomItemCreator;
 import org.tomdang.customitemframework.lore.ItemLoreContext;
+import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 
 import java.util.List;
 
@@ -15,6 +16,10 @@ public class MiningToolCreator extends CustomItemCreator {
 
 	public MiningToolCreator(NamespacedKey miningToolIdKey) {
 		super(miningToolIdKey);
+	}
+
+	public MiningToolCreator(NamespacedKey miningToolIdKey, PlayerStatPresentationRegistry presentations) {
+		super(miningToolIdKey, presentations);
 	}
 
 	public ItemStack createItemStack(MiningTool miningTool) {

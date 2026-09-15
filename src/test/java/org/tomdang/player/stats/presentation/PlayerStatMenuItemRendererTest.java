@@ -10,6 +10,8 @@ import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.evaluation.PlayerStatBreakdown;
 
 import java.util.List;
+import java.util.OptionalDouble;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,6 +56,48 @@ class PlayerStatMenuItemRendererTest {
 						rendered.lore().getLast()
 				)
 		);
+	}
+
+	@Test
+	void cappedStatAdvertisesItsCapAndUncappedValue() {
+		PlayerStatPresentation presentation = new PlayerStatPresentation(
+				PlayerStatType.ATTACK_SPEED, "🗲", TextColor.color(0xEBCD13),
+				"Attack rate", Material.ECHO_SHARD, true
+		);
+		PlayerStatBreakdown breakdown = new PlayerStatBreakdown(
+				PlayerStatType.ATTACK_SPEED, 100, List.of(), 300, 250, OptionalDouble.of(250)
+		);
+
+		List<String> lore = renderer.render(presentation, breakdown).lore().stream()
+				.map(PlainTextComponentSerializer.plainText()::serialize)
+				.toList();
+
+		assertEquals(List.of(
+				"Attack rate",
+				"",
+				"Stat Cap: 250",
+				"Uncapped Value: 300",
+				"CAPPED",
+				"",
+				"Click to view!"
+		), lore);
+	}
+
+	@Test
+	void configuredCapIsShownWithoutCappedWarningWhenBelowIt() {
+		PlayerStatPresentation presentation = new PlayerStatPresentation(
+				PlayerStatType.ATTACK_SPEED, "🗲", TextColor.color(0xEBCD13),
+				"Attack rate", Material.ECHO_SHARD, true
+		);
+		PlayerStatBreakdown breakdown = new PlayerStatBreakdown(
+				PlayerStatType.ATTACK_SPEED, 100, List.of(), 200, 200, OptionalDouble.of(250)
+		);
+
+		List<String> lore = renderer.render(presentation, breakdown).lore().stream()
+				.map(PlainTextComponentSerializer.plainText()::serialize)
+				.toList();
+
+		assertEquals(List.of("Attack rate", "", "Stat Cap: 250", "", "Click to view!"), lore);
 	}
 
 	@Test
