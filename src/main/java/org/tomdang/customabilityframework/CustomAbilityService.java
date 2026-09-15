@@ -1,49 +1,52 @@
 package org.tomdang.customabilityframework;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.tomdang.customabilityframework.abilitycooldown.AbilityCooldownService;
 import org.tomdang.customabilityframework.customability.AbilityExecutionContext;
 import org.tomdang.customabilityframework.customability.CustomAbility;
-import org.tomdang.customitemframework.CustomItem;
-import org.tomdang.customitemframework.CustomItemResolver;
+import org.tomdang.customabilityframework.source.AbilitySource;
+import org.tomdang.customabilityframework.source.AbilitySourceProvider;
 import org.tomdang.player.playerresource.PlayerResourceService;
 
 public class CustomAbilityService {
 
-	private final CustomItemResolver customItemResolver;
+	private final AbilitySourceProvider abilitySourceProvider;
 	private final PlayerResourceService playerResourceService;
 	private final AbilityCooldownService abilityCooldownService;
 
-	public CustomAbilityService(CustomItemResolver customItemResolver, PlayerResourceService playerResourceService,
+	public CustomAbilityService(AbilitySourceProvider abilitySourceProvider, PlayerResourceService playerResourceService,
 								AbilityCooldownService abilityCooldownService) {
-		this.customItemResolver = customItemResolver;
+		if (abilitySourceProvider == null) throw new IllegalArgumentException("abilitySourceProvider cannot be null");
+		if (playerResourceService == null) throw new IllegalArgumentException("playerResourceService cannot be null");
+		if (abilityCooldownService == null) throw new IllegalArgumentException("abilityCooldownService cannot be null");
+		this.abilitySourceProvider = abilitySourceProvider;
 		this.playerResourceService = playerResourceService;
 		this.abilityCooldownService = abilityCooldownService;
 	}
 
 	public void triggerAbility(Player player, AbilityTrigger abilityTrigger) {
-		ItemStack heldItem = player.getInventory().getItemInMainHand();
-		CustomItem customItem = customItemResolver.getCustomItem(heldItem);
+		if (player == null) throw new IllegalArgumentException("player cannot be null");
+		if (abilityTrigger == null) throw new IllegalArgumentException("abilityTrigger cannot be null");
 
-		if (customItem != null) {
-			for (CustomAbility ability : customItem.getCustomAbilities()) {
-				if (abilityTrigger == ability.getAbilityTrigger()) {
-					if (abilityCooldownService.isAbilityOnCooldown(player, ability)) {
-						player.sendMessage(ability.getAbilityName() + " is on cooldown!");
-					} else {
-						if (playerResourceService.spendEnergy(player, ability.getEnergyCost())) {
-							AbilityExecutionContext abilityExecutionContext = new AbilityExecutionContext(customItem, player);
-							abilityCooldownService.startAbilityCooldown(player, ability);
-							ability.execute(abilityExecutionContext);
-						} else {
-							player.sendMessage("You don't have enough energy to use this ability!");
-						}
-					}
-				}
+		for (AbilitySource source : abilitySourceProvider.getAbilitySources(player)) {
+			CustomAbility ability = source.ability();
+			if (abilityTrigger != ability.getAbilityTrigger()) continue;
+			AbilityExecutionContext abilityExecutionContext = new AbilityExecutionContext(source.sourceItem(), player);
+			if (!ability.canActivate(abilityExecutionContext)) continue;
+
+			if (abilityCooldownService.isAbilityOnCooldown(player, source.sourceId())) {
+				player.sendMessage(ability.getAbilityName() + " is on cooldown!");
+				continue;
 			}
-		}
 
+			if (!playerResourceService.spendEnergy(player, ability.getEnergyCost())) {
+				player.sendMessage("You don't have enough energy to use this ability!");
+				continue;
+			}
+
+			abilityCooldownService.startAbilityCooldown(player, source.sourceId(), ability.getCooldownInTicks());
+			ability.execute(abilityExecutionContext);
+		}
 	}
 
 }

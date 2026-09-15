@@ -17,6 +17,7 @@ import org.tomdang.crafting.gui.listener.ForgeDragListener;
 import org.tomdang.crafting.gui.listener.ForgeListener;
 import org.tomdang.customabilityframework.CustomAbilityService;
 import org.tomdang.customabilityframework.listener.PlayerInteractListener;
+import org.tomdang.customabilityframework.trigger.AbilityTriggerResolver;
 import org.tomdang.customarmorframework.listener.PlayerEquipArmorListener;
 import org.tomdang.custommobframework.custommobdrops.MobRewardService;
 import org.tomdang.custommobframework.custommobspawn.CustomMobRespawnService;
@@ -61,7 +62,10 @@ public class ListenerRegistrar {
 		MobDeathListener mobDeathListener = new MobDeathListener(mobRewardService, customMobRespawnService);
 		PlayerMenuListener playerMenuListener = new PlayerMenuListener();
 		PlayerEquipArmorListener playerEquipArmorListener = new PlayerEquipArmorListener(playerResourceService);
-		PlayerInteractListener playerInteractListener = new PlayerInteractListener(customAbilityService);
+		PlayerInteractListener playerInteractListener = new PlayerInteractListener(
+				customAbilityService,
+				new AbilityTriggerResolver()
+		);
 		PlayerRegainHealthListener playerRegainHealthListener = new PlayerRegainHealthListener();
 		ForgeCloseListener forgeCloseListener = new ForgeCloseListener();
 		ForgeDragListener forgeDragListener = new ForgeDragListener(instance, craftingService);

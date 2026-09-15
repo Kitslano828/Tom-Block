@@ -15,20 +15,28 @@ public class AbilityCooldownService {
 	Map<UUID, Map<String, Long>> abilityCooldownMap = new HashMap<>();
 
 	public void startAbilityCooldown(Player player, CustomAbility ability) {
-		long cooldownExpirationTick = Bukkit.getCurrentTick() + ability.getCooldownInTicks();
+		startAbilityCooldown(player, ability.getAbilityID(), ability.getCooldownInTicks());
+	}
 
-		abilityCooldownMap.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(ability.getAbilityID(), cooldownExpirationTick);
+	public void startAbilityCooldown(Player player, String sourceId, long cooldownInTicks) {
+		long cooldownExpirationTick = Bukkit.getCurrentTick() + cooldownInTicks;
+
+		abilityCooldownMap.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(sourceId, cooldownExpirationTick);
 	}
 
 	public boolean isAbilityOnCooldown(Player player, CustomAbility ability) {
+		return isAbilityOnCooldown(player, ability.getAbilityID());
+	}
+
+	public boolean isAbilityOnCooldown(Player player, String sourceId) {
 		Map<String,Long> playerAbilityCooldownMap = abilityCooldownMap.get(player.getUniqueId());
 		if (playerAbilityCooldownMap == null) return false;
 
-		Long abilityExpirationTick = playerAbilityCooldownMap.get(ability.getAbilityID());
+		Long abilityExpirationTick = playerAbilityCooldownMap.get(sourceId);
 		if (abilityExpirationTick == null) return false;
 
 		if (Bukkit.getCurrentTick() >= abilityExpirationTick) {
-			playerAbilityCooldownMap.remove(ability.getAbilityID());
+			playerAbilityCooldownMap.remove(sourceId);
 			if (playerAbilityCooldownMap.isEmpty()) abilityCooldownMap.remove(player.getUniqueId());
 			return false;
 		} else {

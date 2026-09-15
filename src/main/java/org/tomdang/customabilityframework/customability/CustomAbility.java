@@ -41,6 +41,13 @@ public abstract class CustomAbility {
 		return new ArrayList<>();
 	};
 
+	public boolean canActivate(AbilityExecutionContext abilityExecutionContext) {
+		if (abilityExecutionContext == null) {
+			throw new IllegalArgumentException("abilityExecutionContext cannot be null");
+		}
+		return true;
+	}
+
 	public abstract void execute(AbilityExecutionContext abilityExecutionContext);
 
 }

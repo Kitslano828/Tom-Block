@@ -125,11 +125,16 @@ public class TomBlock extends JavaPlugin {
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
 		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
 
-		AbilityBootStrap abilityBootStrap = new AbilityBootStrap(customItemResolver, playerResourceService);
+		AbilityBootStrap abilityBootStrap = new AbilityBootStrap(
+				customItemResolver,
+				customArmorService,
+				playerResourceService
+		);
 
 		CustomAbilityRegistry customAbilityRegistry = abilityBootStrap.getCustomAbilityRegistry();
 		ActiveAbilityService activeAbilityService = abilityBootStrap.getActiveAbilityService();
 		CustomAbilityService customAbilityService = abilityBootStrap.getCustomAbilityService();
+		new GameplayAbilityBootStrap(this, customAbilityRegistry);
 
 		actorBootStrap = new ActorBootStrap(
 				this,

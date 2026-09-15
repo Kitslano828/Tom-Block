@@ -14,6 +14,6 @@ spawn-points:
       scope: GLOBAL
     location:
       world: world
-      x: 95.5
-      y: 76
-      z: 192.5
+      x: 197.5
+      y: 73
+      z: -76.5

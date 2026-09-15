@@ -46,3 +46,16 @@ armor:
       maxHealth: 30.0
       defense: 10.0
     abilities: []
+
+  RABBIT_BOOTS:
+    material: LEATHER_BOOTS
+    display-name: "Rabbit Boots"
+    rarity: COMMON
+    slot: BOOTS
+    color: "#D3D3D3"
+    set-id: RABBIT_ARMOR
+    stats:
+      maxHealth: 300.0
+      defense: 150.0
+    abilities:
+      - DOUBLE_JUMP
