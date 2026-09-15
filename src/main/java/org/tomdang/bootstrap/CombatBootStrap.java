@@ -15,6 +15,10 @@ import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
 import org.tomdang.combat.configuration.CombatTimingConfiguration;
 import org.tomdang.combat.configuration.CombatTimingConfigurationLoader;
 import org.tomdang.combat.combatlevel.CombatLevel;
+import org.tomdang.combat.combo.ComboTimingCalculator;
+import org.tomdang.combat.combo.ComboTimingConfiguration;
+import org.tomdang.combat.combo.ComboTimingConfigurationLoader;
+import org.tomdang.combat.combo.ConsecutiveChargedHitTracker;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.combat.customcombatability.AbilityDamageService;
@@ -57,6 +61,8 @@ public class CombatBootStrap {
 	private final PlayerAttackIndicatorService playerAttackIndicatorService;
 	@Getter
 	private final PlayerCombatHitPublisher playerCombatHitPublisher;
+	@Getter
+	private final ConsecutiveChargedHitTracker consecutiveChargedHitTracker;
 
 
 	public CombatBootStrap(TomBlock instance, WeaponCreator weaponCreator,
@@ -117,6 +123,12 @@ public class CombatBootStrap {
 		);
 		playerAttackIndicatorService.start();
 		playerCombatHitPublisher = new PlayerCombatHitPublisher(instance.getLogger());
+		ComboTimingConfiguration comboTimingConfiguration = loadComboTimingConfiguration(instance);
+		consecutiveChargedHitTracker = new ConsecutiveChargedHitTracker(
+				new ComboTimingCalculator(comboTimingConfiguration),
+				Bukkit::getCurrentTick
+		);
+		playerCombatHitPublisher.register(consecutiveChargedHitTracker);
 
 		combatService = new CombatService(playerProfileService,
 				customMobResolver,
@@ -137,6 +149,19 @@ public class CombatBootStrap {
 				throw new IllegalStateException("TomBlock.jar does not contain combat.yml");
 			}
 			return new CombatTimingConfigurationLoader().load(
+					new InputStreamReader(configurationStream, StandardCharsets.UTF_8)
+			);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled combat.yml resource", exception);
+		}
+	}
+
+	private ComboTimingConfiguration loadComboTimingConfiguration(TomBlock instance) {
+		try (InputStream configurationStream = instance.getResource("combat.yml")) {
+			if (configurationStream == null) {
+				throw new IllegalStateException("TomBlock.jar does not contain combat.yml");
+			}
+			return new ComboTimingConfigurationLoader().load(
 					new InputStreamReader(configurationStream, StandardCharsets.UTF_8)
 			);
 		} catch (IOException exception) {

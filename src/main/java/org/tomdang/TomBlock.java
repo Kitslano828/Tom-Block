@@ -318,6 +318,7 @@ public class TomBlock extends JavaPlugin {
 				craftingService,
 				combatBootStrap.getPlayerAttackReadinessService(),
 				combatBootStrap.getPlayerAttackIndicatorService(),
+				combatBootStrap.getConsecutiveChargedHitTracker(),
 				actorResolver,
 				actorInteractionService,
 				actorDamageService,

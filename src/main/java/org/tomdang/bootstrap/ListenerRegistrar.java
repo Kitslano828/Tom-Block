@@ -12,8 +12,10 @@ import org.tomdang.combat.listener.MobDeathListener;
 import org.tomdang.combat.listener.MobHitListener;
 import org.tomdang.combat.listener.PlayerRespawnListener;
 import org.tomdang.combat.listener.PlayerAttackReadinessListener;
+import org.tomdang.combat.listener.PlayerCombatComboListener;
 import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
 import org.tomdang.combat.attackspeed.PlayerAttackIndicatorService;
+import org.tomdang.combat.combo.ConsecutiveChargedHitTracker;
 import org.tomdang.crafting.CraftingService;
 import org.tomdang.crafting.gui.listener.ForgeCloseListener;
 import org.tomdang.crafting.gui.listener.ForgeDragListener;
@@ -57,6 +59,7 @@ public class ListenerRegistrar {
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 	                         PlayerAttackReadinessService playerAttackReadinessService,
 	                         PlayerAttackIndicatorService playerAttackIndicatorService,
+	                         ConsecutiveChargedHitTracker consecutiveChargedHitTracker,
 							 ActorResolver actorResolver, ActorInteractionService actorInteractionService, ActorDamageService actorDamageService,
 							 DialogueSessionService dialogueSessionService, DialogueAdvanceService dialogueAdvanceService, DialogueController dialogueController,
 							 PlayerNpcLifecycleService playerNpcLifecycleService, PlayerNpcActorVisibilityService playerNpcActorVisibilityService, NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor,
@@ -84,6 +87,8 @@ public class ListenerRegistrar {
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
 		PlayerAttackReadinessListener playerAttackReadinessListener =
 				new PlayerAttackReadinessListener(playerAttackReadinessService, playerAttackIndicatorService);
+		PlayerCombatComboListener playerCombatComboListener =
+				new PlayerCombatComboListener(consecutiveChargedHitTracker);
 		MobDeathListener mobDeathListener = new MobDeathListener(mobRewardService, customMobRespawnService);
 		PlayerMenuListener playerMenuListener = new PlayerMenuListener(playerStatsService, playerStatPresentationRegistry,
 				playerStatsOverviewConfiguration, playerStatsCategoryMenuConfiguration, playerStatsBreakdownMenuConfiguration);
@@ -113,6 +118,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(mobHitListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerRespawnListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerAttackReadinessListener, instance);
+		instance.getServer().getPluginManager().registerEvents(playerCombatComboListener, instance);
 		instance.getServer().getPluginManager().registerEvents(mobDeathListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerMenuListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerEquipArmorListener, instance);

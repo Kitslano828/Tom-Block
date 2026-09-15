@@ -1,3 +1,8 @@
 combat:
   # Used by items without an override. 10 ticks = 0.5 seconds at 0 Attack Speed.
   default-basic-attack-recovery-ticks: 10
+  combo:
+    # Hit 1 receives the full grace period. Grace reaches its minimum at hit 42.
+    base-grace-ticks: 20
+    minimum-grace-ticks: 6
+    hits-to-minimum-grace: 42

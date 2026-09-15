@@ -17,14 +17,14 @@ stats-overview:
       slot: 21
     MINING:
       name: "Mining Stats"
-      color: "#EDC140"
+      color: "#82599E"
       description: "Mining related stats"
       material: DIAMOND_PICKAXE
-      border-material: YELLOW_STAINED_GLASS_PANE
+      border-material: MAGENTA_STAINED_GLASS_PANE
       slot: 22
     FORAGING:
       name: "Foraging Stats"
-      color: "#002E07"
+      color: "#2F7144"
       description: "Foraging related stats"
       material: DIAMOND_AXE
       border-material: GREEN_STAINED_GLASS_PANE
@@ -45,7 +45,7 @@ stats-overview:
       slot: 31
     UTILITY:
       name: "Utility Stats"
-      color: "#B0AD0C"
+      color: "#C44F00"
       description: "General-purpose stats"
       material: CLOCK
       border-material: YELLOW_STAINED_GLASS_PANE
