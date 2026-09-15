@@ -7,6 +7,7 @@ import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
+import org.tomdang.customitemframework.combat.CustomItemCombatProfile;
 import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.Map;
@@ -32,7 +33,14 @@ public class MiningTool extends CustomItem {
 	public MiningTool(Material material, int breakingPower, String id, Rarity rarity, String displayName,
 	                  ItemCategory itemCategory, CustomItemStatModifiers statModifiers,
 	                  CustomItemStatCapModifiers statCapModifiers) {
-		super(id, material, displayName, rarity, itemCategory, statModifiers, statCapModifiers);
+		this(material, breakingPower, id, rarity, displayName, itemCategory, statModifiers,
+				statCapModifiers, CustomItemCombatProfile.empty());
+	}
+
+	public MiningTool(Material material, int breakingPower, String id, Rarity rarity, String displayName,
+	                  ItemCategory itemCategory, CustomItemStatModifiers statModifiers,
+	                  CustomItemStatCapModifiers statCapModifiers, CustomItemCombatProfile combatProfile) {
+		super(id, material, displayName, rarity, itemCategory, statModifiers, statCapModifiers, combatProfile);
 		this.breakingPower = breakingPower;
 	}
 

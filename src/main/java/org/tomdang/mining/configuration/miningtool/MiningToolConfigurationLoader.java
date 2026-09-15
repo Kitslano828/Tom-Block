@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.configuration.CustomItemStatConfigurationLoader;
 import org.tomdang.customitemframework.configuration.CustomItemStatCapConfigurationLoader;
+import org.tomdang.customitemframework.configuration.CustomItemCombatConfigurationLoader;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.player.stats.PlayerStatType;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class MiningToolConfigurationLoader {
 	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
 	private final CustomItemStatCapConfigurationLoader capLoader = new CustomItemStatCapConfigurationLoader();
+	private final CustomItemCombatConfigurationLoader combatLoader = new CustomItemCombatConfigurationLoader();
 
 	public List<MiningToolDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -108,6 +110,7 @@ public class MiningToolConfigurationLoader {
 					breakingPower,
 					statModifiers,
 					capLoader.load(section, id),
+					combatLoader.load(section, id),
 					abilities
 			);
 

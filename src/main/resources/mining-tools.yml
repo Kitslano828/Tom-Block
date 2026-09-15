@@ -65,6 +65,9 @@ mining-tools:
     display-name: "Divan's Drill"
     rarity: MYTHIC
     breaking-power: 15
+    weapon-class: HEAVY
+    damage-type: BLUNT
+    base-recovery-ticks: 40
     stats:
       damage: 500.0
       mining-speed: 2500.0

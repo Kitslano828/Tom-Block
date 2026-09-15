@@ -50,7 +50,8 @@ public class CustomArmorDefinitionRegistrar {
 			CustomArmor armor = new CustomArmor(
 					definition.id(), definition.material(), definition.displayName(), definition.rarity(),
 					ItemCategory.ARMOR, definition.armorSlot(), definition.color(),
-					definition.statModifiers(), definition.statCapModifiers(), definition.armorSetId()
+					definition.statModifiers(), definition.statCapModifiers(), definition.combatProfile(),
+					definition.armorSetId()
 			);
 			for (String abilityID : definition.abilityIDs()) {
 				CustomAbility ability = abilityRegistry.getCustomAbility(abilityID);

@@ -14,7 +14,7 @@ public class CombatTimingConfigurationLoader {
 		ConfigurationSection combat = configuration.getConfigurationSection("combat");
 		if (combat == null) throw new IllegalArgumentException("combat.yml does not contain the required combat section");
 
-		String path = "default-basic-attack-cooldown-ticks";
+		String path = "default-basic-attack-recovery-ticks";
 		if (!combat.isInt(path) && !combat.isLong(path)) {
 			throw new IllegalArgumentException(path + " must be a whole number of ticks");
 		}

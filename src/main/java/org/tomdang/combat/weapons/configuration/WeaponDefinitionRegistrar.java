@@ -40,7 +40,8 @@ public class WeaponDefinitionRegistrar {
 
 		for (WeaponDefinition definition : definitions) {
 			Weapon weapon = new Weapon(definition.id(), definition.material(), definition.displayName(),
-					definition.rarity(), ItemCategory.WEAPON, definition.statModifiers(), definition.statCapModifiers());
+					definition.rarity(), ItemCategory.WEAPON, definition.statModifiers(), definition.statCapModifiers(),
+					definition.combatProfile());
 			for (String abilityID : definition.abilityIDs()) {
 				CustomAbility ability = customAbilityRegistry.getCustomAbility(abilityID);
 				weapon.addAbility(ability);

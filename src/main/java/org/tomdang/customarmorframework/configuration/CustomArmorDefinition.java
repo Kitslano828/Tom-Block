@@ -6,6 +6,7 @@ import org.tomdang.customarmorframework.ArmorSlot;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
+import org.tomdang.customitemframework.combat.CustomItemCombatProfile;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public record CustomArmorDefinition(
 		Color color,
 		CustomItemStatModifiers statModifiers,
 		CustomItemStatCapModifiers statCapModifiers,
+		CustomItemCombatProfile combatProfile,
 		List<String> abilityIDs,
 		String armorSetId
 ) {
@@ -25,7 +27,7 @@ public record CustomArmorDefinition(
 	                             ArmorSlot armorSlot, Color color, CustomItemStatModifiers statModifiers,
 	                             List<String> abilityIDs, String armorSetId) {
 		this(id, material, displayName, rarity, armorSlot, color, statModifiers,
-				CustomItemStatCapModifiers.empty(), abilityIDs, armorSetId);
+				CustomItemStatCapModifiers.empty(), CustomItemCombatProfile.empty(), abilityIDs, armorSetId);
 	}
 
 	public CustomArmorDefinition {

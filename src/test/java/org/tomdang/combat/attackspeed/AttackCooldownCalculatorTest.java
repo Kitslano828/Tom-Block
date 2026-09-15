@@ -7,29 +7,28 @@ import java.util.OptionalLong;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class AttackCooldownCalculatorTest {
+class AttackRecoveryCalculatorTest {
 
-	private final AttackCooldownCalculator calculator = new AttackCooldownCalculator();
+	private final AttackRecoveryCalculator calculator = new AttackRecoveryCalculator();
 
 	@Test
-	void oneHundredAttackSpeedKeepsTheBaseCooldown() {
-		assertEquals(OptionalLong.of(20), calculator.calculate(20, 100));
+	void zeroAttackSpeedKeepsTheBaseRecovery() {
+		assertEquals(OptionalLong.of(20), calculator.calculate(20, 0));
 	}
 
 	@Test
-	void attackSpeedScalesCooldownInBothDirections() {
+	void attackSpeedProvidesOnePercentRecoveryRatePerTenPoints() {
 		assertAll(
-				() -> assertEquals(OptionalLong.of(40), calculator.calculate(20, 50)),
-				() -> assertEquals(OptionalLong.of(10), calculator.calculate(20, 200)),
-				() -> assertEquals(OptionalLong.of(8), calculator.calculate(20, 250))
+				() -> assertEquals(OptionalLong.of(20), calculator.calculate(20, 0)),
+				() -> assertEquals(OptionalLong.of(19), calculator.calculate(20, 100)),
+				() -> assertEquals(OptionalLong.of(16), calculator.calculate(20, 250))
 		);
 	}
 
 	@Test
 	void fractionalResultsRoundUpToAvoidAttackingTooEarly() {
-		assertEquals(OptionalLong.of(14), calculator.calculate(20, 150));
+		assertEquals(OptionalLong.of(18), calculator.calculate(20, 150));
 	}
 
 	@Test
@@ -38,23 +37,17 @@ class AttackCooldownCalculatorTest {
 	}
 
 	@Test
-	void zeroAttackSpeedMeansAttacksAreUnavailable() {
-		assertTrue(calculator.calculate(20, 0).isEmpty());
-	}
-
-	@Test
 	void zeroBaseCooldownRemainsZeroWhenAttacksAreAvailable() {
-		assertEquals(OptionalLong.of(0), calculator.calculate(0, 100));
+		assertEquals(OptionalLong.of(0), calculator.calculate(0, 0));
 	}
 
 	@Test
-	void rejectsInvalidInputsAndOverflow() {
+	void rejectsInvalidInputs() {
 		assertAll(
 				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(-1, 100)),
 				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(20, -1)),
 				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(20, Double.NaN)),
-				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(20, Double.POSITIVE_INFINITY)),
-				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(Long.MAX_VALUE, 0.1))
+				() -> assertThrows(IllegalArgumentException.class, () -> calculator.calculate(20, Double.POSITIVE_INFINITY))
 		);
 	}
 }

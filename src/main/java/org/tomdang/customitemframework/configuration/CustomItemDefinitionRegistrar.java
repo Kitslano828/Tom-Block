@@ -40,7 +40,8 @@ public class CustomItemDefinitionRegistrar {
 					definition.rarity(),
 					definition.itemCategory(),
 					definition.statModifiers(),
-					definition.statCapModifiers()
+					definition.statCapModifiers(),
+					definition.combatProfile()
 			);
 			customItemRegistry.addItemToRegistry(item);
 		}

@@ -6,8 +6,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.tomdang.TomBlock;
 import org.tomdang.combat.CombatService;
 import org.bukkit.Bukkit;
-import org.tomdang.combat.attackspeed.AttackCooldownCalculator;
-import org.tomdang.combat.attackspeed.PlayerAttackCooldownService;
+import org.tomdang.combat.attackspeed.AttackReadinessCalculator;
+import org.tomdang.combat.attackspeed.AttackReadinessDamageScaler;
+import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
+import org.tomdang.combat.attackspeed.PlayerAttackIndicatorService;
+import org.tomdang.combat.attackspeed.AttackRecoveryCalculator;
+import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
 import org.tomdang.combat.configuration.CombatTimingConfiguration;
 import org.tomdang.combat.configuration.CombatTimingConfigurationLoader;
 import org.tomdang.combat.combatlevel.CombatLevel;
@@ -23,6 +27,7 @@ import org.tomdang.combat.weapons.configuration.WeaponDefinitionRegistrar;
 import org.tomdang.customabilityframework.AbilityTrigger;
 import org.tomdang.customabilityframework.CustomAbilityRegistry;
 import org.tomdang.customitemframework.CustomItemRegistry;
+import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
 import org.tomdang.player.PlayerProfileService;
@@ -46,11 +51,14 @@ public class CombatBootStrap {
 	@Getter
 	private final WeaponCreator weaponCreator;
 	@Getter
-	private final PlayerAttackCooldownService playerAttackCooldownService;
+	private final PlayerAttackReadinessService playerAttackReadinessService;
+	@Getter
+	private final PlayerAttackIndicatorService playerAttackIndicatorService;
 
 
 	public CombatBootStrap(TomBlock instance, WeaponCreator weaponCreator,
-						   CustomItemRegistry customItemRegistry, CustomAbilityRegistry customAbilityRegistry,
+						   CustomItemRegistry customItemRegistry, CustomItemResolver customItemResolver,
+						   CustomAbilityRegistry customAbilityRegistry,
 						   PlayerProfileService playerProfileService, PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 						   CustomMobResolver customMobResolver, CustomMobHealthService customMobHealthService
 	) {
@@ -92,10 +100,19 @@ public class CombatBootStrap {
 		);
 		weaponDefinitionRegistrar.registerWeaponDefinitions(weaponDefinitions);
 		CombatTimingConfiguration timingConfiguration = loadTimingConfiguration(instance);
-		playerAttackCooldownService = new PlayerAttackCooldownService(
-				new AttackCooldownCalculator(),
+		HeldItemCombatResolver heldItemCombatResolver = new HeldItemCombatResolver(
+				customItemResolver, timingConfiguration);
+		playerAttackReadinessService = new PlayerAttackReadinessService(
+				new AttackReadinessCalculator(),
 				Bukkit::getCurrentTick
 		);
+		playerAttackIndicatorService = new PlayerAttackIndicatorService(
+				instance,
+				heldItemCombatResolver,
+				playerStatsService,
+				new AttackRecoveryCalculator()
+		);
+		playerAttackIndicatorService.start();
 
 		combatService = new CombatService(playerProfileService,
 				customMobResolver,
@@ -103,8 +120,9 @@ public class CombatBootStrap {
 				playerResourceService,
 				customMobHealthService,
 				new PlayerDamageCalculator(),
-				playerAttackCooldownService,
-				timingConfiguration
+				playerAttackReadinessService,
+				new AttackReadinessDamageScaler(),
+				heldItemCombatResolver
 		);
 	}
 

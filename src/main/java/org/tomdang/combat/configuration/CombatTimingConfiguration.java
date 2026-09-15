@@ -1,9 +1,9 @@
 package org.tomdang.combat.configuration;
 
-public record CombatTimingConfiguration(long defaultBasicAttackCooldownTicks) {
+public record CombatTimingConfiguration(long defaultBasicAttackRecoveryTicks) {
 	public CombatTimingConfiguration {
-		if (defaultBasicAttackCooldownTicks < 0) {
-			throw new IllegalArgumentException("defaultBasicAttackCooldownTicks cannot be negative");
+		if (defaultBasicAttackRecoveryTicks < 0) {
+			throw new IllegalArgumentException("defaultBasicAttackRecoveryTicks cannot be negative");
 		}
 	}
 }

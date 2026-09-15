@@ -69,6 +69,7 @@ public class TomBlock extends JavaPlugin {
 
 
 	private PlayerBootStrap playerBootStrap;
+	private CombatBootStrap combatBootStrap;
 	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
 	private ActorBootStrap actorBootStrap;
 
@@ -192,10 +193,11 @@ public class TomBlock extends JavaPlugin {
 		);
 		blacksmithContent.register();
 
-		CombatBootStrap combatBootStrap = new CombatBootStrap(
+		combatBootStrap = new CombatBootStrap(
 				this,
 				weaponCreator,
 				customItemRegistry,
+				customItemResolver,
 				customAbilityRegistry,
 				playerProfileService,
 				playerStatsService,
@@ -314,7 +316,8 @@ public class TomBlock extends JavaPlugin {
 				combatBootStrap.getCombatService(),
 				mobBootStrap.getCustomMobRespawnService(),
 				craftingService,
-				combatBootStrap.getPlayerAttackCooldownService(),
+				combatBootStrap.getPlayerAttackReadinessService(),
+				combatBootStrap.getPlayerAttackIndicatorService(),
 				actorResolver,
 				actorInteractionService,
 				actorDamageService,
@@ -341,6 +344,9 @@ public class TomBlock extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		if (combatBootStrap != null) {
+			combatBootStrap.getPlayerAttackIndicatorService().stop();
+		}
 		if (nmsPlayerNpcInteractionInterceptor != null) {
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				nmsPlayerNpcInteractionInterceptor.remove(player);

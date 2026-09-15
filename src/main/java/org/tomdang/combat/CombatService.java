@@ -13,18 +13,22 @@ import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.damage.CriticalHitRoller;
 import org.tomdang.combat.damage.RandomCriticalHitRoller;
 import org.tomdang.combat.damage.PlayerAttackResult;
-import org.tomdang.combat.attackspeed.PlayerAttackCooldownResult;
-import org.tomdang.combat.attackspeed.PlayerAttackCooldownService;
-import org.tomdang.combat.configuration.CombatTimingConfiguration;
+import org.tomdang.combat.attackspeed.AttackReadinessCalculation;
+import org.tomdang.combat.attackspeed.AttackReadinessDamageScaler;
+import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
+import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
+import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.PlayerStatValueFormatter;
 import org.tomdang.player.stats.PlayerStatType;
+
+import java.util.Optional;
 
 public class CombatService {
 
@@ -35,28 +39,33 @@ public class CombatService {
 	private final CustomMobHealthService customMobHealthService;
 	private final PlayerDamageCalculator playerDamageCalculator;
 	private final CriticalHitRoller criticalHitRoller;
-	private final PlayerAttackCooldownService attackCooldownService;
-	private final CombatTimingConfiguration timingConfiguration;
+	private final PlayerAttackReadinessService attackReadinessService;
+	private final AttackReadinessDamageScaler readinessDamageScaler;
+	private final HeldItemCombatResolver heldItemCombatResolver;
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
-	                     PlayerAttackCooldownService attackCooldownService, CombatTimingConfiguration timingConfiguration
+	                     PlayerAttackReadinessService attackReadinessService,
+	                     AttackReadinessDamageScaler readinessDamageScaler,
+	                     HeldItemCombatResolver heldItemCombatResolver
 	) {
 		this(playerProfileService, customMobResolver, playerStatsService, playerResourceService,
 				customMobHealthService, playerDamageCalculator, new RandomCriticalHitRoller(),
-				attackCooldownService, timingConfiguration);
+				attackReadinessService, readinessDamageScaler, heldItemCombatResolver);
 	}
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
 	                     PlayerStatsService playerStatsService, PlayerResourceService playerResourceService,
 	                     CustomMobHealthService customMobHealthService, PlayerDamageCalculator playerDamageCalculator,
-	                     CriticalHitRoller criticalHitRoller, PlayerAttackCooldownService attackCooldownService,
-	                     CombatTimingConfiguration timingConfiguration) {
+	                     CriticalHitRoller criticalHitRoller, PlayerAttackReadinessService attackReadinessService,
+	                     AttackReadinessDamageScaler readinessDamageScaler,
+	                     HeldItemCombatResolver heldItemCombatResolver) {
 		if (playerDamageCalculator == null) throw new IllegalArgumentException("playerDamageCalculator cannot be null");
 		if (criticalHitRoller == null) throw new IllegalArgumentException("criticalHitRoller cannot be null");
-		if (attackCooldownService == null) throw new IllegalArgumentException("attackCooldownService cannot be null");
-		if (timingConfiguration == null) throw new IllegalArgumentException("timingConfiguration cannot be null");
+		if (attackReadinessService == null) throw new IllegalArgumentException("attackReadinessService cannot be null");
+		if (readinessDamageScaler == null) throw new IllegalArgumentException("readinessDamageScaler cannot be null");
+		if (heldItemCombatResolver == null) throw new IllegalArgumentException("heldItemCombatResolver cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.customMobResolver = customMobResolver;
 		this.playerStatsService = playerStatsService;
@@ -64,8 +73,9 @@ public class CombatService {
 		this.customMobHealthService = customMobHealthService;
 		this.playerDamageCalculator = playerDamageCalculator;
 		this.criticalHitRoller = criticalHitRoller;
-		this.attackCooldownService = attackCooldownService;
-		this.timingConfiguration = timingConfiguration;
+		this.attackReadinessService = attackReadinessService;
+		this.readinessDamageScaler = readinessDamageScaler;
+		this.heldItemCombatResolver = heldItemCombatResolver;
 	}
 
 	public void onMobHit(EntityDamageByEntityEvent event) {
@@ -92,17 +102,34 @@ public class CombatService {
 		}
 
 		event.setCancelled(true);
-		PlayerAttackCooldownResult cooldownResult = attackCooldownService.tryStart(
-				player.getUniqueId(),
-				timingConfiguration.defaultBasicAttackCooldownTicks(),
-				playerStatsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED)
-		);
-		if (cooldownResult != PlayerAttackCooldownResult.STARTED) return;
+		PlayerCombatHitContext context = createHitContext(player, (LivingEntity) event.getEntity());
+		customMobHealthService.damageMob(player, context.target(), context.damage());
+		String prefix = context.critical() ? "CRITICAL HIT! " : "";
+		event.getDamager().sendMessage(prefix + "YOU DEALT "
+				+ PlayerStatValueFormatter.format(context.damage()) + " DAMAGE!");
+	}
 
-		PlayerAttackResult result = attackResult(player);
-		customMobHealthService.damageMob(player, (LivingEntity) event.getEntity(), result.damage());
-		String prefix = result.critical() ? "CRITICAL HIT! " : "";
-		event.getDamager().sendMessage(prefix + "YOU DEALT " + PlayerStatValueFormatter.format(result.damage()) + " DAMAGE!");
+	public PlayerCombatHitContext createHitContext(Player player, LivingEntity target) {
+		if (player == null) throw new IllegalArgumentException("player cannot be null");
+		if (target == null) throw new IllegalArgumentException("target cannot be null");
+		CustomItem heldItem = heldItemCombatResolver.resolve(player);
+		long baseRecoveryTicks = heldItemCombatResolver.resolveBaseRecoveryTicks(heldItem);
+		AttackReadinessCalculation readiness = attackReadinessService.consume(
+				player.getUniqueId(), baseRecoveryTicks,
+				playerStatsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED));
+		PlayerAttackResult fullAttack = attackResult(player);
+		double scaledDamage = readinessDamageScaler.scale(fullAttack.damage(), readiness.readiness());
+		return new PlayerCombatHitContext(
+				player,
+				target,
+				Optional.ofNullable(heldItem),
+				heldItem == null ? Optional.empty() : heldItem.getCombatProfile().weightClass(),
+				heldItem == null ? Optional.empty() : heldItem.getCombatProfile().damageType(),
+				readiness,
+				fullAttack.damage(),
+				scaledDamage,
+				fullAttack.critical()
+		);
 	}
 
 	public double finalDamage(Player player) {

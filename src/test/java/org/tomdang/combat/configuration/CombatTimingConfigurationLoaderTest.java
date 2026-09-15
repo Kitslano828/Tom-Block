@@ -12,13 +12,13 @@ class CombatTimingConfigurationLoaderTest {
 	private final CombatTimingConfigurationLoader loader = new CombatTimingConfigurationLoader();
 
 	@Test
-	void loadsDefaultBasicAttackCooldown() {
+	void loadsDefaultBasicAttackRecovery() {
 		CombatTimingConfiguration configuration = loader.load(new StringReader("""
 				combat:
-				  default-basic-attack-cooldown-ticks: 10
+				  default-basic-attack-recovery-ticks: 10
 				"""));
 
-		assertEquals(10, configuration.defaultBasicAttackCooldownTicks());
+		assertEquals(10, configuration.defaultBasicAttackRecoveryTicks());
 	}
 
 	@Test
@@ -28,11 +28,11 @@ class CombatTimingConfigurationLoaderTest {
 		assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader("combat: {}")));
 		assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader("""
 				combat:
-				  default-basic-attack-cooldown-ticks: 1.5
+				  default-basic-attack-recovery-ticks: 1.5
 				""")));
 		assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader("""
 				combat:
-				  default-basic-attack-cooldown-ticks: -1
+				  default-basic-attack-recovery-ticks: -1
 				""")));
 	}
 }

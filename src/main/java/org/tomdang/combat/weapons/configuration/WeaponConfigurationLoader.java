@@ -8,6 +8,8 @@ import org.tomdang.customitemframework.configuration.CustomItemStatConfiguration
 import org.tomdang.customitemframework.configuration.CustomItemStatCapConfigurationLoader;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.customitemframework.configuration.CustomItemCombatConfigurationLoader;
+import org.tomdang.customitemframework.combat.CustomItemCombatProfile;
 
 import java.io.File;
 import java.io.Reader;
@@ -19,6 +21,7 @@ public class WeaponConfigurationLoader {
 
 	private final CustomItemStatConfigurationLoader statLoader = new CustomItemStatConfigurationLoader();
 	private final CustomItemStatCapConfigurationLoader capLoader = new CustomItemStatCapConfigurationLoader();
+	private final CustomItemCombatConfigurationLoader combatLoader = new CustomItemCombatConfigurationLoader();
 
 	public List<WeaponDefinition> loadDefinitions(File file) {
 		if (file == null) throw new IllegalArgumentException("file cannot be null");
@@ -96,6 +99,11 @@ public class WeaponConfigurationLoader {
 				throw new IllegalArgumentException("Item " + id + " has an invalid rarity " + rarityStr);
 			}
 
+			CustomItemCombatProfile combatProfile = combatLoader.load(section, id);
+			if (combatProfile.weightClass().isEmpty() || combatProfile.baseRecoveryTicks().isEmpty()) {
+				throw new IllegalArgumentException(id + " must configure weapon combat metadata and base-recovery-ticks");
+			}
+
 			// Create a WeaponDefinition
 			WeaponDefinition definition = new WeaponDefinition(
 					id,
@@ -104,6 +112,7 @@ public class WeaponConfigurationLoader {
 					rarity,
 					statModifiers,
 					capLoader.load(section, id),
+					combatProfile,
 					abilities
 			);
 
@@ -113,6 +122,7 @@ public class WeaponConfigurationLoader {
 
 		return definitions;
 	}
+
 
 	private CustomItemStatModifiers loadLegacyStats(ConfigurationSection section, String id) {
 		EnumMap<PlayerStatType, Double> stats = new EnumMap<>(PlayerStatType.class);

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.customitemframework.combat.CombatWeightClass;
+import org.tomdang.customitemframework.combat.CombatDamageType;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +34,9 @@ class WeaponConfigurationLoaderTest {
 				    material: IRON_SWORD
 				    display-name: "Test Weapon"
 				    rarity: COMMON
+				    weapon-class: HEAVY
+				    damage-type: BLUNT
+				    base-recovery-ticks: 30
 				    stats:
 				      damage: 10.0
 				      strength: 2.0
@@ -44,6 +49,9 @@ class WeaponConfigurationLoaderTest {
 		assertEquals("Test Weapon", definition.displayName());
 		assertEquals(10, definition.statModifiers().get(PlayerStatType.DAMAGE));
 		assertEquals(4, definition.statModifiers().get(PlayerStatType.MINING_FORTUNE));
+		assertEquals(CombatWeightClass.HEAVY, definition.weaponClass());
+		assertEquals(CombatDamageType.BLUNT, definition.damageType());
+		assertEquals(30, definition.baseRecoveryTicks());
 	}
 
 	@Test
@@ -54,6 +62,9 @@ class WeaponConfigurationLoaderTest {
 				    material: IRON_SWORD
 				    display-name: "Rookie Sword"
 				    rarity: COMMON
+				    weapon-class: MEDIUM
+				    damage-type: SLASHING
+				    base-recovery-ticks: 16
 				    damage: 17.0
 				    strength: 5.0
 				    abilities: []
@@ -61,6 +72,9 @@ class WeaponConfigurationLoaderTest {
 				    material: STICK
 				    display-name: "Practice Wand"
 				    rarity: RARE
+				    weapon-class: LIGHT
+				    damage-type: MAGIC
+				    base-recovery-ticks: 20
 				    damage: 5.0
 				    strength: 5.0
 				    abilities:
@@ -69,6 +83,9 @@ class WeaponConfigurationLoaderTest {
 				    material: DIAMOND_SWORD
 				    display-name: "Wind Blade"
 				    rarity: EPIC
+				    weapon-class: LIGHT
+				    damage-type: SLASHING
+				    base-recovery-ticks: 12
 				    damage: 100.0
 				    strength: 100.0
 				    abilities:
@@ -85,6 +102,9 @@ class WeaponConfigurationLoaderTest {
 		assertEquals(Rarity.COMMON, rookieSword.rarity());
 		assertEquals(17.0, rookieSword.damage());
 		assertEquals(5.0, rookieSword.strength());
+		assertEquals(CombatWeightClass.MEDIUM, rookieSword.weaponClass());
+		assertEquals(CombatDamageType.SLASHING, rookieSword.damageType());
+		assertEquals(16, rookieSword.baseRecoveryTicks());
 		assertTrue(rookieSword.abilityIDs().isEmpty());
 
 		WeaponDefinition practiceWand = findDefinition(definitions, "PRACTICE_WAND");
@@ -218,6 +238,14 @@ class WeaponConfigurationLoaderTest {
 		);
 	}
 
+	@Test
+	void invalidCombatMetadataIsRejected() throws IOException {
+		assertInvalidWeapon(validWeaponBody().replace("MEDIUM", "QUICKISH"), "weapon-class");
+		assertInvalidWeapon(validWeaponBody().replace("SLASHING", "LASER"), "damage-type");
+		assertInvalidWeapon(validWeaponBody().replace("base-recovery-ticks: 20", "base-recovery-ticks: 0"),
+				"base-recovery-ticks");
+	}
+
 	private void assertInvalidWeapon(String weaponBody, String expectedMessagePart) throws IOException {
 		File file = writeConfiguration("weapons:\n  TEST_WEAPON:\n" + indent(weaponBody, 4));
 
@@ -251,6 +279,9 @@ class WeaponConfigurationLoaderTest {
 				material: IRON_SWORD
 				display-name: "Test Sword"
 				rarity: COMMON
+				weapon-class: MEDIUM
+				damage-type: SLASHING
+				base-recovery-ticks: 20
 				damage: 10.0
 				strength: 2.0
 				abilities: []

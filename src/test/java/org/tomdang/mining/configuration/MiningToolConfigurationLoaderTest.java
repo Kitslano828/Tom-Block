@@ -6,6 +6,8 @@ import org.tomdang.customitemframework.Rarity;
 import org.tomdang.mining.configuration.miningtool.MiningToolConfigurationLoader;
 import org.tomdang.mining.configuration.miningtool.MiningToolDefinition;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.customitemframework.combat.CombatWeightClass;
+import org.tomdang.customitemframework.combat.CombatDamageType;
 
 import java.io.StringReader;
 import java.util.List;
@@ -27,6 +29,9 @@ class MiningToolConfigurationLoaderTest {
 				    display-name: "Test Pickaxe"
 				    rarity: RARE
 				    breaking-power: 3
+				    weapon-class: HEAVY
+				    damage-type: BLUNT
+				    base-recovery-ticks: 40
 				    stats:
 				      mining-speed: 60.5
 				      mining-fortune: 8.5
@@ -45,6 +50,9 @@ class MiningToolConfigurationLoaderTest {
 		assertEquals(60.5, definition.miningSpeed());
 		assertEquals(8.5, definition.fortune());
 		assertEquals(2.5, definition.statModifiers().get(PlayerStatType.STRENGTH));
+		assertEquals(CombatWeightClass.HEAVY, definition.combatProfile().weightClass().orElseThrow());
+		assertEquals(CombatDamageType.BLUNT, definition.combatProfile().damageType().orElseThrow());
+		assertEquals(40, definition.combatProfile().baseRecoveryTicks().orElseThrow());
 		assertEquals(List.of("MINING_SPREAD_ABILITY"), definition.abilityIDs());
 	}
 
