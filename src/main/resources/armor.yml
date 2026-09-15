@@ -1,0 +1,48 @@
+armor:
+  LAPIS_HELMET:
+    material: LEATHER_HELMET
+    display-name: "Lapis Helmet"
+    rarity: COMMON
+    slot: HELMET
+    color: "#33B8DE"
+    set-id: LAPIS_ARMOR
+    stats:
+      maxHealth: 30.0
+      defense: 10.0
+    abilities: []
+
+  LAPIS_CHESTPLATE:
+    material: LEATHER_CHESTPLATE
+    display-name: "Lapis Chestplate"
+    rarity: COMMON
+    slot: CHESTPLATE
+    color: "#33B8DE"
+    set-id: LAPIS_ARMOR
+    stats:
+      maxHealth: 30.0
+      defense: 10.0
+    abilities: []
+
+  LAPIS_LEGGINGS:
+    material: LEATHER_LEGGINGS
+    display-name: "Lapis Leggings"
+    rarity: COMMON
+    slot: LEGGINGS
+    color: "#33B8DE"
+    set-id: LAPIS_ARMOR
+    stats:
+      maxHealth: 30.0
+      defense: 10.0
+    abilities: []
+
+  LAPIS_BOOTS:
+    material: LEATHER_BOOTS
+    display-name: "Lapis Boots"
+    rarity: COMMON
+    slot: BOOTS
+    color: "#33B8DE"
+    set-id: LAPIS_ARMOR
+    stats:
+      maxHealth: 30.0
+      defense: 10.0
+    abilities: []

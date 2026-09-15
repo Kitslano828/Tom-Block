@@ -17,6 +17,8 @@ public class CustomArmor extends CustomItem {
 	private final ArmorSlot armorSlot;
 	@Getter
 	private final Color color;
+	@Getter
+	private final String armorSetId;
 
 	public CustomArmor(String id, Material material, String displayName, Rarity rarity,
 					   ItemCategory itemCategory, ArmorSlot armorSlot, double health, double defense, Color color) {
@@ -30,11 +32,18 @@ public class CustomArmor extends CustomItem {
 	public CustomArmor(String id, Material material, String displayName, Rarity rarity,
 	                   ItemCategory itemCategory, ArmorSlot armorSlot, Color color,
 	                   CustomItemStatModifiers statModifiers) {
+		this(id, material, displayName, rarity, itemCategory, armorSlot, color, statModifiers, null);
+	}
+
+	public CustomArmor(String id, Material material, String displayName, Rarity rarity,
+	                   ItemCategory itemCategory, ArmorSlot armorSlot, Color color,
+	                   CustomItemStatModifiers statModifiers, String armorSetId) {
 		super(id, material, displayName, rarity, itemCategory, statModifiers);
 		if (armorSlot == null) throw new IllegalArgumentException("armorSlot cannot be null");
 		if (color == null) throw new IllegalArgumentException("color cannot be null");
 		this.armorSlot = armorSlot;
 		this.color = color;
+		this.armorSetId = normalizeOptionalId(armorSetId);
 	}
 
 	public double getHealth() {
@@ -43,5 +52,11 @@ public class CustomArmor extends CustomItem {
 
 	public double getDefense() {
 		return getStatModifiers().get(PlayerStatType.DEFENSE);
+	}
+
+	private String normalizeOptionalId(String value) {
+		if (value == null) return null;
+		String normalized = value.trim();
+		return normalized.isEmpty() ? null : normalized;
 	}
 }

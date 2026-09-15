@@ -21,16 +21,12 @@ public class CustomArmorRegistry {
 	private final CustomItemRegistry customItemRegistry;
 	@Getter
 	private final Map<String, CustomArmor> customArmorMap = new HashMap<>();
-	ItemCategory customArmorCategory = ItemCategory.ARMOR;
 
 	public CustomArmorRegistry(CustomArmorCreator customArmorCreator, CustomItemRegistry customItemRegistry) {
+		if (customArmorCreator == null) throw new IllegalArgumentException("customArmorCreator cannot be null");
+		if (customItemRegistry == null) throw new IllegalArgumentException("customItemRegistry cannot be null");
 		this.customArmorCreator = customArmorCreator;
 		this.customItemRegistry = customItemRegistry;
-
-		createNewArmor("LAPIS_HELMET", Material.LEATHER_HELMET, "Lapis Helmet", Rarity.COMMON, customArmorCategory, ArmorSlot.HELMET, 30.0, 10.0, Color.fromRGB(0x33B8DE));
-		createNewArmor("LAPIS_CHESTPLATE", Material.LEATHER_CHESTPLATE, "Lapis Chestplate", Rarity.COMMON, customArmorCategory, ArmorSlot.CHESTPLATE, 30.0, 10.0, Color.fromRGB(0x33B8DE));
-		createNewArmor("LAPIS_LEGGINGS", Material.LEATHER_LEGGINGS, "Lapis Leggings", Rarity.COMMON, customArmorCategory, ArmorSlot.LEGGINGS, 30.0, 10.0, Color.fromRGB(0x33B8DE));
-		createNewArmor("LAPIS_BOOTS", Material.LEATHER_BOOTS, "Lapis Boots", Rarity.COMMON, customArmorCategory, ArmorSlot.BOOTS, 30.0, 10.0, Color.fromRGB(0x33B8DE));
 	}
 
 	public ItemStack getCustomArmorAsItem(CustomArmor customArmor) {
@@ -55,8 +51,20 @@ public class CustomArmorRegistry {
 	}
 
 	public void addArmorToRegistry(CustomArmor customArmor) {
+		if (customArmor == null) throw new IllegalArgumentException("customArmor cannot be null");
+		if (customArmorMap.containsKey(customArmor.getId())) {
+			throw new IllegalStateException("armor " + customArmor.getId() + " already exists");
+		}
+		if (customItemRegistry.containsCustomItem(customArmor.getId())) {
+			throw new IllegalStateException("item " + customArmor.getId() + " already exists");
+		}
 		customArmorMap.put(customArmor.getId(), customArmor);
-		customItemRegistry.addItemToRegistry(customArmor);
+		try {
+			customItemRegistry.addItemToRegistry(customArmor);
+		} catch (RuntimeException exception) {
+			customArmorMap.remove(customArmor.getId());
+			throw exception;
+		}
 	}
 
 	public List<String> getCustomArmorAsList() {
@@ -65,6 +73,11 @@ public class CustomArmorRegistry {
 
 	public CustomArmor getArmor(String id) {
 		return customArmorMap.get(id);
+	}
+
+	public boolean containsArmor(String id) {
+		if (id == null || id.isBlank()) throw new IllegalArgumentException("id cannot be null or blank");
+		return customArmorMap.containsKey(id);
 	}
 
 }

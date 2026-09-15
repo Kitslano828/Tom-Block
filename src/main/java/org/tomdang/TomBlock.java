@@ -189,6 +189,12 @@ public class TomBlock extends JavaPlugin {
 				activeAbilityService,
 				customAbilityRegistry
 		);
+		new ArmorConfigurationBootStrap(
+				this,
+				customArmorRegistry,
+				customItemRegistry,
+				customAbilityRegistry
+		);
 		CraftingBootStrap craftingBootStrap = new CraftingBootStrap(this,
 				customItemResolver,
 				customItemRegistry,
