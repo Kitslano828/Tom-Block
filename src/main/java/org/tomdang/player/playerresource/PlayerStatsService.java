@@ -9,6 +9,12 @@ import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
 
 import java.util.Collection;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import org.tomdang.player.stats.evaluation.PlayerStatBreakdown;
+import org.tomdang.player.stats.evaluation.PlayerStatContribution;
+import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
 
 public class PlayerStatsService {
 
@@ -58,6 +64,38 @@ public class PlayerStatsService {
 		PlayerProfile playerProfile = requireProfile(player);
 		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
 		return playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers);
+	}
+
+	public PlayerStatEvaluation evaluate(Player player) {
+		PlayerProfile playerProfile = requireProfile(player);
+		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
+		if (modifiers == null) throw new IllegalStateException("stat modifiers cannot be null");
+		if (modifiers.stream().anyMatch(java.util.Objects::isNull)) {
+			throw new IllegalStateException("stat modifiers cannot contain null elements");
+		}
+
+		EnumMap<PlayerStatType, PlayerStatBreakdown> breakdowns = new EnumMap<>(PlayerStatType.class);
+		for (PlayerStatType statType : PlayerStatType.values()) {
+			List<PlayerStatContribution> contributions = new ArrayList<>();
+			for (PlayerStatModifier modifier : modifiers) {
+				if (modifier.getStatType() != statType) continue;
+				contributions.add(new PlayerStatContribution(
+						statType,
+						modifier.getSource(),
+						modifier.getSourceId(),
+						modifier.getDisplayName(),
+						modifier.getAmount()
+				));
+			}
+
+			breakdowns.put(statType, new PlayerStatBreakdown(
+					statType,
+					playerProfile.getStats().get(statType),
+					contributions,
+					playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers)
+			));
+		}
+		return new PlayerStatEvaluation(breakdowns);
 	}
 
 	private PlayerProfile requireProfile(Player player) {

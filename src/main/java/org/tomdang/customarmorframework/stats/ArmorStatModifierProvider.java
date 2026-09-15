@@ -7,6 +7,7 @@ import org.tomdang.customarmorframework.CustomArmorService;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
+import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,8 @@ public class ArmorStatModifierProvider implements PlayerStatModifierProvider {
 						"equipment:armor:"
 								+ armorEntry.getKey().name().toLowerCase(Locale.ROOT) + ":"
 								+ armor.getId() + ":" + statEntry.getKey().getStorageKey(),
+						PlayerStatContributionSource.ARMOR,
+						armor.getDisplayName(),
 						statEntry.getValue()
 				));
 			}

@@ -13,6 +13,7 @@ import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
+import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 
 import java.util.Collection;
 import java.util.Map;
@@ -116,6 +117,8 @@ class ArmorStatModifierProviderTest {
 				.findFirst().orElseThrow();
 		assertEquals(type, modifier.getStatType());
 		assertEquals(amount, modifier.getAmount(), 0.000001);
+		assertEquals(PlayerStatContributionSource.ARMOR, modifier.getSource());
+		assertEquals(sourceId.split(":")[3], modifier.getDisplayName());
 	}
 
 	private record Fixture(Player player, ArmorStatModifierProvider provider) {

@@ -11,6 +11,7 @@ import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
+import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 
 import java.util.Collection;
 import java.util.Map;
@@ -115,6 +116,8 @@ class HeldItemStatModifierProviderTest {
 				.orElseThrow();
 		assertEquals(amount, modifier.getAmount(), 0.000001);
 		assertEquals(sourceId, modifier.getSourceId());
+		assertEquals(PlayerStatContributionSource.HELD_ITEM, modifier.getSource());
+		assertEquals("Odd Pickaxe", modifier.getDisplayName());
 	}
 
 	private record Fixture(Player player, HeldItemStatModifierProvider provider) {

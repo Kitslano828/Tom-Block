@@ -9,6 +9,8 @@ import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
 import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
+import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
+import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 class PlayerStatsServiceTest {
 
@@ -122,6 +125,42 @@ class PlayerStatsServiceTest {
 
 		assertEquals(20, statsService.getTotalDamage(player), 0.000001);
 		assertEquals(45, statsService.getTotalMiningSpeed(player), 0.000001);
+	}
+
+	@Test
+	void completeEvaluationCollectsModifiersOnceAndBuildsBreakdownsAndSnapshot() {
+		profile.setMaximumHealth(125);
+		PlayerStatModifier boots = new PlayerStatModifier(
+				PlayerStatType.MAX_HEALTH,
+				"equipment:armor:feet:RABBIT_BOOTS:maxHealth",
+				PlayerStatContributionSource.ARMOR,
+				"Rabbit Boots",
+				300
+		);
+		when(statModifierProvider.getModifiers(player)).thenReturn(List.of(boots));
+
+		PlayerStatEvaluation evaluation = statsService.evaluate(player);
+
+		assertEquals(425, evaluation.getSnapshot().get(PlayerStatType.MAX_HEALTH), 0.000001);
+		assertEquals(125, evaluation.getBreakdown(PlayerStatType.MAX_HEALTH).baseValue(), 0.000001);
+		assertEquals(425, evaluation.getBreakdown(PlayerStatType.MAX_HEALTH).effectiveValue(), 0.000001);
+		assertEquals(1, evaluation.getBreakdown(PlayerStatType.MAX_HEALTH).contributions().size());
+		assertEquals("Rabbit Boots",
+				evaluation.getBreakdown(PlayerStatType.MAX_HEALTH).contributions().getFirst().displayName());
+		assertEquals(PlayerStatContributionSource.ARMOR,
+				evaluation.getBreakdown(PlayerStatType.MAX_HEALTH).contributions().getFirst().source());
+		assertEquals(PlayerStatType.ABILITY_HASTE.getDefaultValue(),
+				evaluation.getSnapshot().get(PlayerStatType.ABILITY_HASTE), 0.000001);
+		verify(statModifierProvider).getModifiers(player);
+	}
+
+	@Test
+	void evaluationRejectsInvalidModifierCollections() {
+		when(statModifierProvider.getModifiers(player)).thenReturn(null);
+		assertThrows(IllegalStateException.class, () -> statsService.evaluate(player));
+
+		when(statModifierProvider.getModifiers(player)).thenReturn(java.util.Arrays.asList((PlayerStatModifier) null));
+		assertThrows(IllegalStateException.class, () -> statsService.evaluate(player));
 	}
 
 	@Test

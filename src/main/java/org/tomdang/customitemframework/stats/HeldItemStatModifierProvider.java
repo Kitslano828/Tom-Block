@@ -7,6 +7,7 @@ import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
+import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +37,8 @@ public class HeldItemStatModifierProvider implements PlayerStatModifierProvider 
 			modifiers.add(new PlayerStatModifier(
 					entry.getKey(),
 					"equipment:main-hand:" + customItem.getId() + ":" + entry.getKey().getStorageKey(),
+					PlayerStatContributionSource.HELD_ITEM,
+					customItem.getDisplayName(),
 					entry.getValue()
 			));
 		}
