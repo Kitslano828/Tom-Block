@@ -121,6 +121,7 @@ public class TomBlock extends JavaPlugin {
 		PlayerProfileService playerProfileService = playerBootStrap.getPlayerProfileService();
 		PlayerProfileStorage playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
 		PlayerStatsService playerStatsService = playerBootStrap.getPlayerStatsService();
+		PlayerStatPresentationBootStrap playerStatPresentationBootStrap = new PlayerStatPresentationBootStrap(this);
 		PlayerResourceService playerResourceService = playerBootStrap.getPlayerResourceService();
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();

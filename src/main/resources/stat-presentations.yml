@@ -1,0 +1,56 @@
+stat-presentations:
+  MAX_HEALTH:
+    symbol: "❤"
+    color: "#FF5555"
+    description: "Increases the maximum amount of damage you can withstand."
+    material: RED_DYE
+    visible: true
+
+  DEFENSE:
+    symbol: "❈"
+    color: "#55FFFF"
+    description: "Reduces incoming damage before it reaches your health."
+    material: IRON_CHESTPLATE
+    visible: true
+
+  STRENGTH:
+    symbol: "❁"
+    color: "#FF5555"
+    description: "Increases damage dealt by attacks that scale with Strength."
+    material: BLAZE_POWDER
+    visible: true
+
+  DAMAGE:
+    symbol: "⚔"
+    color: "#FF5555"
+    description: "Determines the base damage dealt by your attacks."
+    material: IRON_SWORD
+    visible: true
+
+  MINING_FORTUNE:
+    symbol: "⛏❀"
+    color: "#EDC140"
+    description: "Increases the amount of drops received while mining."
+    material: GOLDEN_PICKAXE
+    visible: true
+
+  MINING_SPEED:
+    symbol: "⛏"
+    color: "#EDC140"
+    description: "Increases how quickly you mine."
+    material: DIAMOND_PICKAXE
+    visible: true
+
+  MAX_ENERGY:
+    symbol: "⚡"
+    color: "#00AA00"
+    description: "Increases the energy available."
+    material: EMERALD
+    visible: true
+
+  ABILITY_HASTE:
+    symbol: "⧖"
+    color: "#B0AD0C"
+    description: "Reduces ability cooldowns."
+    material: CLOCK
+    visible: true
