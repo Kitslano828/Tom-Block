@@ -1,7 +1,8 @@
 package org.tomdang.customarmorframework.stats;
 
 import org.bukkit.entity.Player;
-import org.tomdang.customarmorframework.ArmorBonuses;
+import org.bukkit.inventory.EquipmentSlot;
+import org.tomdang.customarmorframework.CustomArmor;
 import org.tomdang.customarmorframework.CustomArmorService;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
@@ -10,6 +11,8 @@ import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class ArmorStatModifierProvider implements PlayerStatModifierProvider {
 
@@ -30,17 +33,21 @@ public class ArmorStatModifierProvider implements PlayerStatModifierProvider {
 
 		List<PlayerStatModifier> statModifiers = new ArrayList<>();
 
-		ArmorBonuses armorBonuses = customArmorService.calculateBonusStats(player);
-		if (armorBonuses == null) throw new IllegalStateException("armor bonuses are null for " + player.getUniqueId());
+		Map<EquipmentSlot, CustomArmor> equippedArmor = customArmorService.getEquippedArmor(player);
+		if (equippedArmor == null) throw new IllegalStateException("equipped armor is null for " + player.getUniqueId());
 
-		if (armorBonuses.getHealthBonus() != 0) {
-			PlayerStatModifier statModifier = new PlayerStatModifier(PlayerStatType.MAX_HEALTH, "equipment:armor:health", armorBonuses.getHealthBonus());
-			statModifiers.add(statModifier);
-		}
-
-		if (armorBonuses.getDefenseBonus() != 0) {
-			PlayerStatModifier statModifier = new PlayerStatModifier(PlayerStatType.DEFENSE, "equipment:armor:defense", armorBonuses.getDefenseBonus());
-			statModifiers.add(statModifier);
+		for (Map.Entry<EquipmentSlot, CustomArmor> armorEntry : equippedArmor.entrySet()) {
+			CustomArmor armor = armorEntry.getValue();
+			for (Map.Entry<PlayerStatType, Double> statEntry : armor.getStatModifiers().asMap().entrySet()) {
+				if (statEntry.getValue() == 0) continue;
+				statModifiers.add(new PlayerStatModifier(
+						statEntry.getKey(),
+						"equipment:armor:"
+								+ armorEntry.getKey().name().toLowerCase(Locale.ROOT) + ":"
+								+ armor.getId() + ":" + statEntry.getKey().getStorageKey(),
+						statEntry.getValue()
+				));
+			}
 		}
 
 		return List.copyOf(statModifiers);

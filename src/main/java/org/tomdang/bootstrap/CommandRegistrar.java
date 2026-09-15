@@ -68,7 +68,7 @@ public class CommandRegistrar {
 		instance.getCommand("spawncustommob").setExecutor(spawnCustomMob);
 		instance.getCommand("spawncustommob").setTabCompleter(spawnCustomMob);
 
-		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerProfileService, customArmorService, playerStatsService);
+		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerProfileService, playerStatsService);
 		instance.getCommand("stats").setExecutor(playerStatsCommand);
 
 		SetDefense setDefense = new SetDefense(playerProfileService);

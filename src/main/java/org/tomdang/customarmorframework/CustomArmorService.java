@@ -5,20 +5,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.tomdang.player.PlayerProfile;
-import org.tomdang.player.PlayerProfileService;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class CustomArmorService {
 
 	private final CustomArmorResolver customArmorResolver;
 
 	public CustomArmorService(CustomArmorResolver customArmorResolver) {
+		if (customArmorResolver == null) throw new IllegalArgumentException("customArmorResolver cannot be null");
 		this.customArmorResolver = customArmorResolver;
 	}
 
-	public ArmorBonuses calculateBonusStats(Player player) {
+	public Map<EquipmentSlot, CustomArmor> getEquippedArmor(Player player) {
+		if (player == null) throw new IllegalArgumentException("player cannot be null");
 		PlayerInventory inventory = player.getInventory();
-		ArmorBonuses armorBonuses = new ArmorBonuses();
+		Map<EquipmentSlot, CustomArmor> equippedArmor = new EnumMap<>(EquipmentSlot.class);
 
 		// Define the specific physical equipment slots to iterate over
 		EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
@@ -33,19 +36,11 @@ public class CustomArmorService {
 
 			// Pass the physical 'slot' context down to your validation checker
 			if (customArmorPiece != null && inValidSlot(customArmorPiece, slot)) {
-				addTotalBonusHealth(customArmorPiece, armorBonuses);
-				addTotalBonusDefense(customArmorPiece, armorBonuses);
+				equippedArmor.put(slot, customArmorPiece);
 			}
 		}
 
-		return armorBonuses;
-	}
-
-	private void addTotalBonusHealth(CustomArmor customArmor, ArmorBonuses armorBonuses) {
-		armorBonuses.addToHealthBonus(customArmor.getHealth());
-	}
-	private void addTotalBonusDefense(CustomArmor customArmor, ArmorBonuses armorBonuses) {
-		armorBonuses.addToDefenseBonus(customArmor.getDefense());
+		return Map.copyOf(equippedArmor);
 	}
 
 	private boolean inValidSlot(CustomArmor armor, EquipmentSlot actualSlot) {

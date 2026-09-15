@@ -16,8 +16,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.tomdang.customarmorframework.ArmorBonuses;
-import org.tomdang.customarmorframework.CustomArmorService;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerStatsService;
@@ -29,12 +27,10 @@ import java.util.List;
 public class PlayerStatsCommand implements CommandExecutor {
 
 	private final PlayerProfileService playerProfileService;
-	private final CustomArmorService customArmorService;
 	private final PlayerStatsService playerStatsService;
 
-	public PlayerStatsCommand(PlayerProfileService playerProfileService, CustomArmorService customArmorService, PlayerStatsService playerStatsService) {
+	public PlayerStatsCommand(PlayerProfileService playerProfileService, PlayerStatsService playerStatsService) {
 		this.playerProfileService = playerProfileService;
-		this.customArmorService = customArmorService;
 		this.playerStatsService = playerStatsService;
 	}
 
@@ -83,7 +79,6 @@ public class PlayerStatsCommand implements CommandExecutor {
 
 	public ItemStack createCombatStatItem(Player player) {
 		PlayerProfile playerProfile = playerProfileService.getPlayerProfileFromMap(player.getUniqueId());
-		ArmorBonuses armorBonuses = customArmorService.calculateBonusStats(player);
 		double totalDefense = playerStatsService.getTotalDefense(player);
 		double totalEnergy = playerStatsService.getTotalEnergy(player);
 		ItemStack combatStatItem = new ItemStack(Material.IRON_SWORD);
@@ -91,11 +86,10 @@ public class PlayerStatsCommand implements CommandExecutor {
 		if (swordMeta != null) {
 			swordMeta.itemName(MiniMessage.miniMessage().deserialize("<white>Combat Stats").decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true));
 			List<Component> lore = new ArrayList<>();
-			lore.add(MiniMessage.miniMessage().deserialize("<red>Strength: " + "<white>" + format(playerProfile.getStrength())).decoration(TextDecoration.ITALIC, false));
+			lore.add(MiniMessage.miniMessage().deserialize("<red>Strength: " + "<white>" + format(playerStatsService.getTotalStrength(player))).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<green>Current Health: " + "<white>" + format(playerProfile.getHealth().getCurrent())).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<green>Total Health: " + "<white>" + format(playerStatsService.getTotalHealthStat(player))).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<gold>Defense: " + "<white>" + format(playerProfile.getDefense())).decoration(TextDecoration.ITALIC, false));
-			lore.add(MiniMessage.miniMessage().deserialize("<gold>Armor Defense: " + "<white>" + format(armorBonuses.getDefenseBonus())).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<gold>Total Defense: " + "<white>" + format(totalDefense)).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<gold>Current Energy: " + "<white>" + format(playerProfile.getEnergy().getCurrent())).decoration(TextDecoration.ITALIC, false));
 			lore.add(MiniMessage.miniMessage().deserialize("<gold>Total Energy: " + "<white>" + format(totalEnergy)).decoration(TextDecoration.ITALIC, false));

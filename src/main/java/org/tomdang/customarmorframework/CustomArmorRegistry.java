@@ -7,6 +7,8 @@ import org.bukkit.inventory.ItemStack;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
+import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
+import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +39,18 @@ public class CustomArmorRegistry {
 
 	public void createNewArmor(String id, Material material, String displayName, Rarity rarity,
 							   ItemCategory itemCategory, ArmorSlot armorSlot, double health, double defense, Color color) {
-		CustomArmor customArmor = new CustomArmor(id, material,displayName,rarity, itemCategory,armorSlot, health, defense, color);
+		createNewArmor(id, material, displayName, rarity, itemCategory, armorSlot, color,
+				new CustomItemStatModifiers(Map.of(
+						PlayerStatType.MAX_HEALTH, health,
+						PlayerStatType.DEFENSE, defense
+				)));
+	}
+
+	public void createNewArmor(String id, Material material, String displayName, Rarity rarity,
+	                           ItemCategory itemCategory, ArmorSlot armorSlot, Color color,
+	                           CustomItemStatModifiers statModifiers) {
+		CustomArmor customArmor = new CustomArmor(id, material, displayName, rarity, itemCategory,
+				armorSlot, color, statModifiers);
 		addArmorToRegistry(customArmor);
 	}
 
