@@ -43,6 +43,7 @@ import org.tomdang.region.resolution.RegionResolver;
 import org.tomdang.region.registry.RegionRegistry;
 import org.tomdang.region.edit.RegionEditingService;
 import org.tomdang.region.edit.RegionBrushItemService;
+import org.tomdang.player.movement.PlayerMovementSpeedRefreshScheduler;
 
 public class CommandRegistrar {
 	
@@ -58,7 +59,8 @@ public class CommandRegistrar {
 	                        RegionResolver regionResolver,
 	                        RegionRegistry regionRegistry,
 	                        RegionEditingService regionEditingService,
-	                        RegionBrushItemService regionBrushItemService
+	                        RegionBrushItemService regionBrushItemService,
+	                        PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -88,7 +90,8 @@ public class CommandRegistrar {
 		PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand(playerStatsService, playerStatPresentationRegistry, playerStatsOverviewConfiguration);
 		instance.getCommand("stats").setExecutor(playerStatsCommand);
 
-		SetStatCommand setStatCommand = new SetStatCommand(playerProfileService, playerInventoryItemRefreshService);
+		SetStatCommand setStatCommand = new SetStatCommand(
+				playerProfileService, playerInventoryItemRefreshService, movementSpeedRefreshScheduler);
 		instance.getCommand("setstat").setExecutor(setStatCommand);
 		instance.getCommand("setstat").setTabCompleter(setStatCommand);
 

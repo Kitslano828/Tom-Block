@@ -94,6 +94,8 @@ class PlayerStatRuleConfigurationLoaderTest {
 				    cap: null
 				  ATTACK_SPEED:
 				    cap: 250
+				  SPEED:
+				    cap: 400
 				""";
 	}
 }

@@ -13,6 +13,7 @@ import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.PlayerStatValueFormatter;
 import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshResult;
 import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
+import org.tomdang.player.movement.PlayerMovementSpeedRefreshScheduler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,13 +24,21 @@ public class SetStatCommand implements CommandExecutor, TabCompleter {
 
 	private final PlayerProfileService playerProfileService;
 	private final PlayerInventoryItemRefreshService itemRefreshService;
+	private final PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler;
 
 	public SetStatCommand(PlayerProfileService playerProfileService,
 	                      PlayerInventoryItemRefreshService itemRefreshService) {
+		this(playerProfileService, itemRefreshService, null);
+	}
+
+	public SetStatCommand(PlayerProfileService playerProfileService,
+	                      PlayerInventoryItemRefreshService itemRefreshService,
+	                      PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler) {
 		if (playerProfileService == null) throw new IllegalArgumentException("playerProfileService cannot be null");
 		if (itemRefreshService == null) throw new IllegalArgumentException("itemRefreshService cannot be null");
 		this.playerProfileService = playerProfileService;
 		this.itemRefreshService = itemRefreshService;
+		this.movementSpeedRefreshScheduler = movementSpeedRefreshScheduler;
 	}
 
 	@Override
@@ -50,6 +59,7 @@ public class SetStatCommand implements CommandExecutor, TabCompleter {
 			profile.resetAllStats();
 			player.sendMessage("Reset all base stats to their default values.");
 			refreshItemLore(player);
+			refreshMovementSpeed(player);
 			return true;
 		}
 
@@ -86,7 +96,12 @@ public class SetStatCommand implements CommandExecutor, TabCompleter {
 		player.sendMessage("Set base " + statType.getDisplayName() + " to "
 				+ PlayerStatValueFormatter.format(amount) + ".");
 		refreshItemLore(player);
+		if (statType == PlayerStatType.SPEED) refreshMovementSpeed(player);
 		return true;
+	}
+
+	private void refreshMovementSpeed(Player player) {
+		if (movementSpeedRefreshScheduler != null) movementSpeedRefreshScheduler.requestRefresh(player);
 	}
 
 	private void refreshItemLore(Player player) {

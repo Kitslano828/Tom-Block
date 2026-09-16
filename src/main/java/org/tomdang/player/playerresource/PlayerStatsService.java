@@ -79,6 +79,10 @@ public class PlayerStatsService {
 		return getTotalStat(player, PlayerStatType.MINING_SPEED);
 	}
 
+	public double getTotalSpeed(Player player) {
+		return getTotalStat(player, PlayerStatType.SPEED);
+	}
+
 	public double getTotalStat(Player player, PlayerStatType statType) {
 		if (statType == null) throw new IllegalArgumentException("statType cannot be null");
 		PlayerProfile playerProfile = requireProfile(player);

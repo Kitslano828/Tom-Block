@@ -60,5 +60,6 @@ armor:
       ability-haste: 100.0
     stat-cap-modifiers:
       attack-speed: 50.0
+      speed: 200.0
     abilities:
       - DOUBLE_JUMP

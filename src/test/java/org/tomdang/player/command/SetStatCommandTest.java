@@ -9,6 +9,7 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshResult;
 import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
+import org.tomdang.player.movement.PlayerMovementSpeedRefreshScheduler;
 
 import java.util.List;
 import java.util.UUID;
@@ -131,6 +132,24 @@ class SetStatCommandTest {
 				new String[]{"ability-haste", "100"});
 
 		verify(fixture.player()).sendMessage("Some custom items could not be refreshed: 1 failed.");
+	}
+
+	@Test
+	void speedMutationAndResetRequestMovementRefresh() {
+		UUID uuid = UUID.randomUUID();
+		Player player = mock(Player.class);
+		when(player.getUniqueId()).thenReturn(uuid);
+		PlayerProfileService profiles = mock(PlayerProfileService.class);
+		when(profiles.getPlayerProfileFromMap(uuid)).thenReturn(new PlayerProfile(uuid));
+		PlayerInventoryItemRefreshService items = mock(PlayerInventoryItemRefreshService.class);
+		when(items.refresh(player)).thenReturn(new PlayerInventoryItemRefreshResult(0, 0, 0, 0));
+		PlayerMovementSpeedRefreshScheduler movement = mock(PlayerMovementSpeedRefreshScheduler.class);
+		SetStatCommand command = new SetStatCommand(profiles, items, movement);
+
+		command.onCommand(player, mock(Command.class), "setstat", new String[]{"speed", "200"});
+		command.onCommand(player, mock(Command.class), "setstat", new String[]{"reset"});
+
+		verify(movement, org.mockito.Mockito.times(2)).requestRefresh(player);
 	}
 
 	private Fixture fixture() {

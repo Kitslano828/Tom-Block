@@ -57,6 +57,11 @@ class PlayerStatTypeTest {
 	}
 
 	@Test
+	void speedDefinitionUsesNormalMovementAsItsBaseline() {
+		assertDefinition(PlayerStatType.SPEED, "speed", "Speed", PlayerStatCategory.UTILITY, 100, 0);
+	}
+
+	@Test
 	void storageKeysAreUnique() {
 		Set<String> storageKeys = Arrays.stream(PlayerStatType.values())
 				.map(PlayerStatType::getStorageKey)

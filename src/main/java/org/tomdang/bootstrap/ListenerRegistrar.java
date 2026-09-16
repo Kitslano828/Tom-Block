@@ -51,6 +51,7 @@ import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
 import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
 import org.tomdang.region.edit.RegionBrushListener;
+import org.tomdang.player.movement.PlayerMovementSpeedListener;
 
 public class ListenerRegistrar {
 
@@ -71,7 +72,8 @@ public class ListenerRegistrar {
 							 PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
 							 PlayerStatsCategoryMenuConfiguration playerStatsCategoryMenuConfiguration,
 							 PlayerStatsBreakdownMenuConfiguration playerStatsBreakdownMenuConfiguration,
-							 RegionBrushListener regionBrushListener
+							 RegionBrushListener regionBrushListener,
+							 PlayerMovementSpeedListener movementSpeedListener
 	){
 		PlayerItemRefreshScheduler itemRefreshScheduler = new PlayerItemRefreshScheduler(
 				instance,
@@ -134,6 +136,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(dialogueSneakListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerNpcConnectionListener, instance);
 		instance.getServer().getPluginManager().registerEvents(regionBrushListener, instance);
+		instance.getServer().getPluginManager().registerEvents(movementSpeedListener, instance);
 	}
 
 }

@@ -19,7 +19,8 @@ public enum PlayerStatType {
 	MINING_SPEED("mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0.0, 0.0),
 
 	// stats that affects all
-	ABILITY_HASTE("ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0.0, 0.0);
+	ABILITY_HASTE("ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0.0, 0.0),
+	SPEED("speed", "Speed", PlayerStatCategory.UTILITY, 100.0, 0.0);
 
 	@Getter
 	private final String storageKey;

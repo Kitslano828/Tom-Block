@@ -1,0 +1,5 @@
+movement-speed:
+  reference-stat: 100.0
+  reference-walk-speed: 0.2
+  minimum-walk-speed: 0.0
+  maximum-walk-speed: 1.0

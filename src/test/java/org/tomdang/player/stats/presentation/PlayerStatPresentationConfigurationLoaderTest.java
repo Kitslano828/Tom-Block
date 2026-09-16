@@ -32,9 +32,9 @@ class PlayerStatPresentationConfigurationLoaderTest {
 				() -> assertFalse(first.visible()),
 				() -> assertEquals(PlayerStatType.MAX_HEALTH, presentations.get(1).statType()),
 				() -> assertTrue(presentations.get(1).visible()),
-				() -> assertEquals(PlayerStatType.ATTACK_SPEED, presentations.getLast().statType()),
-				() -> assertEquals("🗲", presentations.getLast().symbol()),
-				() -> assertEquals(Material.ECHO_SHARD, presentations.getLast().menuMaterial())
+				() -> assertEquals(PlayerStatType.SPEED, presentations.getLast().statType()),
+				() -> assertEquals("➟", presentations.getLast().symbol()),
+				() -> assertEquals(Material.SUGAR, presentations.getLast().menuMaterial())
 		);
 	}
 
@@ -111,7 +111,9 @@ class PlayerStatPresentationConfigurationLoaderTest {
 				  CRIT_DAMAGE:
 				""" + entry("★", "#EF4444", "Critical damage", "FIRE_CHARGE") + """
 				  ATTACK_SPEED:
-				""" + entry("🗲", "#EBCD13", "Attack rate", "ECHO_SHARD");
+				""" + entry("🗲", "#EBCD13", "Attack rate", "ECHO_SHARD") + """
+				  SPEED:
+				""" + entry("➟", "#FFFFFF", "Movement rate", "SUGAR");
 	}
 
 	private static String entry(String symbol, String color, String description, String material) {

@@ -26,6 +26,8 @@ class PlayerStatRuleBootStrapTest {
 		assertFalse(bootStrap.getRegistry().get(PlayerStatType.MAX_HEALTH).getCap().isPresent());
 		assertEquals(250,
 				bootStrap.getRegistry().get(PlayerStatType.ATTACK_SPEED).getCap().orElseThrow());
+		assertEquals(400,
+				bootStrap.getRegistry().get(PlayerStatType.SPEED).getCap().orElseThrow());
 	}
 
 	@Test

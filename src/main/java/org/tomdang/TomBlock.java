@@ -76,6 +76,7 @@ public class TomBlock extends JavaPlugin {
 	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
 	private ActorBootStrap actorBootStrap;
 	private RegionBrushVisualizationTask regionBrushVisualizationTask;
+	private PlayerMovementSpeedBootStrap playerMovementSpeedBootStrap;
 
 
 	@Override
@@ -140,6 +141,7 @@ public class TomBlock extends JavaPlugin {
 		PlayerProfileStorage playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
 		PlayerStatsService playerStatsService = playerBootStrap.getPlayerStatsService();
 		PlayerResourceService playerResourceService = playerBootStrap.getPlayerResourceService();
+		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
 		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
@@ -326,7 +328,8 @@ public class TomBlock extends JavaPlugin {
 				regionBootStrap.getRegionResolver(),
 				regionBootStrap.getRegionRegistry(),
 				regionBootStrap.getRegionEditingService(),
-				regionBrushItemService
+				regionBrushItemService,
+				playerMovementSpeedBootStrap.getRefreshScheduler()
 		);
 
 		new ListenerRegistrar(
@@ -359,7 +362,8 @@ public class TomBlock extends JavaPlugin {
 				playerStatPresentationBootStrap.getOverviewConfiguration(),
 				playerStatPresentationBootStrap.getCategoryMenuConfiguration(),
 				playerStatPresentationBootStrap.getBreakdownMenuConfiguration(),
-				regionBrushListener
+				regionBrushListener,
+				playerMovementSpeedBootStrap.getListener()
 				);
 
 		playerBootStrap.start();
@@ -373,6 +377,9 @@ public class TomBlock extends JavaPlugin {
 	public void onDisable() {
 		if (regionBrushVisualizationTask != null) {
 			regionBrushVisualizationTask.stop();
+		}
+		if (playerMovementSpeedBootStrap != null) {
+			playerMovementSpeedBootStrap.shutDown();
 		}
 		if (combatBootStrap != null) {
 			combatBootStrap.getPlayerAttackIndicatorService().stop();

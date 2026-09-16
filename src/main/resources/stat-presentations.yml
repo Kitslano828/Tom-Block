@@ -75,3 +75,10 @@ stat-presentations:
     description: "Reduces the cooldown of a melee attack."
     material: ECHO_SHARD
     visible: true
+
+  SPEED:
+    symbol: "💨"
+    color: "#FFFFFF"
+    description: "Increases how quickly you move through the world."
+    material: SUGAR
+    visible: true
