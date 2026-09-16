@@ -70,7 +70,7 @@ class CustomMobDefinitionRegistrarTest {
 
 	private CustomMobDefinition definition(String id) {
 		return new CustomMobDefinition(id, EntityType.ZOMBIE, "Training Zombie", 100, 20,
-				MobType.COMMON_MOB, 5, false,
+				MobType.COMMON_MOB, 5, false, List.of(), null,
 				List.of(new CustomMobDropDefinition("ROTTEN_FLESH", 2, 100)));
 	}
 }

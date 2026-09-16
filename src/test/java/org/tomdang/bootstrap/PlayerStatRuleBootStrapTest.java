@@ -17,8 +17,8 @@ class PlayerStatRuleBootStrapTest {
 	@Test
 	void loadsAndRegistersBundledStatRules() {
 		TomBlock plugin = mock(TomBlock.class);
-		InputStream resource = getClass().getClassLoader().getResourceAsStream("stat-rules.yml");
-		when(plugin.getResource("stat-rules.yml")).thenReturn(resource);
+		InputStream resource = getClass().getClassLoader().getResourceAsStream("stats/stat-rules.yml");
+		when(plugin.getResource("stats/stat-rules.yml")).thenReturn(resource);
 
 		PlayerStatRuleBootStrap bootStrap = new PlayerStatRuleBootStrap(plugin);
 
@@ -33,7 +33,7 @@ class PlayerStatRuleBootStrapTest {
 	@Test
 	void rejectsMissingResourceAndNullPlugin() {
 		TomBlock plugin = mock(TomBlock.class);
-		when(plugin.getResource("stat-rules.yml")).thenReturn(null);
+		when(plugin.getResource("stats/stat-rules.yml")).thenReturn(null);
 
 		assertThrows(IllegalStateException.class, () -> new PlayerStatRuleBootStrap(plugin));
 		assertThrows(IllegalArgumentException.class, () -> new PlayerStatRuleBootStrap(null));

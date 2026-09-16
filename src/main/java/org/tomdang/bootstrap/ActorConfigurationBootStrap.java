@@ -30,7 +30,7 @@ public class ActorConfigurationBootStrap {
 
 		ActorConfigurationLoader loader = new ActorConfigurationLoader();
 		List<ActorConfigurationDefinition> definitions;
-		try (InputStream configurationStream = instance.getResource("actors.yml")) {
+		try (InputStream configurationStream = instance.getResource("actors/actors.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain actors.yml");
 			}

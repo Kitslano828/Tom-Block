@@ -70,8 +70,11 @@ mining-tools:
     base-recovery-ticks: 40
     stats:
       damage: 5.0
+      attack-speed: 1000.0
       mining-speed: 2500.0
       mining-fortune: 1530.0
       ability-haste: 50.0
+    stat-cap-modifiers:
+      attack-speed: 500.0
     abilities:
       - MINING_SPREAD_ABILITY

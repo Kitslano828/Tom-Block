@@ -21,7 +21,7 @@ public class PlayerStatRuleBootStrap {
 		if (instance == null) throw new IllegalArgumentException("instance cannot be null");
 
 		List<PlayerStatRule> rules;
-		try (InputStream configurationStream = instance.getResource("stat-rules.yml")) {
+		try (InputStream configurationStream = instance.getResource("stats/stat-rules.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain stat-rules.yml");
 			}

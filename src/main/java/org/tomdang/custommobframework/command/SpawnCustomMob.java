@@ -44,8 +44,11 @@ public class SpawnCustomMob implements CommandExecutor, TabCompleter {
 			return true;
 		}
 		Entity mob = customMobRegistry.getCustomMobAsMob(customMob, spawnLocation);
-
-		sender.sendMessage("Successfully spawned " + customMob.getName() + "at you location!");
+		if (mob == null) {
+			sender.sendMessage("This mob cannot spawn in your current region.");
+			return true;
+		}
+		sender.sendMessage("Successfully spawned " + customMob.getName() + " at your location!");
 
 		return true;
 	}

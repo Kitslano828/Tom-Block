@@ -1,5 +1,7 @@
 package org.tomdang;
 
+import org.tomdang.custommobframework.custommobspawn.MobRegionConfinementListener;
+
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -79,6 +81,7 @@ public class TomBlock extends JavaPlugin {
 
 	private PlayerBootStrap playerBootStrap;
 	private CombatBootStrap combatBootStrap;
+	private MobBootStrap mobBootStrap;
 	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
 	private ActorBootStrap actorBootStrap;
 	private RegionBrushVisualizationTask regionBrushVisualizationTask;
@@ -94,7 +97,9 @@ public class TomBlock extends JavaPlugin {
 		// NameSpaced Keys
 		NamespacedKey customItemIdKey = new NamespacedKey(this, "item_id");
 		NamespacedKey customMobKey = new NamespacedKey(this, "mob_id");
+		NamespacedKey customMobHealthKey = new NamespacedKey(this, "mob_current_health");
 		NamespacedKey spawnPointIDKey = new NamespacedKey(this, "spawnpoint_id");
+		NamespacedKey populationRuleKey = new NamespacedKey(this, "population_rule_id");
 		NamespacedKey actorInstanceIDKey = new NamespacedKey(this, "actor_instance_id");
 		NamespacedKey actorDefinitionKey = new NamespacedKey(this, "actor_definition_id");
 		NamespacedKey actorAudienceScopeKey = new NamespacedKey(this,"actor_audience_scope");
@@ -123,12 +128,17 @@ public class TomBlock extends JavaPlugin {
 				miningToolCreator,
 				customArmorCreator
 		);
+		RegionBootStrap regionBootStrap = new RegionBootStrap(this);
 
-		MobBootStrap mobBootStrap = new MobBootStrap(
+		mobBootStrap = new MobBootStrap(
 				this,
 				customMobKey,
 				spawnPointIDKey,
-				customItemRegistry
+				customMobHealthKey,
+				populationRuleKey,
+				customItemRegistry,
+				regionBootStrap.getRegionRegistry(),
+				regionBootStrap.getRegionResolver()
 		);
 		CustomMobResolver customMobResolver = mobBootStrap.getCustomMobResolver();
 		CustomMobHealthService customMobHealthService = mobBootStrap.getCustomMobHealthService();
@@ -296,7 +306,6 @@ public class TomBlock extends JavaPlugin {
 		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);
 		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService, actorNameplatePresentation);
-		RegionBootStrap regionBootStrap = new RegionBootStrap(this);
 		BukkitBlockPositionAdapter regionPositions = new BukkitBlockPositionAdapter();
 		playerStatsService.setLocationCapProvider((player, statType) -> regionBootStrap.getRegionStatCapResolver()
 				.resolve(regionPositions.fromLocation(player.getLocation()), statType));
@@ -311,9 +320,12 @@ public class TomBlock extends JavaPlugin {
 					}
 				});
 		getServer().getPluginManager().registerEvents(new PlayerRegionTrackingListener(regionTracking, regionPositions, regionDebug), this);
+		getServer().getPluginManager().registerEvents(new MobRegionConfinementListener(
+				customMobKey, populationRuleKey, mobBootStrap.getMobRegionConfinementPolicy()), this);
 		getServer().getPluginManager().registerEvents(
 				new RegionSpeedRefreshListener(playerMovementSpeedBootStrap.getRefreshScheduler()), this);
 		regionBootStrap.getRegionEditingService().onMembershipChanged(position -> {
+			mobBootStrap.reconcileSpawnPointsAt(position);
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				if (regionPositions.fromLocation(player.getLocation()).equals(position)) {
 					regionTracking.refresh(player.getUniqueId(), position);
@@ -402,6 +414,7 @@ public class TomBlock extends JavaPlugin {
 
 		playerBootStrap.start();
 		mobBootStrap.reconcileSpawnPoints();
+		mobBootStrap.startPopulations();
 
 		actorReconciliationService.reconcileSpawnPoints();
 		regionBrushVisualizationTask.start();
@@ -409,6 +422,7 @@ public class TomBlock extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		if (mobBootStrap != null) mobBootStrap.stopPopulations();
 		if (regionBrushVisualizationTask != null) {
 			regionBrushVisualizationTask.stop();
 		}

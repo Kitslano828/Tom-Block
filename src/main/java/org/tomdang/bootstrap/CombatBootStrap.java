@@ -99,7 +99,7 @@ public class CombatBootStrap {
 
 		WeaponConfigurationLoader weaponConfigurationLoader = new WeaponConfigurationLoader();
 		List<WeaponDefinition> weaponDefinitions;
-		try (InputStream weaponConfigurationStream = instance.getResource("weapons.yml")) {
+		try (InputStream weaponConfigurationStream = instance.getResource("items/weapons.yml")) {
 			if (weaponConfigurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain weapons.yml");
 			}
@@ -167,7 +167,7 @@ public class CombatBootStrap {
 	}
 
 	private CombatTimingConfiguration loadTimingConfiguration(TomBlock instance) {
-		try (InputStream configurationStream = instance.getResource("combat.yml")) {
+		try (InputStream configurationStream = instance.getResource("combat/combat.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain combat.yml");
 			}
@@ -180,7 +180,7 @@ public class CombatBootStrap {
 	}
 
 	private ComboTimingConfiguration loadComboTimingConfiguration(TomBlock instance) {
-		try (InputStream configurationStream = instance.getResource("combat.yml")) {
+		try (InputStream configurationStream = instance.getResource("combat/combat.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain combat.yml");
 			}

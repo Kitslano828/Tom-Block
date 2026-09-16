@@ -10,7 +10,6 @@ import org.tomdang.TomBlock;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobRegistry;
 import org.tomdang.custommobframework.CustomMobSpawner;
-import org.tomdang.custommobframework.custommobcontext.CustomMobContext;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContextRegistry;
 
 public class 	CustomMobRespawnService {
@@ -56,9 +55,8 @@ public class 	CustomMobRespawnService {
 		if (mob == null) {
 			return;
 		}
-		customMobSpawner.createCustomMob(mob, customMobSpawnpoint.getLocation(), customMobSpawnpoint);
-
-		customMobSpawnpoint.setOccupied(true);
+		Entity spawned = customMobSpawner.createCustomMob(mob, customMobSpawnpoint.getLocation(), customMobSpawnpoint);
+		customMobSpawnpoint.setOccupied(spawned != null);
 	}
 
 	public void reconcileSpawnPoint(CustomMobSpawnPoint spawnPoint) {
@@ -86,11 +84,7 @@ public class 	CustomMobRespawnService {
 
 			foundExistingMob = true;
 			customMobSpawner.applyEntityBehavior(customMob, entity);
-			CustomMobContext context = customMobContextRegistry.getCustomMobContext(entity.getUniqueId());
-			if (context == null) {
-				customMobContextRegistry.createNewCustomMobContext(entity.getUniqueId(), customMob);
-			}
-
+			// Health is recovered from the entity's saved data on its next hit.
 		}
 
 		spawnPoint.setOccupied(foundExistingMob);

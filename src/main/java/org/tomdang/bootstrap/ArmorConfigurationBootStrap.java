@@ -24,7 +24,7 @@ public class ArmorConfigurationBootStrap {
 		if (abilityRegistry == null) throw new IllegalArgumentException("abilityRegistry cannot be null");
 
 		List<CustomArmorDefinition> definitions;
-		try (InputStream configurationStream = instance.getResource("armor.yml")) {
+		try (InputStream configurationStream = instance.getResource("items/armor.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain armor.yml");
 			}

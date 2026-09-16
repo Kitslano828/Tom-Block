@@ -43,7 +43,7 @@ public class ItemBootStrap {
 
 		CustomItemConfigurationLoader configurationLoader = new CustomItemConfigurationLoader();
 		List<CustomItemDefinition> definitions;
-		try (InputStream configurationStream = instance.getResource("items.yml")) {
+		try (InputStream configurationStream = instance.getResource("items/items.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain items.yml");
 			}

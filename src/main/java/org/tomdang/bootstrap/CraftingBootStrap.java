@@ -31,7 +31,7 @@ public class CraftingBootStrap {
 
 		CraftingRecipeConfigurationLoader configurationLoader = new CraftingRecipeConfigurationLoader();
 		List<ShapedCraftingRecipeDefinition> definitions;
-		try (InputStream configurationStream = instance.getResource("recipes.yml")) {
+		try (InputStream configurationStream = instance.getResource("crafting/recipes.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain recipes.yml");
 			}

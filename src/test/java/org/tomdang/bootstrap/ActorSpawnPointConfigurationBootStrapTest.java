@@ -46,7 +46,7 @@ class ActorSpawnPointConfigurationBootStrapTest {
 
 	@Test
 	void loadsAndRegistersBundledSpawnPoints() {
-		when(plugin.getResource("spawn-points.yml")).thenReturn(stream(validYaml()));
+		when(plugin.getResource("actors/spawn-points.yml")).thenReturn(stream(validYaml()));
 
 		new ActorSpawnPointConfigurationBootStrap(plugin, actorRegistry, spawnPointRegistry);
 
@@ -63,7 +63,7 @@ class ActorSpawnPointConfigurationBootStrapTest {
 
 	@Test
 	void rejectsMissingBundledConfiguration() {
-		when(plugin.getResource("spawn-points.yml")).thenReturn(null);
+		when(plugin.getResource("actors/spawn-points.yml")).thenReturn(null);
 
 		assertThrows(IllegalStateException.class, () ->
 				new ActorSpawnPointConfigurationBootStrap(plugin, actorRegistry, spawnPointRegistry));

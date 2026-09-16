@@ -1,5 +1,7 @@
 # TomBlock
 
+For a categorized index of YAML files and their loading behavior, see [CONFIGURATION.md](CONFIGURATION.md).
+
 TomBlock is an in-development Minecraft Paper MMORPG plugin written in Java. The goal is to build reusable systems for custom combat, abilities, items, crafting, NPCs, dialogue, mining, player progression, and eventually a complete multiplayer gameplay experience.
 
 This is my first substantial programming project and is currently being developed as both a game project and a way for me to learn programming while making something fun in a game I enjoy.

@@ -28,7 +28,7 @@ public class PlayerStatPresentationBootStrap {
 		if (instance == null) throw new IllegalArgumentException("instance cannot be null");
 
 		List<PlayerStatPresentation> presentations;
-		try (InputStream configurationStream = instance.getResource("stat-presentations.yml")) {
+		try (InputStream configurationStream = instance.getResource("stats/stat-presentations.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain stat-presentations.yml");
 			}
@@ -47,7 +47,7 @@ public class PlayerStatPresentationBootStrap {
 	}
 
 	private PlayerStatsBreakdownMenuConfiguration loadBreakdownMenuConfiguration(TomBlock instance) {
-		try (InputStream stream = instance.getResource("stat-categories.yml")) {
+		try (InputStream stream = instance.getResource("stats/stat-categories.yml")) {
 			if (stream == null) throw new IllegalStateException("TomBlock.jar does not contain stat-categories.yml");
 			return new PlayerStatsBreakdownMenuConfigurationLoader().load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 		} catch (IOException exception) {
@@ -56,7 +56,7 @@ public class PlayerStatPresentationBootStrap {
 	}
 
 	private PlayerStatsCategoryMenuConfiguration loadCategoryMenuConfiguration(TomBlock instance) {
-		try (InputStream stream = instance.getResource("stat-categories.yml")) {
+		try (InputStream stream = instance.getResource("stats/stat-categories.yml")) {
 			if (stream == null) throw new IllegalStateException("TomBlock.jar does not contain stat-categories.yml");
 			return new PlayerStatsCategoryMenuConfigurationLoader().load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 		} catch (IOException exception) {
@@ -65,7 +65,7 @@ public class PlayerStatPresentationBootStrap {
 	}
 
 	private PlayerStatsOverviewConfiguration loadOverviewConfiguration(TomBlock instance) {
-		try (InputStream stream = instance.getResource("stat-categories.yml")) {
+		try (InputStream stream = instance.getResource("stats/stat-categories.yml")) {
 			if (stream == null) throw new IllegalStateException("TomBlock.jar does not contain stat-categories.yml");
 			return new PlayerStatsOverviewConfigurationLoader().load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 		} catch (IOException exception) {

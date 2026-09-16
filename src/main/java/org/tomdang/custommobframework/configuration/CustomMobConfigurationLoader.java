@@ -28,10 +28,45 @@ public class CustomMobConfigurationLoader {
 					parseEnum(MobType.class, requireText(mob, id, "mob-type"), id, "mob-type"),
 					requireInt(mob, id, "xp"),
 					requireBoolean(mob, id, "burns-in-daylight"),
+					loadAllowedSpawnRegions(mob, id),
+					loadPopulation(mob, id),
 					loadDrops(mob, id)
 			));
 		}
 		return List.copyOf(definitions);
+	}
+
+	private MobPopulationRule loadPopulation(ConfigurationSection mob, String mobId) {
+		if (!mob.contains("population")) return null;
+		ConfigurationSection section = requireSection(mob, "population", "Population for mob " + mobId);
+		return new MobPopulationRule(mobId,
+				requireText(section, mobId, "region"),
+				requireInt(section, mobId, "max-alive"),
+				requireLong(section, mobId, "interval-ticks"),
+				requireInt(section, mobId, "activation-radius"),
+				requireInt(section, mobId, "despawn-radius"),
+				requireLong(section, mobId, "despawn-grace-ticks"),
+				requireInt(section, mobId, "minimum-spawn-distance"),
+				requireInt(section, mobId, "maximum-spawn-distance"));
+	}
+
+	private long requireLong(ConfigurationSection section, String id, String field) {
+		if (!section.isInt(field) && !section.isLong(field)) {
+			throw new IllegalArgumentException("Mob " + id + " has a non-integer " + field);
+		}
+		return section.getLong(field);
+	}
+
+	private List<String> loadAllowedSpawnRegions(ConfigurationSection mob, String mobId) {
+		if (!mob.contains("allowed-spawn-regions")) return List.of();
+		if (!mob.isList("allowed-spawn-regions")) {
+			throw new IllegalArgumentException("Mob " + mobId + " has a non-list allowed-spawn-regions");
+		}
+		List<?> values = mob.getList("allowed-spawn-regions");
+		if (values == null || values.stream().anyMatch(value -> !(value instanceof String))) {
+			throw new IllegalArgumentException("Mob " + mobId + " has a non-text allowed-spawn-regions entry");
+		}
+		return values.stream().map(value -> ((String) value).trim()).toList();
 	}
 
 	private List<CustomMobDropDefinition> loadDrops(ConfigurationSection mob, String mobId) {

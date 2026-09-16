@@ -27,7 +27,7 @@ public class ActorSpawnPointConfigurationBootStrap {
 
 		ActorSpawnPointConfigurationLoader loader = new ActorSpawnPointConfigurationLoader();
 		List<ActorSpawnPointConfigurationDefinition> definitions;
-		try (InputStream configurationStream = instance.getResource("spawn-points.yml")) {
+		try (InputStream configurationStream = instance.getResource("actors/spawn-points.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain spawn-points.yml");
 			}

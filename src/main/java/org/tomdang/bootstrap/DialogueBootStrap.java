@@ -67,7 +67,7 @@ public class DialogueBootStrap {
 
 		DialogueConfigurationLoader configurationLoader = new DialogueConfigurationLoader();
 		List<DialogueConfigurationDefinition> dialogueDefinitions;
-		try (InputStream configurationStream = instance.getResource("dialogues.yml")) {
+		try (InputStream configurationStream = instance.getResource("actors/dialogues.yml")) {
 			if (configurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain dialogues.yml");
 			}

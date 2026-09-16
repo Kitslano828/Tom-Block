@@ -15,21 +15,31 @@ import org.bukkit.persistence.PersistentDataType;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContext;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContextRegistry;
 import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPoint;
+import org.tomdang.custommobframework.custommobspawn.MobSpawnRegionPolicy;
+import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 
 public class CustomMobSpawner {
 
 	private final NamespacedKey customMobKey;
 	private final NamespacedKey spawnPointIDKey;
+	private final NamespacedKey currentHealthKey;
 	CustomMobContextRegistry customMobContextRegistry;
+	private final MobSpawnRegionPolicy spawnRegionPolicy;
+	private final BukkitBlockPositionAdapter blockPositions = new BukkitBlockPositionAdapter();
 
-	public CustomMobSpawner(NamespacedKey customMobKey, NamespacedKey spawnPointIDKey, CustomMobContextRegistry customMobContextRegistry) {
+	public CustomMobSpawner(NamespacedKey customMobKey, NamespacedKey spawnPointIDKey,
+	                        NamespacedKey currentHealthKey,
+	                        CustomMobContextRegistry customMobContextRegistry, MobSpawnRegionPolicy spawnRegionPolicy) {
 		this.customMobKey = customMobKey;
 		this.spawnPointIDKey = spawnPointIDKey;
+		this.currentHealthKey = currentHealthKey;
 		this.customMobContextRegistry = customMobContextRegistry;
+		this.spawnRegionPolicy = spawnRegionPolicy;
 	}
 
 	public Entity createCustomMob(CustomMob customMob, Location location, CustomMobSpawnPoint customMobSpawnPoint) {
-		// if CustomMobSpawnPoint Exist
+		if (customMob == null || location == null) throw new IllegalArgumentException("mob and location are required");
+		if (!spawnRegionPolicy.allows(customMob.getId(), blockPositions.fromLocation(location))) return null;
 		Entity entity = location.getWorld().spawnEntity(location, customMob.getEntityType());
 
 		applyEntityBehavior(customMob, entity);
@@ -37,6 +47,7 @@ public class CustomMobSpawner {
 		CustomMobContext customMobContext = new CustomMobContext(entity.getUniqueId(), customMob.getMaxHealth(), customMob);
 		customMobContextRegistry.addCustomMobContextToRegistry(customMobContext);
 		PersistentDataContainer pdc = entity.getPersistentDataContainer();
+		pdc.set(currentHealthKey, PersistentDataType.DOUBLE, customMob.getMaxHealth());
 		if (customMobSpawnPoint != null) {
 			String customSpawnID = customMobSpawnPoint.getSpawnPointID();
 			pdc.set(spawnPointIDKey, PersistentDataType.STRING, customSpawnID);

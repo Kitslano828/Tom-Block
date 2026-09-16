@@ -61,7 +61,7 @@ public class MiningBootstrap {
 		MiningBlockRegistry miningBlockRegistry = new MiningBlockRegistry();
 		MiningBlockConfigurationLoader miningBlockConfigurationLoader = new MiningBlockConfigurationLoader();
 		List<MiningBlockDefinition> miningBlockDefinitions;
-		try (InputStream miningBlockConfigurationStream = instance.getResource("mining-blocks.yml")) {
+		try (InputStream miningBlockConfigurationStream = instance.getResource("mining/mining-blocks.yml")) {
 			if (miningBlockConfigurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain mining-blocks.yml");
 			}
@@ -79,7 +79,7 @@ public class MiningBootstrap {
 
 		MiningToolConfigurationLoader miningToolConfigurationLoader = new MiningToolConfigurationLoader();
 		List<MiningToolDefinition> miningToolDefinitions;
-		try (InputStream miningToolConfigurationStream = instance.getResource("mining-tools.yml")) {
+		try (InputStream miningToolConfigurationStream = instance.getResource("mining/mining-tools.yml")) {
 			if (miningToolConfigurationStream == null) {
 				throw new IllegalStateException("TomBlock.jar does not contain mining-tools.yml");
 			}

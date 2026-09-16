@@ -20,7 +20,7 @@ class DialogueConfigurationIntegrationTest {
 		DialogueConfigurationLoader loader = new DialogueConfigurationLoader();
 		List<DialogueConfigurationDefinition> definitions;
 
-		try (InputStream stream = getClass().getClassLoader().getResourceAsStream("dialogues.yml")) {
+		try (InputStream stream = getClass().getClassLoader().getResourceAsStream("actors/dialogues.yml")) {
 			assertNotNull(stream, "The built plugin resources must contain dialogues.yml");
 			definitions = loader.loadDefinitions(new InputStreamReader(stream, StandardCharsets.UTF_8));
 		}

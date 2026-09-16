@@ -1,0 +1,26 @@
+mobs:
+  TRAINING_ZOMBIE:
+    entity-type: ZOMBIE
+    display-name: "Training Zombie"
+    max-health: 100.0
+    damage: 20.0
+    mob-type: COMMON_MOB
+    xp: 5
+    burns-in-daylight: false
+    # Omit or use [] to allow spawning anywhere. Resolved child/parent membership counts.
+    allowed-spawn-regions:
+      - BLACKSMITH_DEVELOPMENT_AREA
+    # Ambient mobs use loaded chunks near players; fixed spawn points remain for encounters.
+    population:
+      region: BLACKSMITH_DEVELOPMENT_AREA
+      max-alive: 3
+      interval-ticks: 100
+      activation-radius: 48
+      despawn-radius: 80
+      despawn-grace-ticks: 200
+      minimum-spawn-distance: 16
+      maximum-spawn-distance: 40
+    drops:
+      ROTTEN_FLESH:
+        amount: 2
+        chance: 100.0

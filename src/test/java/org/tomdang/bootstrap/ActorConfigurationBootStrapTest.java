@@ -53,7 +53,7 @@ class ActorConfigurationBootStrapTest {
 				          text: Blacksmith
 				          visible-while-moving: true
 				""";
-		when(plugin.getResource("actors.yml")).thenReturn(
+		when(plugin.getResource("actors/actors.yml")).thenReturn(
 				new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))
 		);
 
@@ -69,7 +69,7 @@ class ActorConfigurationBootStrapTest {
 
 	@Test
 	void rejectsMissingBundledConfiguration() {
-		when(plugin.getResource("actors.yml")).thenReturn(null);
+		when(plugin.getResource("actors/actors.yml")).thenReturn(null);
 
 		assertThrows(IllegalStateException.class, () -> new ActorConfigurationBootStrap(
 				plugin,

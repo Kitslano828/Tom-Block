@@ -15,6 +15,8 @@ public record CustomMobDefinition(
 		MobType mobType,
 		int xp,
 		boolean burnsInDaylight,
+		List<String> allowedSpawnRegions,
+		MobPopulationRule population,
 		List<CustomMobDropDefinition> drops
 ) {
 	public CustomMobDefinition {
@@ -35,7 +37,18 @@ public record CustomMobDefinition(
 		}
 		if (mobType == null) throw new IllegalArgumentException("mobType cannot be null");
 		if (xp < 0) throw new IllegalArgumentException("xp cannot be negative");
+		if (allowedSpawnRegions == null) throw new IllegalArgumentException("allowedSpawnRegions cannot be null");
+		if (allowedSpawnRegions.stream().anyMatch(regionId -> regionId == null || regionId.isBlank())) {
+			throw new IllegalArgumentException("allowedSpawnRegions cannot contain blank IDs");
+		}
+		if (allowedSpawnRegions.stream().distinct().count() != allowedSpawnRegions.size()) {
+			throw new IllegalArgumentException("allowedSpawnRegions cannot contain duplicate IDs");
+		}
 		if (drops == null) throw new IllegalArgumentException("drops cannot be null");
+		allowedSpawnRegions = List.copyOf(allowedSpawnRegions);
+		if (population != null && !population.mobId().equals(id)) {
+			throw new IllegalArgumentException("population mobId must match definition ID");
+		}
 		drops = List.copyOf(drops);
 	}
 }

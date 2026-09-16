@@ -1,6 +1,5 @@
 package org.tomdang.custommobframework.custommobspawn;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import java.util.*;
 
@@ -8,12 +7,7 @@ public class CustomMobSpawnPointRegistry {
 
 	private final Map<String,CustomMobSpawnPoint> customMobSpawnPoints = new HashMap<>();
 
-	public CustomMobSpawnPointRegistry() {
-
-
-		registerSpawnPoint("TRAINING_ZOMBIE_SPAWN2",new Location(Bukkit.getWorld("world"), 97.5,76,190.5),"TRAINING_ZOMBIE", 100L);
-		registerSpawnPoint("TRAINING_ZOMBIE_SPAWN3",new Location(Bukkit.getWorld("world"), 102.5,76,190.5),"TRAINING_ZOMBIE", 100L);
-	}
+	public CustomMobSpawnPointRegistry() { }
 
 	public void registerSpawnPoint(String spawnPointID, Location location, String customMobID,
 											   long respawnDelayInTicks) {
