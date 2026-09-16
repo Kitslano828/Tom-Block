@@ -19,15 +19,14 @@ import org.tomdang.player.playerhealthdisplay.PlayerHealthDisplayService;
 import org.tomdang.player.playerresource.PlayerResourceRegenerationService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
-import org.tomdang.player.stats.modifier.CompositePlayerStatModifierProvider;
 import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
+import org.tomdang.player.stats.modifier.PlayerStatModifierProviderRegistry;
 import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
-import org.tomdang.player.stats.modifier.cap.CompositePlayerStatCapModifierProvider;
+import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifierProviderRegistry;
 import org.tomdang.customitemframework.stats.HeldItemStatCapModifierProvider;
 import org.tomdang.customarmorframework.stats.ArmorStatCapModifierProvider;
 
 import java.io.File;
-import java.util.List;
 
 public class PlayerBootStrap {
 
@@ -48,6 +47,10 @@ public class PlayerBootStrap {
 
 	@Getter
 	private final ActionBarSuppressionService actionBarSuppressionService;
+	@Getter
+	private final PlayerStatModifierProviderRegistry statModifierProviderRegistry;
+	@Getter
+	private final PlayerStatCapModifierProviderRegistry statCapModifierProviderRegistry;
 
 	public PlayerBootStrap(TomBlock instance, File playerFile, CustomArmorResolver customArmorResolver,
 	                      CustomItemResolver customItemResolver, PlayerStatRuleRegistry statRuleRegistry) {
@@ -57,21 +60,18 @@ public class PlayerBootStrap {
 		customArmorService = new CustomArmorService(customArmorResolver);
 		ArmorStatModifierProvider armorStatModifierProvider = new ArmorStatModifierProvider(customArmorService);
 		HeldItemStatModifierProvider heldItemStatModifierProvider = new HeldItemStatModifierProvider(customItemResolver);
-		CompositePlayerStatModifierProvider statModifierProvider = new CompositePlayerStatModifierProvider(
-				List.of(armorStatModifierProvider, heldItemStatModifierProvider)
-		);
+		statModifierProviderRegistry = new PlayerStatModifierProviderRegistry();
+		statModifierProviderRegistry.register("armor", armorStatModifierProvider);
+		statModifierProviderRegistry.register("held-item", heldItemStatModifierProvider);
 		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator(statRuleRegistry);
-		CompositePlayerStatCapModifierProvider capModifierProvider = new CompositePlayerStatCapModifierProvider(
-				List.of(
-						new ArmorStatCapModifierProvider(customArmorService),
-						new HeldItemStatCapModifierProvider(customItemResolver)
-				)
-		);
+		statCapModifierProviderRegistry = new PlayerStatCapModifierProviderRegistry();
+		statCapModifierProviderRegistry.register("armor", new ArmorStatCapModifierProvider(customArmorService));
+		statCapModifierProviderRegistry.register("held-item", new HeldItemStatCapModifierProvider(customItemResolver));
 		playerStatsService = new PlayerStatsService(
 				playerProfileService,
-				statModifierProvider,
+				statModifierProviderRegistry,
 				playerStatModifierCalculator,
-				capModifierProvider
+				statCapModifierProviderRegistry
 		);
 		PlayerHealthDisplayService 	playerHealthDisplayService = new PlayerHealthDisplayService(playerProfileService, playerStatsService);
 		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService, playerHealthDisplayService);
