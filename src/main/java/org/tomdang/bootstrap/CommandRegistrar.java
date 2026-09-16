@@ -37,6 +37,9 @@ import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
 import org.tomdang.playernpc.command.NmsPlayerNpcTestCommand;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
+import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
+import org.tomdang.region.command.RegionInspectCommand;
+import org.tomdang.region.resolution.RegionResolver;
 
 public class CommandRegistrar {
 	
@@ -48,7 +51,8 @@ public class CommandRegistrar {
 	                        ActorFollowService actorFollowService,
 	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
 	                        PlayerStatPresentationRegistry playerStatPresentationRegistry,
-	                        PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration
+	                        PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
+	                        RegionResolver regionResolver
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -111,6 +115,13 @@ public class CommandRegistrar {
 
 		FollowTestCommand followTestCommand = new FollowTestCommand(actorFollowService, actorInstanceRegistry);
 		instance.getCommand("followtest").setExecutor(followTestCommand);
+
+		RegionInspectCommand regionInspectCommand = new RegionInspectCommand(
+				regionResolver,
+				new BukkitBlockPositionAdapter()
+		);
+		instance.getCommand("region").setExecutor(regionInspectCommand);
+		instance.getCommand("region").setTabCompleter(regionInspectCommand);
 	}
 	
 }

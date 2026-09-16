@@ -283,6 +283,7 @@ public class TomBlock extends JavaPlugin {
 		PlayerNpcActorInteractionService playerNpcActorInteractionService = new PlayerNpcActorInteractionService(playerNpcRegistry, playerNpcVisibilityRegistry, playerNpcActorResolver, actorInteractionService);
 		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService, actorNameplatePresentation);
+		RegionBootStrap regionBootStrap = new RegionBootStrap(this);
 		new CommandRegistrar(
 				this,
 				playerProfileService,
@@ -302,7 +303,8 @@ public class TomBlock extends JavaPlugin {
 				actorBootStrap.getActorFollowService(),
 				playerInventoryItemRefreshService,
 				playerStatPresentationBootStrap.getRegistry(),
-				playerStatPresentationBootStrap.getOverviewConfiguration()
+				playerStatPresentationBootStrap.getOverviewConfiguration(),
+				regionBootStrap.getRegionResolver()
 		);
 
 		new ListenerRegistrar(

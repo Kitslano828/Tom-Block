@@ -1,0 +1,23 @@
+# Region definitions are loaded from plugins/TomBlock/regions.yml.
+# A region may contain multiple disconnected cuboids and may inherit semantic
+# membership from a parent without duplicating the parent's geometry.
+regions:
+  BLACKSMITH_DEVELOPMENT_AREA:
+    priority: 10
+    tags:
+      - DEVELOPMENTg
+    shape:
+      cuboids:
+        main:
+          world: world
+          minimum:
+            x: 80
+            y: 60
+            z: 175
+          maximum:
+            x: 110
+            y: 100
+            z: 200
+    overrides:
+      inclusions: {}
+      exclusions: {}
