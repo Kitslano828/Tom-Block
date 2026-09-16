@@ -58,17 +58,22 @@ public final class RegionInspectCommand implements CommandExecutor, TabCompleter
 		}
 
 		sender.sendMessage(Component.text("Primary: ", NamedTextColor.GRAY).append(formatRegion(resolved.getFirst())));
-		sender.sendMessage(Component.text("Direct: ", NamedTextColor.GRAY).append(formatRegions(direct)));
-		sender.sendMessage(Component.text("Inherited: ", NamedTextColor.GRAY).append(formatRegions(inherited)));
+		sender.sendMessage(Component.text("Direct: ", NamedTextColor.GRAY).append(formatRegions(direct, position, true)));
+		sender.sendMessage(Component.text("Inherited: ", NamedTextColor.GRAY).append(formatRegions(inherited, position, false)));
 		return true;
 	}
 
-	private Component formatRegions(List<RegionDefinition> regions) {
+	private Component formatRegions(List<RegionDefinition> regions, BlockPosition position, boolean showSource) {
 		if (regions.isEmpty()) return Component.text("none", NamedTextColor.DARK_GRAY);
 		Component output = Component.empty();
 		for (int index = 0; index < regions.size(); index++) {
 			if (index > 0) output = output.append(Component.text(", ", NamedTextColor.GRAY));
 			output = output.append(formatRegion(regions.get(index)));
+			if (showSource) {
+				output = output.append(Component.text(
+						" source=" + resolver.evaluateDirect(regions.get(index), position).source(),
+						NamedTextColor.DARK_GRAY));
+			}
 		}
 		return output;
 	}

@@ -2,6 +2,7 @@ package org.tomdang.region.resolution;
 
 import org.tomdang.region.definition.RegionDefinition;
 import org.tomdang.region.position.BlockPosition;
+import org.tomdang.region.override.RegionRuntimeOverrideProvider;
 import org.tomdang.region.registry.RegionRegistry;
 
 import java.util.ArrayList;
@@ -17,18 +18,29 @@ public final class RegionResolver {
 					.thenComparing(RegionDefinition::id);
 
 	private final RegionRegistry registry;
+	private final RegionMembershipEvaluator membershipEvaluator;
 
 	public RegionResolver(RegionRegistry registry) {
+		this(registry, RegionRuntimeOverrideProvider.empty());
+	}
+
+	public RegionResolver(RegionRegistry registry, RegionRuntimeOverrideProvider runtimeOverrides) {
 		if (registry == null) throw new IllegalArgumentException("registry cannot be null");
+		if (runtimeOverrides == null) throw new IllegalArgumentException("runtimeOverrides cannot be null");
 		this.registry = registry;
+		this.membershipEvaluator = new RegionMembershipEvaluator(runtimeOverrides);
 	}
 
 	public List<RegionDefinition> directRegionsAt(BlockPosition position) {
 		requirePosition(position);
 		return registry.all().stream()
-				.filter(region -> region.directlyContains(position))
+				.filter(region -> evaluateDirect(region, position).member())
 				.sorted(RESOLUTION_ORDER)
 				.toList();
+	}
+
+	public RegionMembershipEvaluation evaluateDirect(RegionDefinition region, BlockPosition position) {
+		return membershipEvaluator.evaluate(region, position);
 	}
 
 	public List<RegionDefinition> regionsAt(BlockPosition position) {

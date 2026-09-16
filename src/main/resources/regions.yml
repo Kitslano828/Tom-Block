@@ -5,7 +5,7 @@ regions:
   BLACKSMITH_DEVELOPMENT_AREA:
     priority: 10
     tags:
-      - DEVELOPMENTg
+      - DEVELOPMENT
     shape:
       cuboids:
         main:

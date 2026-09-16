@@ -6,6 +6,10 @@ import org.tomdang.region.configuration.RegionConfigurationDefinition;
 import org.tomdang.region.configuration.RegionConfigurationLoader;
 import org.tomdang.region.registry.RegionRegistry;
 import org.tomdang.region.resolution.RegionResolver;
+import org.tomdang.region.override.RegionOverrideService;
+import org.tomdang.region.override.YamlRegionOverrideRepository;
+import org.tomdang.region.edit.RegionEditSessionRegistry;
+import org.tomdang.region.edit.RegionEditingService;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,6 +21,8 @@ import java.util.List;
 public final class RegionBootStrap {
 	private final RegionRegistry regionRegistry;
 	private final RegionResolver regionResolver;
+	private final RegionOverrideService regionOverrideService;
+	private final RegionEditingService regionEditingService;
 
 	public RegionBootStrap(TomBlock instance) {
 		if (instance == null) throw new IllegalArgumentException("instance cannot be null");
@@ -35,7 +41,21 @@ public final class RegionBootStrap {
 		RegionConfigurationConverter converter = new RegionConfigurationConverter();
 		regionRegistry = new RegionRegistry();
 		regionRegistry.registerAll(configurations.stream().map(converter::convert).toList());
-		regionResolver = new RegionResolver(regionRegistry);
+		regionOverrideService = new RegionOverrideService(
+				regionRegistry,
+				new YamlRegionOverrideRepository(instance.getDataFolder().toPath().resolve("region-overrides.yml"))
+		);
+		try {
+			regionOverrideService.load();
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not read region-overrides.yml", exception);
+		}
+		regionResolver = new RegionResolver(regionRegistry, regionOverrideService);
+		regionEditingService = new RegionEditingService(
+				regionRegistry,
+				regionOverrideService,
+				new RegionEditSessionRegistry(100)
+		);
 		instance.getLogger().info("Loaded " + regionRegistry.all().size() + " region definitions.");
 	}
 
@@ -45,5 +65,13 @@ public final class RegionBootStrap {
 
 	public RegionResolver getRegionResolver() {
 		return regionResolver;
+	}
+
+	public RegionOverrideService getRegionOverrideService() {
+		return regionOverrideService;
+	}
+
+	public RegionEditingService getRegionEditingService() {
+		return regionEditingService;
 	}
 }
