@@ -38,8 +38,11 @@ import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
 import org.tomdang.playernpc.command.NmsPlayerNpcTestCommand;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
-import org.tomdang.region.command.RegionInspectCommand;
+import org.tomdang.region.command.RegionCommand;
 import org.tomdang.region.resolution.RegionResolver;
+import org.tomdang.region.registry.RegionRegistry;
+import org.tomdang.region.edit.RegionEditingService;
+import org.tomdang.region.edit.RegionBrushItemService;
 
 public class CommandRegistrar {
 	
@@ -52,7 +55,10 @@ public class CommandRegistrar {
 	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
 	                        PlayerStatPresentationRegistry playerStatPresentationRegistry,
 	                        PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
-	                        RegionResolver regionResolver
+	                        RegionResolver regionResolver,
+	                        RegionRegistry regionRegistry,
+	                        RegionEditingService regionEditingService,
+	                        RegionBrushItemService regionBrushItemService
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -116,12 +122,15 @@ public class CommandRegistrar {
 		FollowTestCommand followTestCommand = new FollowTestCommand(actorFollowService, actorInstanceRegistry);
 		instance.getCommand("followtest").setExecutor(followTestCommand);
 
-		RegionInspectCommand regionInspectCommand = new RegionInspectCommand(
+		RegionCommand regionCommand = new RegionCommand(
 				regionResolver,
-				new BukkitBlockPositionAdapter()
+				new BukkitBlockPositionAdapter(),
+				regionRegistry,
+				regionEditingService,
+				regionBrushItemService
 		);
-		instance.getCommand("region").setExecutor(regionInspectCommand);
-		instance.getCommand("region").setTabCompleter(regionInspectCommand);
+		instance.getCommand("region").setExecutor(regionCommand);
+		instance.getCommand("region").setTabCompleter(regionCommand);
 	}
 	
 }

@@ -61,6 +61,9 @@ import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
 import org.tomdang.playernpc.nms.NmsPlayerNpcViewer;
 import org.tomdang.playernpc.runtime.PlayerNpcRegistry;
 import org.tomdang.playernpc.runtime.PlayerNpcVisibilityRegistry;
+import org.tomdang.region.edit.RegionBrushItemService;
+import org.tomdang.region.edit.RegionBrushListener;
+import org.tomdang.region.visualization.RegionBrushVisualizationTask;
 
 import java.io.File;
 
@@ -72,6 +75,7 @@ public class TomBlock extends JavaPlugin {
 	private CombatBootStrap combatBootStrap;
 	private NmsPlayerNpcInteractionInterceptor nmsPlayerNpcInteractionInterceptor;
 	private ActorBootStrap actorBootStrap;
+	private RegionBrushVisualizationTask regionBrushVisualizationTask;
 
 
 	@Override
@@ -89,6 +93,7 @@ public class TomBlock extends JavaPlugin {
 		NamespacedKey actorAudienceScopeKey = new NamespacedKey(this,"actor_audience_scope");
 		NamespacedKey actorAudienceIDKey = new NamespacedKey(this,"actor_audience_id");
 		NamespacedKey actorSpawnPointIDKey = new NamespacedKey(this, "actor_spawn_point_id");
+		NamespacedKey regionBrushKey = new NamespacedKey(this, "region_brush");
 
 		PlayerStatPresentationBootStrap playerStatPresentationBootStrap = new PlayerStatPresentationBootStrap(this);
 		ItemBootStrap itemBootStrap = new ItemBootStrap(
@@ -284,6 +289,20 @@ public class TomBlock extends JavaPlugin {
 		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService, actorNameplatePresentation);
 		RegionBootStrap regionBootStrap = new RegionBootStrap(this);
+		RegionBrushItemService regionBrushItemService = new RegionBrushItemService(regionBrushKey);
+		RegionBrushListener regionBrushListener = new RegionBrushListener(
+				regionBrushItemService,
+				regionBootStrap.getRegionEditingService(),
+				new org.tomdang.region.bukkit.BukkitBlockPositionAdapter()
+		);
+		regionBrushVisualizationTask = new RegionBrushVisualizationTask(
+				this,
+				regionBootStrap.getRegionEditingService(),
+				regionBrushItemService,
+				regionBootStrap.getRegionVisualizationService(),
+				new org.tomdang.region.bukkit.BukkitBlockPositionAdapter(),
+				regionBootStrap.getRegionVisualizationSettings()
+		);
 		new CommandRegistrar(
 				this,
 				playerProfileService,
@@ -304,7 +323,10 @@ public class TomBlock extends JavaPlugin {
 				playerInventoryItemRefreshService,
 				playerStatPresentationBootStrap.getRegistry(),
 				playerStatPresentationBootStrap.getOverviewConfiguration(),
-				regionBootStrap.getRegionResolver()
+				regionBootStrap.getRegionResolver(),
+				regionBootStrap.getRegionRegistry(),
+				regionBootStrap.getRegionEditingService(),
+				regionBrushItemService
 		);
 
 		new ListenerRegistrar(
@@ -336,17 +358,22 @@ public class TomBlock extends JavaPlugin {
 				playerStatPresentationBootStrap.getRegistry(),
 				playerStatPresentationBootStrap.getOverviewConfiguration(),
 				playerStatPresentationBootStrap.getCategoryMenuConfiguration(),
-				playerStatPresentationBootStrap.getBreakdownMenuConfiguration()
+				playerStatPresentationBootStrap.getBreakdownMenuConfiguration(),
+				regionBrushListener
 				);
 
 		playerBootStrap.start();
 		mobBootStrap.reconcileSpawnPoints();
 
 		actorReconciliationService.reconcileSpawnPoints();
+		regionBrushVisualizationTask.start();
 	}
 
 	@Override
 	public void onDisable() {
+		if (regionBrushVisualizationTask != null) {
+			regionBrushVisualizationTask.stop();
+		}
 		if (combatBootStrap != null) {
 			combatBootStrap.getPlayerAttackIndicatorService().stop();
 		}

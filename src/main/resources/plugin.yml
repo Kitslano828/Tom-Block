@@ -64,3 +64,6 @@ permissions:
   tomblock.admin.region.inspect:
     description: allows inspection of configured region membership
     default: op
+  tomblock.admin.region.edit:
+    description: allows editing and saving region block overrides
+    default: op

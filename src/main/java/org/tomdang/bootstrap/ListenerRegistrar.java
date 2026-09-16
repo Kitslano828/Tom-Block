@@ -50,6 +50,7 @@ import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
 import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
+import org.tomdang.region.edit.RegionBrushListener;
 
 public class ListenerRegistrar {
 
@@ -69,7 +70,8 @@ public class ListenerRegistrar {
 							 PlayerStatPresentationRegistry playerStatPresentationRegistry,
 							 PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
 							 PlayerStatsCategoryMenuConfiguration playerStatsCategoryMenuConfiguration,
-							 PlayerStatsBreakdownMenuConfiguration playerStatsBreakdownMenuConfiguration
+							 PlayerStatsBreakdownMenuConfiguration playerStatsBreakdownMenuConfiguration,
+							 RegionBrushListener regionBrushListener
 	){
 		PlayerItemRefreshScheduler itemRefreshScheduler = new PlayerItemRefreshScheduler(
 				instance,
@@ -131,6 +133,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(actorDamageListener, instance);
 		instance.getServer().getPluginManager().registerEvents(dialogueSneakListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerNpcConnectionListener, instance);
+		instance.getServer().getPluginManager().registerEvents(regionBrushListener, instance);
 	}
 
 }

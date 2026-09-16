@@ -5,12 +5,16 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.junit.jupiter.api.Test;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.mockito.ArgumentCaptor;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 import org.tomdang.region.definition.RegionDefinition;
+import org.tomdang.region.edit.RegionBrushItemService;
+import org.tomdang.region.edit.RegionEditingService;
 import org.tomdang.region.override.RegionOverrides;
 import org.tomdang.region.position.BlockPosition;
 import org.tomdang.region.registry.RegionRegistry;
@@ -18,8 +22,10 @@ import org.tomdang.region.resolution.RegionResolver;
 import org.tomdang.region.shape.CuboidRegionShape;
 
 import java.util.List;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
@@ -27,7 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class RegionInspectCommandTest {
+class RegionCommandTest {
 	@Test
 	void reportsDirectInheritedAndPrimaryRegions() {
 		RegionRegistry registry = new RegionRegistry();
@@ -35,8 +41,7 @@ class RegionInspectCommandTest {
 				definition("LIBRARY", "VILLAGE", 20),
 				definition("VILLAGE", null, 10)
 		));
-		RegionInspectCommand command = new RegionInspectCommand(
-				new RegionResolver(registry), new BukkitBlockPositionAdapter());
+		RegionCommand command = command(registry);
 		Player player = playerAt(5);
 
 		command.onCommand(player, mock(Command.class), "region", new String[]{"inspect"});
@@ -51,8 +56,7 @@ class RegionInspectCommandTest {
 
 	@Test
 	void reportsNoRegionAndRejectsConsoleOrInvalidUsage() {
-		RegionInspectCommand command = new RegionInspectCommand(
-				new RegionResolver(new RegionRegistry()), new BukkitBlockPositionAdapter());
+		RegionCommand command = command(new RegionRegistry());
 		Player player = playerAt(50);
 		Command bukkitCommand = mock(Command.class);
 
@@ -66,10 +70,33 @@ class RegionInspectCommandTest {
 
 	@Test
 	void providesInspectTabCompletion() {
-		RegionInspectCommand command = new RegionInspectCommand(
-				new RegionResolver(new RegionRegistry()), new BukkitBlockPositionAdapter());
+		RegionCommand command = command(new RegionRegistry());
 		assertTrue(command.onTabComplete(mock(CommandSender.class), mock(Command.class), "region",
 				new String[]{"in"}).contains("inspect"));
+	}
+
+	@Test
+	void beginsEditSessionAndGivesTaggedBrush() {
+		RegionRegistry registry = new RegionRegistry();
+		registry.register(definition("VILLAGE", null, 10));
+		RegionEditingService editing = mock(RegionEditingService.class);
+		RegionBrushItemService brushItems = mock(RegionBrushItemService.class);
+		ItemStack brush = mock(ItemStack.class);
+		when(brushItems.create()).thenReturn(brush);
+		Player player = mock(Player.class);
+		UUID playerId = UUID.randomUUID();
+		when(player.getUniqueId()).thenReturn(playerId);
+		when(player.hasPermission("tomblock.admin.region.edit")).thenReturn(true);
+		PlayerInventory inventory = mock(PlayerInventory.class);
+		when(player.getInventory()).thenReturn(inventory);
+		when(inventory.addItem(brush)).thenReturn(new HashMap<>());
+		RegionCommand command = new RegionCommand(new RegionResolver(registry),
+				new BukkitBlockPositionAdapter(), registry, editing, brushItems);
+
+		command.onCommand(player, mock(Command.class), "region", new String[]{"edit", "VILLAGE"});
+
+		verify(editing).begin(playerId, "VILLAGE");
+		verify(inventory).addItem(brush);
 	}
 
 	private RegionDefinition definition(String id, String parentId, int priority) {
@@ -77,6 +104,15 @@ class RegionInspectCommandTest {
 		BlockPosition maximum = new BlockPosition("world", 10, 100, 10);
 		return new RegionDefinition(id, Optional.ofNullable(parentId), priority, Set.of("TEST"),
 				new CuboidRegionShape(minimum, maximum), RegionOverrides.empty());
+	}
+
+	private RegionCommand command(RegionRegistry registry) {
+		return new RegionCommand(
+				new RegionResolver(registry),
+				new BukkitBlockPositionAdapter(),
+				registry,
+				mock(RegionEditingService.class),
+				mock(RegionBrushItemService.class));
 	}
 
 	private Player playerAt(int x) {

@@ -10,6 +10,9 @@ import org.tomdang.region.override.RegionOverrideService;
 import org.tomdang.region.override.YamlRegionOverrideRepository;
 import org.tomdang.region.edit.RegionEditSessionRegistry;
 import org.tomdang.region.edit.RegionEditingService;
+import org.tomdang.region.visualization.RegionVisualizationConfigurationLoader;
+import org.tomdang.region.visualization.RegionVisualizationService;
+import org.tomdang.region.visualization.RegionVisualizationSettings;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -23,6 +26,8 @@ public final class RegionBootStrap {
 	private final RegionResolver regionResolver;
 	private final RegionOverrideService regionOverrideService;
 	private final RegionEditingService regionEditingService;
+	private final RegionVisualizationSettings regionVisualizationSettings;
+	private final RegionVisualizationService regionVisualizationService;
 
 	public RegionBootStrap(TomBlock instance) {
 		if (instance == null) throw new IllegalArgumentException("instance cannot be null");
@@ -56,6 +61,15 @@ public final class RegionBootStrap {
 				regionOverrideService,
 				new RegionEditSessionRegistry(100)
 		);
+		Path visualizationPath = instance.getDataFolder().toPath().resolve("region-visualization.yml");
+		if (Files.notExists(visualizationPath)) instance.saveResource("region-visualization.yml", false);
+		try (Reader reader = Files.newBufferedReader(visualizationPath, StandardCharsets.UTF_8)) {
+			regionVisualizationSettings = new RegionVisualizationConfigurationLoader().load(reader);
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not read region-visualization.yml", exception);
+		}
+		regionVisualizationService = new RegionVisualizationService(
+				regionRegistry, regionOverrideService, regionVisualizationSettings);
 		instance.getLogger().info("Loaded " + regionRegistry.all().size() + " region definitions.");
 	}
 
@@ -73,5 +87,13 @@ public final class RegionBootStrap {
 
 	public RegionEditingService getRegionEditingService() {
 		return regionEditingService;
+	}
+
+	public RegionVisualizationSettings getRegionVisualizationSettings() {
+		return regionVisualizationSettings;
+	}
+
+	public RegionVisualizationService getRegionVisualizationService() {
+		return regionVisualizationService;
 	}
 }

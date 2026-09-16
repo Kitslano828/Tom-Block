@@ -1,0 +1,6 @@
+visualization:
+  interval-ticks: 5
+  radius: 48
+  boundary-spacing: 1
+  maximum-markers: 1600
+  target-distance: 20

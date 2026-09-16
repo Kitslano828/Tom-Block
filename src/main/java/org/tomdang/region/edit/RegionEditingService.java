@@ -29,6 +29,14 @@ public final class RegionEditingService {
 		return sessionRegistry.begin(playerId, regionId);
 	}
 
+	public Optional<RegionEditSession> session(UUID playerId) {
+		return sessionRegistry.find(playerId);
+	}
+
+	public void end(UUID playerId) {
+		sessionRegistry.end(playerId);
+	}
+
 	public RegionEditAction apply(UUID playerId, BlockPosition position, RegionOverrideState state) {
 		RegionEditSession session = requireSession(playerId);
 		RegionOverrideState previous = overrideService.setState(session.selectedRegionId(), position, state);
