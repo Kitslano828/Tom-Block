@@ -64,6 +64,12 @@ import org.tomdang.playernpc.runtime.PlayerNpcVisibilityRegistry;
 import org.tomdang.region.edit.RegionBrushItemService;
 import org.tomdang.region.edit.RegionBrushListener;
 import org.tomdang.region.visualization.RegionBrushVisualizationTask;
+import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
+import org.tomdang.region.bukkit.PlayerRegionTrackingListener;
+import org.tomdang.region.bukkit.PlayerRegionTransitionEvent;
+import org.tomdang.region.bukkit.RegionTrackingDebugService;
+import org.tomdang.region.bukkit.RegionSpeedRefreshListener;
+import org.tomdang.region.tracking.PlayerRegionTrackingService;
 
 import java.io.File;
 
@@ -291,11 +297,34 @@ public class TomBlock extends JavaPlugin {
 		nmsPlayerNpcInteractionInterceptor = new NmsPlayerNpcInteractionInterceptor(this, playerNpcActorInteractionService::interact);
 		PlayerNpcActorVisibilityService playerNpcActorVisibilityService = new PlayerNpcActorVisibilityService(playerNpcRegistry, playerNpcActorResolver, actorBootStrap.getActorAudienceResolver(), playerNpcLifecycleService, actorNameplatePresentation);
 		RegionBootStrap regionBootStrap = new RegionBootStrap(this);
+		BukkitBlockPositionAdapter regionPositions = new BukkitBlockPositionAdapter();
+		playerStatsService.setLocationCapProvider((player, statType) -> regionBootStrap.getRegionStatCapResolver()
+				.resolve(regionPositions.fromLocation(player.getLocation()), statType));
+		RegionTrackingDebugService regionDebug = new RegionTrackingDebugService();
+		PlayerRegionTrackingService regionTracking = new PlayerRegionTrackingService(
+				regionBootStrap.getRegionResolver(),
+				(playerId, transition) -> {
+					Player player = Bukkit.getPlayer(playerId);
+					if (player != null) {
+						regionDebug.onTransition(player, transition);
+						Bukkit.getPluginManager().callEvent(new PlayerRegionTransitionEvent(player, transition));
+					}
+				});
+		getServer().getPluginManager().registerEvents(new PlayerRegionTrackingListener(regionTracking, regionPositions, regionDebug), this);
+		getServer().getPluginManager().registerEvents(
+				new RegionSpeedRefreshListener(playerMovementSpeedBootStrap.getRefreshScheduler()), this);
+		regionBootStrap.getRegionEditingService().onMembershipChanged(position -> {
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				if (regionPositions.fromLocation(player.getLocation()).equals(position)) {
+					regionTracking.refresh(player.getUniqueId(), position);
+				}
+			}
+		});
 		RegionBrushItemService regionBrushItemService = new RegionBrushItemService(regionBrushKey);
 		RegionBrushListener regionBrushListener = new RegionBrushListener(
 				regionBrushItemService,
 				regionBootStrap.getRegionEditingService(),
-				new org.tomdang.region.bukkit.BukkitBlockPositionAdapter()
+				regionPositions
 		);
 		regionBrushVisualizationTask = new RegionBrushVisualizationTask(
 				this,
@@ -329,6 +358,8 @@ public class TomBlock extends JavaPlugin {
 				regionBootStrap.getRegionRegistry(),
 				regionBootStrap.getRegionEditingService(),
 				regionBrushItemService,
+				regionTracking,
+				regionDebug,
 				playerMovementSpeedBootStrap.getRefreshScheduler()
 		);
 
@@ -365,6 +396,9 @@ public class TomBlock extends JavaPlugin {
 				regionBrushListener,
 				playerMovementSpeedBootStrap.getListener()
 				);
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			regionTracking.update(player.getUniqueId(), regionPositions.fromLocation(player.getLocation()));
+		}
 
 		playerBootStrap.start();
 		mobBootStrap.reconcileSpawnPoints();

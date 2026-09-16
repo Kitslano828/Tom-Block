@@ -13,6 +13,8 @@ import org.tomdang.region.edit.RegionEditingService;
 import org.tomdang.region.visualization.RegionVisualizationConfigurationLoader;
 import org.tomdang.region.visualization.RegionVisualizationService;
 import org.tomdang.region.visualization.RegionVisualizationSettings;
+import org.tomdang.region.policy.RegionStatCapResolver;
+import org.tomdang.region.policy.RegionStatCapConfigurationLoader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -28,6 +30,7 @@ public final class RegionBootStrap {
 	private final RegionEditingService regionEditingService;
 	private final RegionVisualizationSettings regionVisualizationSettings;
 	private final RegionVisualizationService regionVisualizationService;
+	private final RegionStatCapResolver regionStatCapResolver;
 
 	public RegionBootStrap(TomBlock instance) {
 		if (instance == null) throw new IllegalArgumentException("instance cannot be null");
@@ -56,6 +59,14 @@ public final class RegionBootStrap {
 			throw new IllegalStateException("Could not read region-overrides.yml", exception);
 		}
 		regionResolver = new RegionResolver(regionRegistry, regionOverrideService);
+		Path statCapsPath = instance.getDataFolder().toPath().resolve("region-stat-caps.yml");
+		if (Files.notExists(statCapsPath)) instance.saveResource("region-stat-caps.yml", false);
+		try (Reader reader = Files.newBufferedReader(statCapsPath, StandardCharsets.UTF_8)) {
+			regionStatCapResolver = new RegionStatCapResolver(regionResolver,
+					new RegionStatCapConfigurationLoader().load(reader, regionRegistry));
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not read region-stat-caps.yml", exception);
+		}
 		regionEditingService = new RegionEditingService(
 				regionRegistry,
 				regionOverrideService,
@@ -79,6 +90,10 @@ public final class RegionBootStrap {
 
 	public RegionResolver getRegionResolver() {
 		return regionResolver;
+	}
+
+	public RegionStatCapResolver getRegionStatCapResolver() {
+		return regionStatCapResolver;
 	}
 
 	public RegionOverrideService getRegionOverrideService() {

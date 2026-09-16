@@ -13,6 +13,7 @@ import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
 import org.tomdang.player.stats.rule.PlayerStatRule;
 import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
+import org.tomdang.player.stats.cap.LocationStatCap;
 
 import java.util.List;
 import java.util.UUID;
@@ -62,6 +63,36 @@ class PlayerStatsServiceTest {
 		));
 
 		assertEquals(160, statsService.getTotalHealthStat(player), 0.000001);
+	}
+
+	@Test
+	void locationCapOverridesNormalCapAndAppearsInEvaluation() {
+		profile.getStats().set(PlayerStatType.SPEED, 300);
+		statsService.setLocationCapProvider((player, statType) -> statType == PlayerStatType.SPEED
+				? java.util.Optional.of(new LocationStatCap("village", statType, 120)) : java.util.Optional.empty());
+		assertEquals(120, statsService.getTotalSpeed(player));
+		var breakdown = statsService.evaluate(player).getBreakdown(PlayerStatType.SPEED);
+		assertEquals(120, breakdown.effectiveValue());
+		assertEquals("village", breakdown.locationCap().orElseThrow().locationId());
+		assertTrue(breakdown.capped());
+	}
+
+	@Test
+	void locationCapCanRaiseTheNormalCapAsWellAsLowerIt() {
+		// The service uses a dedicated registry here so SPEED can have a normal cap.
+		PlayerStatRuleRegistry cappedRules = new PlayerStatRuleRegistry();
+		for (PlayerStatType type : PlayerStatType.values()) {
+			cappedRules.register(new PlayerStatRule(type,
+					type == PlayerStatType.SPEED ? OptionalDouble.of(200) : OptionalDouble.empty()));
+		}
+		PlayerStatsService service = new PlayerStatsService(profileService, statModifierProvider,
+				new PlayerStatModifierCalculator(cappedRules));
+		profile.getStats().set(PlayerStatType.SPEED, 300);
+		assertEquals(200, service.getTotalSpeed(player));
+		service.setLocationCapProvider((ignored, type) -> type == PlayerStatType.SPEED
+				? java.util.Optional.of(new LocationStatCap("wilderness", type, 280)) : java.util.Optional.empty());
+		assertEquals(280, service.getTotalSpeed(player));
+		assertEquals(200, service.evaluate(player).getBreakdown(PlayerStatType.SPEED).configuredCap().orElseThrow());
 	}
 
 	@Test

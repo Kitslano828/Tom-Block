@@ -21,7 +21,13 @@ public class PlayerStatBreakdownItemRenderer {
 			lore.add(line("Uncapped: ", breakdown.rawValue()));
 		}
 		if (breakdown.cap().isPresent()) {
-			lore.add(capLine(breakdown.cap().getAsDouble()));
+			if (breakdown.locationCap().isPresent()) {
+				lore.add(Component.text("Location Cap (" + breakdown.locationCap().orElseThrow().locationId() + "): ", NamedTextColor.AQUA)
+						.append(Component.text(PlayerStatValueFormatter.format(breakdown.cap().getAsDouble()), NamedTextColor.GOLD))
+						.decoration(TextDecoration.ITALIC, false));
+				lore.add(Component.text("Overrides other stat caps here.", NamedTextColor.GRAY)
+						.decoration(TextDecoration.ITALIC, false));
+			} else lore.add(capLine(breakdown.cap().getAsDouble()));
 		}
 		lore.add(effectiveLine(breakdown));
 		return new PlayerStatMenuItemDefinition(presentation.menuMaterial(),

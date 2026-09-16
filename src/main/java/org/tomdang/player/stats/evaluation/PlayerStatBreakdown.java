@@ -5,6 +5,8 @@ import org.tomdang.player.stats.PlayerStatType;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
+import java.util.Optional;
+import org.tomdang.player.stats.cap.LocationStatCap;
 
 public record PlayerStatBreakdown(
 		PlayerStatType statType,
@@ -14,8 +16,16 @@ public record PlayerStatBreakdown(
 		double effectiveValue,
 		OptionalDouble configuredCap,
 		OptionalDouble cap,
-		double capModifierTotal
+		double capModifierTotal,
+		Optional<LocationStatCap> locationCap
 ) {
+	public PlayerStatBreakdown(PlayerStatType statType, double baseValue, List<PlayerStatContribution> contributions,
+			double rawValue, double effectiveValue, OptionalDouble configuredCap, OptionalDouble cap,
+			double capModifierTotal) {
+		this(statType, baseValue, contributions, rawValue, effectiveValue, configuredCap, cap,
+				capModifierTotal, Optional.empty());
+	}
+
 	public PlayerStatBreakdown(PlayerStatType statType, double baseValue,
 	                           List<PlayerStatContribution> contributions, double effectiveValue) {
 		this(statType, baseValue, contributions, effectiveValue, effectiveValue,
@@ -42,6 +52,13 @@ public record PlayerStatBreakdown(
 		);
 	}
 
+	public PlayerStatBreakdown(PlayerStatType statType, double baseValue,
+			List<PlayerStatContribution> contributions, PlayerStatCalculation calculation,
+			Optional<LocationStatCap> locationCap) {
+		this(statType, baseValue, contributions, calculation.rawValue(), calculation.effectiveValue(),
+				calculation.configuredCap(), calculation.cap(), calculation.capModifierTotal(), locationCap);
+	}
+
 	public PlayerStatBreakdown {
 		if (statType == null) throw new IllegalArgumentException("statType cannot be null");
 		if (!Double.isFinite(baseValue)) throw new IllegalArgumentException("baseValue must be finite");
@@ -63,6 +80,10 @@ public record PlayerStatBreakdown(
 			throw new IllegalArgumentException("cap must be finite when present");
 		}
 		if (!Double.isFinite(capModifierTotal)) throw new IllegalArgumentException("capModifierTotal must be finite");
+		if (locationCap == null) throw new IllegalArgumentException("locationCap cannot be null");
+		locationCap.ifPresent(value -> {
+			if (value.statType() != statType) throw new IllegalArgumentException("locationCap stat mismatch");
+		});
 		contributions = List.copyOf(contributions);
 	}
 

@@ -2,6 +2,25 @@
 # A region may contain multiple disconnected cuboids and may inherit semantic
 # membership from a parent without duplicating the parent's geometry.
 regions:
+  STARTER_VILLAGE:
+    priority: 20
+    tags:
+      - VILLAGE
+    shape:
+      cuboids:
+        main:
+          world: world
+          minimum:
+            x: 107
+            y: -64
+            z: -171
+          maximum:
+            x: 295
+            y: 319
+            z: 1
+    overrides:
+      inclusions: {}
+      exclusions: {}
   BLACKSMITH_DEVELOPMENT_AREA:
     priority: 10
     tags:

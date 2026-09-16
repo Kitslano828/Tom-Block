@@ -18,6 +18,10 @@ import org.tomdang.player.stats.evaluation.PlayerStatEvaluation;
 import org.tomdang.player.stats.evaluation.PlayerStatCalculation;
 import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifier;
 import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifierProvider;
+import org.tomdang.player.stats.cap.LocationStatCapProvider;
+import org.tomdang.player.stats.cap.LocationStatCap;
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 public class PlayerStatsService {
 
@@ -25,6 +29,12 @@ public class PlayerStatsService {
 	private final PlayerStatModifierProvider statModifierProvider;
 	private final PlayerStatModifierCalculator playerStatModifierCalculator;
 	private final PlayerStatCapModifierProvider statCapModifierProvider;
+	private LocationStatCapProvider locationCapProvider = LocationStatCapProvider.none();
+
+	public void setLocationCapProvider(LocationStatCapProvider provider) {
+		if (provider == null) throw new IllegalArgumentException("provider cannot be null");
+		this.locationCapProvider = provider;
+	}
 
 	public PlayerStatsService(PlayerProfileService playerProfileService, PlayerStatModifierProvider statModifierProvider, PlayerStatModifierCalculator playerStatModifierCalculator) {
 		this(playerProfileService, statModifierProvider, playerStatModifierCalculator, player -> List.of());
@@ -88,7 +98,9 @@ public class PlayerStatsService {
 		PlayerProfile playerProfile = requireProfile(player);
 		Collection<PlayerStatModifier> modifiers = statModifierProvider.getModifiers(player);
 		Collection<PlayerStatCapModifier> capModifiers = statCapModifierProvider.getModifiers(player);
-		return playerStatModifierCalculator.calculate(playerProfile.getStats(), statType, modifiers, capModifiers);
+		PlayerStatCalculation calculation = playerStatModifierCalculator.calculateResult(
+				playerProfile.getStats(), statType, modifiers, capModifiers);
+		return applyLocationCap(calculation, locationCapProvider.capFor(player, statType)).effectiveValue();
 	}
 
 	public PlayerStatEvaluation evaluate(Player player) {
@@ -121,14 +133,26 @@ public class PlayerStatsService {
 			PlayerStatCalculation calculation = playerStatModifierCalculator.calculateResult(
 					playerProfile.getStats(), statType, modifiers, capModifiers
 			);
+			Optional<LocationStatCap> locationCap = locationCapProvider.capFor(player, statType);
+			calculation = applyLocationCap(calculation, locationCap);
 			breakdowns.put(statType, new PlayerStatBreakdown(
 					statType,
 					playerProfile.getStats().get(statType),
 					contributions,
-					calculation
+					calculation,
+					locationCap
 			));
 		}
 		return new PlayerStatEvaluation(breakdowns);
+	}
+
+	private PlayerStatCalculation applyLocationCap(PlayerStatCalculation calculation,
+			Optional<LocationStatCap> locationCap) {
+		if (locationCap.isEmpty()) return calculation;
+		double cap = locationCap.orElseThrow().value();
+		return new PlayerStatCalculation(calculation.statType(), calculation.rawValue(),
+				Math.min(Math.max(calculation.rawValue(), calculation.statType().getMinimumValue()), cap),
+				calculation.configuredCap(), OptionalDouble.of(cap), calculation.capModifierTotal());
 	}
 
 	private PlayerProfile requireProfile(Player player) {

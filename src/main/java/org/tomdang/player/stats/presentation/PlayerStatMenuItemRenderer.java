@@ -32,7 +32,13 @@ public class PlayerStatMenuItemRenderer {
 				.decoration(TextDecoration.ITALIC, false));
 		if (breakdown.cap().isPresent()) {
 			lore.add(Component.empty());
-			lore.add(Component.text("Stat Cap: ", NamedTextColor.GRAY)
+			if (breakdown.locationCap().isPresent()) {
+				lore.add(Component.text("Location Cap (" + breakdown.locationCap().orElseThrow().locationId() + "): ", NamedTextColor.AQUA)
+						.append(Component.text(PlayerStatValueFormatter.format(breakdown.cap().getAsDouble()), NamedTextColor.GOLD))
+						.decoration(TextDecoration.ITALIC, false));
+				lore.add(Component.text("Overrides other stat caps here.", NamedTextColor.GRAY)
+						.decoration(TextDecoration.ITALIC, false));
+			} else lore.add(Component.text("Stat Cap: ", NamedTextColor.GRAY)
 					.append(Component.text(
 							PlayerStatValueFormatter.format(breakdown.cap().getAsDouble()),
 							NamedTextColor.GOLD

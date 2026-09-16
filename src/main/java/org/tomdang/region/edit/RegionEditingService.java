@@ -8,11 +8,18 @@ import org.tomdang.region.registry.RegionRegistry;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class RegionEditingService {
 	private final RegionRegistry regionRegistry;
 	private final RegionOverrideService overrideService;
 	private final RegionEditSessionRegistry sessionRegistry;
+	private Consumer<BlockPosition> changeListener = ignored -> {};
+
+	public void onMembershipChanged(Consumer<BlockPosition> listener) {
+		if (listener == null) throw new IllegalArgumentException("listener cannot be null");
+		this.changeListener = listener;
+	}
 
 	public RegionEditingService(RegionRegistry regionRegistry, RegionOverrideService overrideService,
 			RegionEditSessionRegistry sessionRegistry) {
@@ -42,14 +49,17 @@ public final class RegionEditingService {
 		RegionOverrideState previous = overrideService.setState(session.selectedRegionId(), position, state);
 		RegionEditAction action = new RegionEditAction(session.selectedRegionId(), position, previous, state);
 		if (previous != state) session.record(action);
+		if (previous != state) changeListener.accept(position);
 		return action;
 	}
 
 	public Optional<RegionEditAction> undo(UUID playerId) {
 		RegionEditSession session = requireSession(playerId);
 		Optional<RegionEditAction> latest = session.takeLatest();
-		latest.ifPresent(action -> overrideService.setState(
-				action.regionId(), action.position(), action.previousState()));
+		latest.ifPresent(action -> {
+			overrideService.setState(action.regionId(), action.position(), action.previousState());
+			changeListener.accept(action.position());
+		});
 		return latest;
 	}
 

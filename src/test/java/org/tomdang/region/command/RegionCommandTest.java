@@ -20,6 +20,8 @@ import org.tomdang.region.position.BlockPosition;
 import org.tomdang.region.registry.RegionRegistry;
 import org.tomdang.region.resolution.RegionResolver;
 import org.tomdang.region.shape.CuboidRegionShape;
+import org.tomdang.region.bukkit.RegionTrackingDebugService;
+import org.tomdang.region.tracking.PlayerRegionTrackingService;
 
 import java.util.List;
 import java.util.HashMap;
@@ -97,6 +99,31 @@ class RegionCommandTest {
 
 		verify(editing).begin(playerId, "VILLAGE");
 		verify(inventory).addItem(brush);
+	}
+
+	@Test
+	void trackToggleShowsCachedMembershipAndRequiresPermission() {
+		RegionRegistry registry = new RegionRegistry();
+		registry.register(definition("VILLAGE", null, 10));
+		PlayerRegionTrackingService tracking = new PlayerRegionTrackingService(new RegionResolver(registry),
+				(id, transition) -> {});
+		RegionTrackingDebugService debug = new RegionTrackingDebugService();
+		RegionCommand command = new RegionCommand(new RegionResolver(registry),
+				new BukkitBlockPositionAdapter(), registry, mock(RegionEditingService.class),
+				mock(RegionBrushItemService.class), tracking, debug);
+		Player player = playerAt(5);
+		UUID id = UUID.randomUUID();
+		when(player.getUniqueId()).thenReturn(id);
+		when(player.hasPermission("tomblock.admin.region.edit")).thenReturn(true);
+		tracking.update(id, new BlockPosition("world", 5, 64, 0));
+
+		command.onCommand(player, mock(Command.class), "region", new String[]{"track"});
+		assertTrue(debug.isWatching(id));
+		assertTrue(sentMessages(player).contains("Cached primary: VILLAGE"));
+		command.onCommand(player, mock(Command.class), "region", new String[]{"track", "status"});
+		assertTrue(debug.isWatching(id));
+		command.onCommand(player, mock(Command.class), "region", new String[]{"track"});
+		assertTrue(!debug.isWatching(id));
 	}
 
 	private RegionDefinition definition(String id, String parentId, int priority) {

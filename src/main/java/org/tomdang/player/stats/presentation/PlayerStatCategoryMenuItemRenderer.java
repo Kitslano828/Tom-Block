@@ -19,8 +19,12 @@ public class PlayerStatCategoryMenuItemRenderer {
 		if (stats.isEmpty()) lore.add(Component.text("No stats available yet.", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
 		for (PlayerStatPresentation stat : stats) {
 			double value = evaluation.getBreakdown(stat.statType()).effectiveValue();
-			lore.add(Component.text(stat.symbol() + " " + stat.statType().getDisplayName() + ": ", stat.color())
-					.append(Component.text(PlayerStatValueFormatter.format(value), NamedTextColor.WHITE)).decoration(TextDecoration.ITALIC, false));
+			var breakdown = evaluation.getBreakdown(stat.statType());
+			Component line = Component.text(stat.symbol() + " " + stat.statType().getDisplayName() + ": ", stat.color())
+					.append(Component.text(PlayerStatValueFormatter.format(value), NamedTextColor.WHITE));
+			if (breakdown.locationCap().isPresent()) line = line.append(Component.text(" (location cap "
+					+ PlayerStatValueFormatter.format(breakdown.locationCap().orElseThrow().value()) + ")", NamedTextColor.AQUA));
+			lore.add(line.decoration(TextDecoration.ITALIC, false));
 		}
 		lore.add(Component.empty());
 		lore.add(Component.text("Click to view!", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false));

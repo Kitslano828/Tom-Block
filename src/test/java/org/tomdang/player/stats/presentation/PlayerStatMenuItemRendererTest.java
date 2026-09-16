@@ -8,14 +8,17 @@ import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.evaluation.PlayerStatBreakdown;
+import org.tomdang.player.stats.cap.LocationStatCap;
 
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.Optional;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PlayerStatMenuItemRendererTest {
 
@@ -81,6 +84,19 @@ class PlayerStatMenuItemRendererTest {
 				"",
 				"Click to view!"
 		), lore);
+	}
+
+	@Test
+	void locationCapNamesItsRegionAndOverridesNormalCapLabel() {
+		PlayerStatPresentation presentation = new PlayerStatPresentation(PlayerStatType.SPEED, "✦",
+				TextColor.color(0xFFFFFF), "Movement speed", Material.SUGAR, true);
+		PlayerStatBreakdown breakdown = new PlayerStatBreakdown(PlayerStatType.SPEED, 100, List.of(),
+				300, 120, OptionalDouble.of(400), OptionalDouble.of(120), 0,
+				Optional.of(new LocationStatCap("village", PlayerStatType.SPEED, 120)));
+		String lore = renderer.render(presentation, breakdown).lore().stream()
+				.map(PlainTextComponentSerializer.plainText()::serialize).reduce("", (a, b) -> a + "\n" + b);
+		assertTrue(lore.contains("Location Cap (village): 120"));
+		assertTrue(lore.contains("Overrides other stat caps here."));
 	}
 
 	@Test

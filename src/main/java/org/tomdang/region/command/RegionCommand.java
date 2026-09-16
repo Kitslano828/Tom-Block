@@ -17,6 +17,10 @@ import org.tomdang.region.edit.RegionEditingService;
 import org.tomdang.region.position.BlockPosition;
 import org.tomdang.region.registry.RegionRegistry;
 import org.tomdang.region.resolution.RegionResolver;
+import org.tomdang.region.bukkit.RegionTrackingDebugService;
+import org.tomdang.region.tracking.PlayerRegionTrackingService;
+import org.tomdang.region.tracking.RegionMembershipSnapshot;
+import org.tomdang.region.tracking.RegionMembershipTransition;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -30,9 +34,17 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 	private final RegionRegistry registry;
 	private final RegionEditingService editingService;
 	private final RegionBrushItemService brushItemService;
+	private final PlayerRegionTrackingService tracking;
+	private final RegionTrackingDebugService debug;
 
 	public RegionCommand(RegionResolver resolver, BukkitBlockPositionAdapter positionAdapter,
 			RegionRegistry registry, RegionEditingService editingService, RegionBrushItemService brushItemService) {
+		this(resolver, positionAdapter, registry, editingService, brushItemService, null, null);
+	}
+
+	public RegionCommand(RegionResolver resolver, BukkitBlockPositionAdapter positionAdapter,
+			RegionRegistry registry, RegionEditingService editingService, RegionBrushItemService brushItemService,
+			PlayerRegionTrackingService tracking, RegionTrackingDebugService debug) {
 		if (resolver == null) throw new IllegalArgumentException("resolver cannot be null");
 		if (positionAdapter == null) throw new IllegalArgumentException("positionAdapter cannot be null");
 		if (registry == null) throw new IllegalArgumentException("registry cannot be null");
@@ -43,6 +55,8 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 		this.registry = registry;
 		this.editingService = editingService;
 		this.brushItemService = brushItemService;
+		this.tracking = tracking;
+		this.debug = debug;
 	}
 
 	@Override
@@ -58,6 +72,7 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 		}
 		return switch (args[0].toLowerCase(Locale.ROOT)) {
 			case "inspect" -> inspect(player, args);
+			case "track" -> track(player, args);
 			case "edit" -> edit(player, args);
 			case "undo" -> undo(player, args);
 			case "save" -> save(player, args);
@@ -67,6 +82,42 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 				yield true;
 			}
 		};
+	}
+
+	private boolean track(Player player, String[] args) {
+		if (!player.hasPermission("tomblock.admin.region.edit")) {
+			player.sendMessage(Component.text("You do not have permission to track regions.", NamedTextColor.RED));
+			return true;
+		}
+		if (tracking == null || debug == null) {
+			player.sendMessage(Component.text("Region tracking is unavailable.", NamedTextColor.RED));
+			return true;
+		}
+		if (args.length > 2 || (args.length == 2 && !args[1].equalsIgnoreCase("status"))) {
+			player.sendMessage(Component.text("Usage: /region track [status]", NamedTextColor.RED));
+			return true;
+		}
+		if (args.length == 1) {
+			boolean enabled = debug.toggle(player.getUniqueId());
+			player.sendMessage(Component.text("Region transition chat messages " + (enabled ? "enabled" : "disabled") + ".",
+					enabled ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
+		}
+		RegionMembershipSnapshot snapshot = tracking.snapshot(player.getUniqueId()).orElse(null);
+		if (snapshot == null) {
+			player.sendMessage(Component.text("No cached region snapshot yet.", NamedTextColor.GRAY));
+			return true;
+		}
+		player.sendMessage(Component.text("Cached primary: " + snapshot.primary().orElse("none"), NamedTextColor.AQUA));
+		player.sendMessage(Component.text("Direct: " + names(snapshot.direct()), NamedTextColor.GRAY));
+		player.sendMessage(Component.text("Resolved: " + names(snapshot.resolved()), NamedTextColor.GRAY));
+		RegionMembershipTransition last = debug.last(player.getUniqueId()).orElse(null);
+		if (last != null) player.sendMessage(Component.text("Last transition: entered=" + names(last.entered())
+				+ "; left=" + names(last.left()), NamedTextColor.YELLOW));
+		return true;
+	}
+
+	private String names(List<String> ids) {
+		return ids.isEmpty() ? "none" : String.join(", ", ids);
 	}
 
 	private boolean inspect(Player player, String[] args) {
@@ -161,7 +212,7 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 	}
 
 	private void sendUsage(CommandSender sender) {
-		sender.sendMessage(Component.text("Usage: /region <inspect|edit|undo|save|cancel>", NamedTextColor.RED));
+		sender.sendMessage(Component.text("Usage: /region <inspect|track|edit|undo|save|cancel>", NamedTextColor.RED));
 	}
 
 	private Component formatRegions(List<RegionDefinition> regions, BlockPosition position, boolean showSource) {
@@ -190,9 +241,12 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 			@NotNull String alias, @NotNull String[] args) {
 		if (args.length == 1) {
 			String prefix = args[0].toLowerCase(Locale.ROOT);
-			return List.of("inspect", "edit", "undo", "save", "cancel").stream()
+			return List.of("inspect", "track", "edit", "undo", "save", "cancel").stream()
 					.filter(value -> value.startsWith(prefix))
 					.toList();
+		}
+		if (args.length == 2 && args[0].equalsIgnoreCase("track")) {
+			return "status".startsWith(args[1].toLowerCase(Locale.ROOT)) ? List.of("status") : List.of();
 		}
 		if (args.length == 2 && args[0].equalsIgnoreCase("edit")) {
 			String prefix = args[1].toLowerCase(Locale.ROOT);

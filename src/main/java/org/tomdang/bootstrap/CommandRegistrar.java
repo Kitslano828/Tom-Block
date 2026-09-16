@@ -43,6 +43,8 @@ import org.tomdang.region.resolution.RegionResolver;
 import org.tomdang.region.registry.RegionRegistry;
 import org.tomdang.region.edit.RegionEditingService;
 import org.tomdang.region.edit.RegionBrushItemService;
+import org.tomdang.region.bukkit.RegionTrackingDebugService;
+import org.tomdang.region.tracking.PlayerRegionTrackingService;
 import org.tomdang.player.movement.PlayerMovementSpeedRefreshScheduler;
 
 public class CommandRegistrar {
@@ -60,6 +62,8 @@ public class CommandRegistrar {
 	                        RegionRegistry regionRegistry,
 	                        RegionEditingService regionEditingService,
 	                        RegionBrushItemService regionBrushItemService,
+	                        PlayerRegionTrackingService regionTracking,
+	                        RegionTrackingDebugService regionDebug,
 	                        PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler
 	) {
 		// COMMANDS
@@ -130,7 +134,9 @@ public class CommandRegistrar {
 				new BukkitBlockPositionAdapter(),
 				regionRegistry,
 				regionEditingService,
-				regionBrushItemService
+				regionBrushItemService,
+				regionTracking,
+				regionDebug
 		);
 		instance.getCommand("region").setExecutor(regionCommand);
 		instance.getCommand("region").setTabCompleter(regionCommand);

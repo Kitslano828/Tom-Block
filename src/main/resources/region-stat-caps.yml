@@ -1,0 +1,8 @@
+# Optional final stat caps by region ID. The highest-priority matching region
+# with a cap for a stat wins. Parent regions provide fallback policies.
+# A location cap replaces the global/item-adjusted cap while inside that region.
+region-stat-caps:
+  STARTER_VILLAGE:
+    SPEED: 200
+  BLACKSMITH_DEVELOPMENT_AREA:
+    SPEED: 120
