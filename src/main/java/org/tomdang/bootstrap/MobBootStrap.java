@@ -13,6 +13,15 @@ import org.tomdang.custommobframework.custommobspawn.CustomMobRespawnService;
 import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPoint;
 import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPointRegistry;
 import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPointResolver;
+import org.tomdang.custommobframework.configuration.CustomMobConfigurationLoader;
+import org.tomdang.custommobframework.configuration.CustomMobDefinition;
+import org.tomdang.custommobframework.configuration.CustomMobDefinitionRegistrar;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class MobBootStrap {
 
@@ -33,7 +42,16 @@ public class MobBootStrap {
 	) {
 		customMobContextRegistry = new CustomMobContextRegistry();
 		CustomMobSpawner customMobSpawner = new CustomMobSpawner(customMobKey, spawnPointIDKey, customMobContextRegistry);
-		customMobRegistry = new CustomMobRegistry(customItemRegistry, customMobSpawner);
+		customMobRegistry = new CustomMobRegistry(customMobSpawner);
+		List<CustomMobDefinition> definitions;
+		try (InputStream stream = instance.getResource("mobs.yml")) {
+			if (stream == null) throw new IllegalStateException("TomBlock.jar does not contain mobs.yml");
+			definitions = new CustomMobConfigurationLoader().loadDefinitions(
+					new InputStreamReader(stream, StandardCharsets.UTF_8));
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not close the bundled mobs.yml resource", exception);
+		}
+		new CustomMobDefinitionRegistrar(customMobRegistry, customItemRegistry).registerDefinitions(definitions);
 		customMobHealthService = new CustomMobHealthService(customMobContextRegistry);
 		customMobSpawnPointRegistry = new CustomMobSpawnPointRegistry();
 		CustomMobSpawnPointResolver customMobSpawnPointResolver = new CustomMobSpawnPointResolver(spawnPointIDKey, customMobSpawnPointRegistry);

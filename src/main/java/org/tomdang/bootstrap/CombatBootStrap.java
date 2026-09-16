@@ -19,6 +19,9 @@ import org.tomdang.combat.combo.ComboTimingCalculator;
 import org.tomdang.combat.combo.ComboTimingConfiguration;
 import org.tomdang.combat.combo.ComboTimingConfigurationLoader;
 import org.tomdang.combat.combo.ConsecutiveChargedHitTracker;
+import org.tomdang.combat.combo.milestone.ComboMilestoneObserver;
+import org.tomdang.combat.combo.requirement.ComboRequirement;
+import org.tomdang.combat.combo.requirement.ComboRequirementEvaluator;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.combat.customcombatability.AbilityDamageService;
@@ -33,6 +36,8 @@ import org.tomdang.customabilityframework.AbilityTrigger;
 import org.tomdang.customabilityframework.CustomAbilityRegistry;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.CustomItemResolver;
+import org.tomdang.customitemframework.combat.CombatDamageType;
+import org.tomdang.customitemframework.combat.CombatWeightClass;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
 import org.tomdang.player.PlayerProfileService;
@@ -44,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 public class CombatBootStrap {
 
@@ -129,6 +135,23 @@ public class CombatBootStrap {
 				Bukkit::getCurrentTick
 		);
 		playerCombatHitPublisher.register(consecutiveChargedHitTracker);
+		ComboRequirement divansDrillTestRequirement = new ComboRequirement(
+				3,
+				Optional.of(CombatWeightClass.HEAVY),
+				Optional.of(CombatDamageType.BLUNT),
+				Optional.of("SUPER_PICKAXE")
+		);
+		ComboMilestoneObserver divansDrillTestMilestone = new ComboMilestoneObserver(
+				consecutiveChargedHitTracker,
+				new ComboRequirementEvaluator(),
+				divansDrillTestRequirement,
+				(context, progress) -> context.attacker().sendMessage(
+						Component.text("COMBO COMPLETE", NamedTextColor.GOLD)
+								.decorate(net.kyori.adventure.text.format.TextDecoration.BOLD)
+				),
+				true
+		);
+		playerCombatHitPublisher.register(divansDrillTestMilestone);
 
 		combatService = new CombatService(playerProfileService,
 				customMobResolver,
