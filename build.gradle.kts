@@ -1,5 +1,12 @@
 import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 import java.security.MessageDigest
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 plugins {
     java
@@ -63,17 +70,42 @@ val packageResourcePack by tasks.registering(Zip::class) {
 
 val deployResourcePackToServer by tasks.registering {
     group = "build"
-    description = "Copies the resource pack to the local server and updates its required-pack settings."
-    dependsOn(packageResourcePack)
+    description = "Verifies a public resource-pack ZIP and configures a Paper server to require it."
 
     doLast {
-        val archive = packageResourcePack.get().archiveFile.get().asFile
-        val serverPackDirectory = localServerDirectory.resolve("resource-pack")
-        serverPackDirectory.mkdirs()
-        archive.copyTo(serverPackDirectory.resolve(resourcePackArchiveName), overwrite = true)
+        val packUrl = providers.gradleProperty("tomblockResourcePackUrl").orNull
+            ?: throw GradleException("Supply -PtomblockResourcePackUrl=<public HTTPS ZIP URL>")
+        val serverPath = providers.gradleProperty("tomblockServerDirectory").orNull
+            ?: throw GradleException("Supply -PtomblockServerDirectory=<Paper server directory>")
+        val uri = try { URI.create(packUrl) } catch (exception: IllegalArgumentException) {
+            throw GradleException("Invalid resource-pack URL", exception)
+        }
+        if (uri.scheme != "https" || uri.host.isNullOrBlank()) {
+            throw GradleException("The resource-pack URL must be a public HTTPS URL")
+        }
+        val serverProperties = file(serverPath).resolve("server.properties")
+        if (!serverProperties.isFile) throw GradleException("No server.properties at $serverProperties")
 
+        val client = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(15))
+            .build()
+        val request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(60)).GET().build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+        if (response.statusCode() != 200) {
+            response.body().close()
+            throw GradleException("Resource-pack URL returned HTTP ${response.statusCode()}")
+        }
         val digest = MessageDigest.getInstance("SHA-1")
-        val hash = archive.inputStream().use { input ->
+        val hash = response.body().use { input ->
+            val signature = input.readNBytes(4)
+            if (signature.size != 4 || signature[0] != 'P'.code.toByte() ||
+                signature[1] != 'K'.code.toByte() ||
+                !((signature[2] == 3.toByte() && signature[3] == 4.toByte()) ||
+                  (signature[2] == 5.toByte() && signature[3] == 6.toByte()))) {
+                throw GradleException("Resource-pack URL did not return a ZIP file")
+            }
+            digest.update(signature)
             val buffer = ByteArray(8192)
             var bytesRead = input.read(buffer)
             while (bytesRead != -1) {
@@ -85,10 +117,9 @@ val deployResourcePackToServer by tasks.registering {
             }
         }
 
-        val serverProperties = localServerDirectory.resolve("server.properties")
         val replacements = mapOf(
             "require-resource-pack" to "true",
-            "resource-pack" to "http\\://127.0.0.1\\:8123/$resourcePackArchiveName",
+            "resource-pack" to packUrl.replace(":", "\\:"),
             "resource-pack-sha1" to hash
         )
         val updatedKeys = mutableSetOf<String>()
@@ -104,13 +135,23 @@ val deployResourcePackToServer by tasks.registering {
         replacements.forEach { (key, value) ->
             if (key !in updatedKeys) updatedLines.add("$key=$value")
         }
-        serverProperties.writeText(updatedLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+        val propertiesPath = serverProperties.toPath()
+        val replacementPath = Files.createTempFile(propertiesPath.parent, "server.properties.", ".tmp")
+        try {
+            Files.writeString(replacementPath,
+                updatedLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+            try {
+                Files.setPosixFilePermissions(replacementPath, Files.getPosixFilePermissions(propertiesPath))
+            } catch (_: UnsupportedOperationException) {
+                // Windows filesystems do not expose POSIX permissions.
+            }
+            serverProperties.copyTo(serverProperties.resolveSibling("server.properties.tomblock-backup"), overwrite = true)
+            Files.move(replacementPath, propertiesPath, StandardCopyOption.REPLACE_EXISTING)
+        } finally {
+            Files.deleteIfExists(replacementPath)
+        }
 
-        logger.lifecycle("Deployed required resource pack: ${archive.name}")
+        logger.lifecycle("Configured required resource pack: $packUrl")
         logger.lifecycle("Resource pack SHA-1: $hash")
     }
-}
-
-tasks.build {
-    finalizedBy(copyPluginToServer, deployResourcePackToServer)
 }

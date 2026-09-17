@@ -23,6 +23,7 @@ import org.tomdang.customitemframework.stats.CustomItemStatModifiers;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
+import org.tomdang.combat.eligibility.AttackSource;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
@@ -44,6 +45,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 
 class CombatServiceTest {
 	@Test
@@ -127,6 +129,8 @@ class CombatServiceTest {
 		CustomMobResolver resolver = mock(CustomMobResolver.class);
 		when(resolver.getCustomMob(target)).thenReturn(customMob);
 		CustomMobHealthService healthService = mock(CustomMobHealthService.class);
+		when(healthService.canDamage(eq(target), any(AttackSource.class))).thenReturn(true);
+		when(healthService.damageMob(eq(player), eq(target), anyDouble(), any(AttackSource.class))).thenReturn(true);
 		PlayerStatsService statsService = mock(PlayerStatsService.class);
 		when(statsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED)).thenReturn(0.0);
 		when(statsService.getTotalDamage(player)).thenReturn(10.0);
@@ -147,8 +151,8 @@ class CombatServiceTest {
 
 		verify(event, times(2)).setCancelled(true);
 		verify(criticalHitRoller, times(2)).isCritical(0.0);
-		verify(healthService).damageMob(player, target, 10.0);
-		verify(healthService).damageMob(player, target, 2.0);
+		verify(healthService).damageMob(eq(player), eq(target), eq(10.0), any(AttackSource.class));
+		verify(healthService).damageMob(eq(player), eq(target), eq(2.0), any(AttackSource.class));
 	}
 
 	@Test
@@ -197,6 +201,8 @@ class CombatServiceTest {
 		CustomMobResolver mobResolver = mock(CustomMobResolver.class);
 		when(mobResolver.getCustomMob(target)).thenReturn(mock(CustomMob.class));
 		CustomMobHealthService healthService = mock(CustomMobHealthService.class);
+		when(healthService.canDamage(eq(target), any(AttackSource.class))).thenReturn(true);
+		when(healthService.damageMob(eq(player), eq(target), anyDouble(), any(AttackSource.class))).thenReturn(true);
 		PlayerCombatHitPublisher publisher = mock(PlayerCombatHitPublisher.class);
 		PlayerStatsService statsService = mock(PlayerStatsService.class);
 		when(statsService.getTotalDamage(player)).thenReturn(10.0);
@@ -211,7 +217,7 @@ class CombatServiceTest {
 		service.damageMob(event);
 
 		var ordered = inOrder(healthService, publisher);
-		ordered.verify(healthService).damageMob(eq(player), eq(target), anyDouble());
+		ordered.verify(healthService).damageMob(eq(player), eq(target), anyDouble(), any(AttackSource.class));
 		ordered.verify(publisher).publish(org.mockito.ArgumentMatchers.any(PlayerCombatHitContext.class));
 	}
 

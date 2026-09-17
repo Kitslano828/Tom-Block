@@ -34,6 +34,10 @@ public class CustomMobRegistry {
 		return customMobSpawner.createCustomMob(mob, location, null);
 	}
 
+	public Entity getCustomMobAsMob(CustomMob mob, Location location, String visualVariant) {
+		return customMobSpawner.createCustomMob(mob, location, null, visualVariant);
+	}
+
 	public CustomMob getCustomMob(String id) {
 		return customMobMap.get(id);
 	}

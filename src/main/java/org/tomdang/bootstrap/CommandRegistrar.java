@@ -14,6 +14,9 @@ import org.tomdang.customarmorframework.CustomArmorRegistry;
 import org.tomdang.customarmorframework.CustomArmorService;
 import org.tomdang.customarmorframework.command.GiveCustomArmor;
 import org.tomdang.customitemframework.command.RefreshItemsCommand;
+import org.tomdang.customitemframework.command.GiveCustomItemCommand;
+import org.tomdang.customitemframework.CustomItemRegistry;
+import org.tomdang.customitemframework.CustomItemStackFactory;
 import org.tomdang.customitemframework.refresh.PlayerInventoryItemRefreshService;
 import org.tomdang.custommobframework.CustomMobRegistry;
 import org.tomdang.custommobframework.command.SpawnCustomMob;
@@ -64,7 +67,9 @@ public class CommandRegistrar {
 	                        RegionBrushItemService regionBrushItemService,
 	                        PlayerRegionTrackingService regionTracking,
 	                        RegionTrackingDebugService regionDebug,
-	                        PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler
+	                        PlayerMovementSpeedRefreshScheduler movementSpeedRefreshScheduler,
+	                        CustomItemRegistry customItemRegistry,
+	                        CustomItemStackFactory customItemStackFactory
 	) {
 		// COMMANDS
 		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
@@ -86,6 +91,10 @@ public class CommandRegistrar {
 		GetWeapon getWeapon = new GetWeapon(weaponRegistry);
 		instance.getCommand("giveweapon").setExecutor(getWeapon);
 		instance.getCommand("giveweapon").setTabCompleter(getWeapon);
+
+		GiveCustomItemCommand giveCustomItem = new GiveCustomItemCommand(customItemRegistry, customItemStackFactory);
+		instance.getCommand("givecustomitem").setExecutor(giveCustomItem);
+		instance.getCommand("givecustomitem").setTabCompleter(giveCustomItem);
 
 		SpawnCustomMob spawnCustomMob = new SpawnCustomMob(customMobRegistry);
 		instance.getCommand("spawncustommob").setExecutor(spawnCustomMob);

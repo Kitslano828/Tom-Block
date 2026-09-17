@@ -21,8 +21,13 @@ commands:
     description: give the sender a custom mining tool
   giveweapon:
     description: give the sender a custom weapon
+  givecustomitem:
+    description: give the sender a registered custom item
+    usage: /givecustomitem <id>
   spawncustommob:
     description: spawn a custom mob at the sender's location
+    aliases: [spawncustom]
+    usage: /spawncustommob <name> [color]
   stats:
     description: returns a customGUI of the sender's stats
   setstat:

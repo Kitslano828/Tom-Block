@@ -4,10 +4,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.tomdang.custommobframework.MobType;
+import org.tomdang.combat.eligibility.AttackCapability;
+import org.tomdang.combat.eligibility.AttackEligibilityRule;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.EnumSet;
+import java.util.Locale;
+import java.util.Set;
 
 public class CustomMobConfigurationLoader {
 	public List<CustomMobDefinition> loadDefinitions(Reader reader) {
@@ -30,10 +35,33 @@ public class CustomMobConfigurationLoader {
 					requireBoolean(mob, id, "burns-in-daylight"),
 					loadAllowedSpawnRegions(mob, id),
 					loadPopulation(mob, id),
+					loadAttackEligibility(mob, id),
 					loadDrops(mob, id)
 			));
 		}
 		return List.copyOf(definitions);
+	}
+
+	private AttackEligibilityRule loadAttackEligibility(ConfigurationSection mob, String mobId) {
+		String field = "accepted-attack-capabilities";
+		if (!mob.contains(field)) return new AttackEligibilityRule(Set.of());
+		if (!mob.isList(field)) throw new IllegalArgumentException("Mob " + mobId + " has a non-list " + field);
+		List<?> values = mob.getList(field);
+		if (values == null) throw new IllegalArgumentException("Mob " + mobId + " has an invalid " + field);
+		Set<AttackCapability> accepted = EnumSet.noneOf(AttackCapability.class);
+		for (Object value : values) {
+			if (!(value instanceof String name) || name.isBlank()) {
+				throw new IllegalArgumentException("Mob " + mobId + " has a non-text " + field + " entry");
+			}
+			AttackCapability capability;
+			try {
+				capability = AttackCapability.valueOf(name.trim().toUpperCase(Locale.ROOT));
+			} catch (IllegalArgumentException exception) {
+				throw new IllegalArgumentException("Mob " + mobId + " has unknown attack capability " + name, exception);
+			}
+			if (!accepted.add(capability)) throw new IllegalArgumentException("Mob " + mobId + " has duplicate attack capability " + name);
+		}
+		return new AttackEligibilityRule(accepted);
 	}
 
 	private MobPopulationRule loadPopulation(ConfigurationSection mob, String mobId) {

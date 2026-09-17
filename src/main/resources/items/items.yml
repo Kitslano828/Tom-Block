@@ -1,4 +1,14 @@
 items:
+  JELLYFISH_NET:
+    material: FISHING_ROD
+    display-name: "Jellyfish Net"
+    rarity: COMMON
+    category: TEST_ITEM
+    stats:
+      damage: 10.0
+    attack-capabilities:
+      - JELLYFISH_HUNTING
+
   ROTTEN_FLESH:
     material: ROTTEN_FLESH
     display-name: "Rotten Flesh"

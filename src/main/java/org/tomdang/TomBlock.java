@@ -372,7 +372,9 @@ public class TomBlock extends JavaPlugin {
 				regionBrushItemService,
 				regionTracking,
 				regionDebug,
-				playerMovementSpeedBootStrap.getRefreshScheduler()
+				playerMovementSpeedBootStrap.getRefreshScheduler(),
+				customItemRegistry,
+				customItemStackFactory
 		);
 
 		new ListenerRegistrar(
@@ -414,6 +416,7 @@ public class TomBlock extends JavaPlugin {
 
 		playerBootStrap.start();
 		mobBootStrap.reconcileSpawnPoints();
+		mobBootStrap.startPresentations();
 		mobBootStrap.startPopulations();
 
 		actorReconciliationService.reconcileSpawnPoints();
@@ -423,6 +426,7 @@ public class TomBlock extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		if (mobBootStrap != null) mobBootStrap.stopPopulations();
+		if (mobBootStrap != null) mobBootStrap.stopPresentations();
 		if (regionBrushVisualizationTask != null) {
 			regionBrushVisualizationTask.stop();
 		}

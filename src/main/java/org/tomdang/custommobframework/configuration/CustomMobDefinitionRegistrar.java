@@ -26,7 +26,7 @@ public class CustomMobDefinitionRegistrar {
 		for (CustomMobDefinition definition : definitions) {
 			CustomMob mob = new CustomMob(definition.id(), definition.entityType(), definition.displayName(),
 					definition.maxHealth(), definition.damage(), definition.mobType(), definition.xp(),
-					definition.burnsInDaylight());
+					definition.burnsInDaylight(), definition.attackEligibilityRule());
 			for (CustomMobDropDefinition drop : definition.drops()) {
 				mob.addMobDrops(itemRegistry.getCustomItem(drop.itemId()), drop.amount(), drop.chance());
 			}

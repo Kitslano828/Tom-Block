@@ -19,6 +19,7 @@ import org.tomdang.custommobframework.custommobspawn.MobRegionConfinementPolicy;
 import org.tomdang.custommobframework.configuration.CustomMobConfigurationLoader;
 import org.tomdang.custommobframework.configuration.CustomMobDefinition;
 import org.tomdang.custommobframework.configuration.CustomMobDefinitionRegistrar;
+import org.tomdang.custommobframework.presentation.JellyfishPresentationService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +46,9 @@ public class MobBootStrap {
 	private final CustomMobContextRegistry customMobContextRegistry;
 	private final CustomMobSpawnPointRegistry customMobSpawnPointRegistry;
 	private final MobPopulationService mobPopulationService;
+	private final JellyfishPresentationService jellyfishPresentationService;
+	@Getter
+	private final NamespacedKey mobVisualVariantKey;
 	@Getter
 	private final MobRegionConfinementPolicy mobRegionConfinementPolicy;
 
@@ -75,15 +79,20 @@ public class MobBootStrap {
 			}
 		}
 		mobRegionConfinementPolicy = new MobRegionConfinementPolicy(spawnRegionPolicy, regionResolver, populationRules);
+		mobVisualVariantKey = new NamespacedKey(instance, "mob_visual_variant");
 		CustomMobSpawner customMobSpawner = new CustomMobSpawner(
-				customMobKey, spawnPointIDKey, currentHealthKey, customMobContextRegistry, spawnRegionPolicy);
+				customMobKey, spawnPointIDKey, currentHealthKey, mobVisualVariantKey,
+				customMobContextRegistry, spawnRegionPolicy);
 		customMobRegistry = new CustomMobRegistry(customMobSpawner);
 		mobPopulationService = new MobPopulationService(instance, customMobRegistry, customMobSpawner,
 				customMobContextRegistry, regionResolver, customMobKey, populationRuleKey, populationRules);
 		new CustomMobDefinitionRegistrar(customMobRegistry, customItemRegistry).registerDefinitions(definitions);
+		jellyfishPresentationService = new JellyfishPresentationService(
+				instance, customMobKey, currentHealthKey, mobVisualVariantKey, customMobRegistry);
+		customMobSpawner.addSpawnObserver(jellyfishPresentationService::trackIfJellyfish);
 		customMobResolver = new CustomMobResolver(customMobKey, customMobRegistry);
 		customMobHealthService = new CustomMobHealthService(customMobContextRegistry,
-				customMobResolver, currentHealthKey);
+				customMobResolver, currentHealthKey, jellyfishPresentationService);
 		customMobSpawnPointRegistry = new CustomMobSpawnPointRegistry();
 		CustomMobSpawnPointResolver customMobSpawnPointResolver = new CustomMobSpawnPointResolver(spawnPointIDKey, customMobSpawnPointRegistry);
 		customMobRespawnService = new CustomMobRespawnService(
@@ -115,6 +124,14 @@ public class MobBootStrap {
 
 	public void startPopulations() {
 		mobPopulationService.start();
+	}
+
+	public void startPresentations() {
+		jellyfishPresentationService.start();
+	}
+
+	public void stopPresentations() {
+		jellyfishPresentationService.stop();
 	}
 
 	public void stopPopulations() {

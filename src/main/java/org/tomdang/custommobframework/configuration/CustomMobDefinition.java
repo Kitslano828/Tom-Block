@@ -3,8 +3,10 @@ package org.tomdang.custommobframework.configuration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.tomdang.custommobframework.MobType;
+import org.tomdang.combat.eligibility.AttackEligibilityRule;
 
 import java.util.List;
+import java.util.Set;
 
 public record CustomMobDefinition(
 		String id,
@@ -15,10 +17,19 @@ public record CustomMobDefinition(
 		MobType mobType,
 		int xp,
 		boolean burnsInDaylight,
-		List<String> allowedSpawnRegions,
-		MobPopulationRule population,
-		List<CustomMobDropDefinition> drops
+	List<String> allowedSpawnRegions,
+	MobPopulationRule population,
+	AttackEligibilityRule attackEligibilityRule,
+	List<CustomMobDropDefinition> drops
 ) {
+	public CustomMobDefinition(String id, EntityType entityType, String displayName, double maxHealth,
+	                           double damage, MobType mobType, int xp, boolean burnsInDaylight,
+	                           List<String> allowedSpawnRegions, MobPopulationRule population,
+	                           List<CustomMobDropDefinition> drops) {
+		this(id, entityType, displayName, maxHealth, damage, mobType, xp, burnsInDaylight,
+				allowedSpawnRegions, population, new AttackEligibilityRule(Set.of()), drops);
+	}
+
 	public CustomMobDefinition {
 		if (id == null || id.isBlank()) throw new IllegalArgumentException("id cannot be blank");
 		if (entityType == null) throw new IllegalArgumentException("entityType cannot be null");
@@ -45,6 +56,7 @@ public record CustomMobDefinition(
 			throw new IllegalArgumentException("allowedSpawnRegions cannot contain duplicate IDs");
 		}
 		if (drops == null) throw new IllegalArgumentException("drops cannot be null");
+		if (attackEligibilityRule == null) throw new IllegalArgumentException("attackEligibilityRule cannot be null");
 		allowedSpawnRegions = List.copyOf(allowedSpawnRegions);
 		if (population != null && !population.mobId().equals(id)) {
 			throw new IllegalArgumentException("population mobId must match definition ID");

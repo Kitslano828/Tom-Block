@@ -22,6 +22,8 @@ import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.custommobframework.custommobhealth.CustomMobHealthService;
 import org.tomdang.customitemframework.CustomItem;
+import org.tomdang.combat.eligibility.AttackDelivery;
+import org.tomdang.combat.eligibility.AttackSource;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
@@ -30,6 +32,7 @@ import org.tomdang.player.stats.PlayerStatValueFormatter;
 import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.Optional;
+import java.util.Set;
 
 public class CombatService {
 
@@ -108,8 +111,15 @@ public class CombatService {
 		}
 
 		event.setCancelled(true);
+		CustomItem attackingItem = heldItemCombatResolver.resolve(player);
+		AttackSource source = new AttackSource(AttackDelivery.BASIC_ATTACK,
+				attackingItem == null ? Set.of() : attackingItem.getCombatProfile().attackCapabilities());
+		if (!customMobHealthService.canDamage((LivingEntity) event.getEntity(), source)) {
+			customMobHealthService.rejectedAttack(player, (LivingEntity) event.getEntity());
+			return;
+		}
 		PlayerCombatHitContext context = createHitContext(player, (LivingEntity) event.getEntity());
-		customMobHealthService.damageMob(player, context.target(), context.damage());
+		if (!customMobHealthService.damageMob(player, context.target(), context.damage(), source)) return;
 		hitPublisher.publish(context);
 		String prefix = context.critical() ? "CRITICAL HIT! " : "";
 		event.getDamager().sendMessage(prefix + "YOU DEALT "

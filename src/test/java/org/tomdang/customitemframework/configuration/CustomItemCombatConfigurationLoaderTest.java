@@ -2,6 +2,7 @@ package org.tomdang.customitemframework.configuration;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
+import org.tomdang.combat.eligibility.AttackCapability;
 import org.tomdang.customitemframework.combat.CombatDamageType;
 import org.tomdang.customitemframework.combat.CombatWeightClass;
 
@@ -20,6 +21,28 @@ class CustomItemCombatConfigurationLoaderTest {
 		assertTrue(profile.weightClass().isEmpty());
 		assertTrue(profile.damageType().isEmpty());
 		assertTrue(profile.baseRecoveryTicks().isEmpty());
+		assertTrue(profile.attackCapabilities().isEmpty());
+	}
+
+	@Test
+	void loadsAttackCapabilitiesForAnyCustomItem() {
+		var profile = loader.load(section("""
+				attack-capabilities:
+				  - JELLYFISH_HUNTING
+				"""), "JELLYFISH_NET");
+
+		assertEquals(java.util.Set.of(AttackCapability.JELLYFISH_HUNTING), profile.attackCapabilities());
+		assertTrue(profile.weightClass().isEmpty());
+	}
+
+	@Test
+	void rejectsUnknownOrMalformedAttackCapabilities() {
+		assertThrows(IllegalArgumentException.class,
+				() -> loader.load(section("attack-capabilities: [UNKNOWN]\n"), "TEST_ITEM"));
+		assertThrows(IllegalArgumentException.class,
+				() -> loader.load(section("attack-capabilities: JELLYFISH_HUNTING\n"), "TEST_ITEM"));
+		assertThrows(IllegalArgumentException.class,
+				() -> loader.load(section("attack-capabilities: [JELLYFISH_HUNTING, JELLYFISH_HUNTING]\n"), "TEST_ITEM"));
 	}
 
 	@Test

@@ -18,26 +18,38 @@ import org.tomdang.custommobframework.custommobspawn.CustomMobSpawnPoint;
 import org.tomdang.custommobframework.custommobspawn.MobSpawnRegionPolicy;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class CustomMobSpawner {
 
 	private final NamespacedKey customMobKey;
 	private final NamespacedKey spawnPointIDKey;
 	private final NamespacedKey currentHealthKey;
+	private final NamespacedKey visualVariantKey;
 	CustomMobContextRegistry customMobContextRegistry;
 	private final MobSpawnRegionPolicy spawnRegionPolicy;
 	private final BukkitBlockPositionAdapter blockPositions = new BukkitBlockPositionAdapter();
+	private final List<Consumer<Entity>> spawnObservers = new ArrayList<>();
 
 	public CustomMobSpawner(NamespacedKey customMobKey, NamespacedKey spawnPointIDKey,
-	                        NamespacedKey currentHealthKey,
+	                        NamespacedKey currentHealthKey, NamespacedKey visualVariantKey,
 	                        CustomMobContextRegistry customMobContextRegistry, MobSpawnRegionPolicy spawnRegionPolicy) {
 		this.customMobKey = customMobKey;
 		this.spawnPointIDKey = spawnPointIDKey;
 		this.currentHealthKey = currentHealthKey;
+		this.visualVariantKey = visualVariantKey;
 		this.customMobContextRegistry = customMobContextRegistry;
 		this.spawnRegionPolicy = spawnRegionPolicy;
 	}
 
 	public Entity createCustomMob(CustomMob customMob, Location location, CustomMobSpawnPoint customMobSpawnPoint) {
+		return createCustomMob(customMob, location, customMobSpawnPoint, null);
+	}
+
+	public Entity createCustomMob(CustomMob customMob, Location location, CustomMobSpawnPoint customMobSpawnPoint,
+	                              String visualVariant) {
 		if (customMob == null || location == null) throw new IllegalArgumentException("mob and location are required");
 		if (!spawnRegionPolicy.allows(customMob.getId(), blockPositions.fromLocation(location))) return null;
 		Entity entity = location.getWorld().spawnEntity(location, customMob.getEntityType());
@@ -65,9 +77,14 @@ public class CustomMobSpawner {
 		}
 
 		pdc.set(customMobKey, PersistentDataType.STRING, customMob.getId());
-
-
+		if (visualVariant != null) pdc.set(visualVariantKey, PersistentDataType.STRING, visualVariant);
+		for (Consumer<Entity> observer : spawnObservers) observer.accept(entity);
 		return entity;
+	}
+
+	public void addSpawnObserver(Consumer<Entity> observer) {
+		if (observer == null) throw new IllegalArgumentException("observer cannot be null");
+		spawnObservers.add(observer);
 	}
 
 	public void applyEntityBehavior(CustomMob customMob, Entity entity) {

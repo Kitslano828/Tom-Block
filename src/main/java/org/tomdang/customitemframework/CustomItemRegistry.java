@@ -2,6 +2,7 @@ package org.tomdang.customitemframework;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class CustomItemRegistry {
 
@@ -22,6 +23,10 @@ public class CustomItemRegistry {
 
 	public CustomItem getCustomItem(String id) {
 		return customitemMap.get(id);
+	}
+
+	public List<String> getItemIds() {
+		return customitemMap.keySet().stream().sorted().toList();
 	}
 
 	public boolean containsCustomItem(String id) {
