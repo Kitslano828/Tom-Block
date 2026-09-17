@@ -82,7 +82,7 @@ class PlayerProfileStorageTest {
 	}
 
 	@Test
-	void legacyLevelRaisesXpWithoutReplayingAlreadySavedReward() {
+	void oldSkillFormatResetsSkillsAndEmbeddedStatsButKeepsOtherStats() {
 		File file = temporaryDirectory.resolve("legacy-player.yml").toFile();
 		UUID playerId = UUID.randomUUID();
 		String path = "players." + playerId;
@@ -93,23 +93,71 @@ class PlayerProfileStorageTest {
 		legacy.set(path + ".combat-level", 8);
 		legacy.set(path + ".mining-fortune", 36.0);
 		legacy.set(path + ".strength", 14.0);
+		legacy.set(path + ".defense", 23.0);
 		assertDoesNotThrow(() -> legacy.save(file));
 		PlayerProfile profile = new PlayerProfile(playerId);
 		PlayerProfileStorage storage = new PlayerProfileStorage(file);
 		storage.loadPlayerProfile(profile);
-		assertEquals(10, profile.getMiningLVL());
-		assertEquals(8, profile.getCombatLvl());
-		assertEquals(SkillXpCurve.totalXpForLevel(10), profile.getMiningXP());
-		assertEquals(36.0, profile.getMiningFortune());
-		assertEquals(14.0, profile.getStrength());
+		assertEquals(0, profile.getMiningLVL());
+		assertEquals(0, profile.getCombatLvl());
+		assertEquals(0, profile.getMiningXP());
+		assertEquals(0.0, profile.getMiningFortune());
+		assertEquals(0.0, profile.getStrength());
+		assertEquals(23.0, profile.getDefense());
 		storage.savePlayerProfile(profile);
 		storage.saveFile();
 		YamlConfiguration migrated = YamlConfiguration.loadConfiguration(file);
-		assertEquals(1, migrated.getInt(path + ".skill-xp-version"));
+		assertEquals(2, migrated.getInt(path + ".skill-reward-version"));
 		assertEquals(false, migrated.contains(path + ".mining-level"));
+		assertEquals(false, migrated.contains(path + ".skill-xp-version"));
 		PlayerProfile reloaded = new PlayerProfile(playerId);
 		new PlayerProfileStorage(file).loadPlayerProfile(reloaded);
 		assertEquals(profile.getMiningXP(), reloaded.getMiningXP());
 		assertEquals(profile.getMiningFortune(), reloaded.getMiningFortune());
+	}
+
+	@Test
+	void previousXpOnlyFormatAlsoResetsInsteadOfTransferringBonuses() {
+		File file = temporaryDirectory.resolve("xp-only-player.yml").toFile();
+		UUID playerId = UUID.randomUUID();
+		String path = "players." + playerId;
+		YamlConfiguration previous = new YamlConfiguration();
+		previous.set(path + ".mining-xp", 999L);
+		previous.set(path + ".combat-xp", 999L);
+		previous.set(path + ".skill-xp-version", 1);
+		previous.set(path + ".mining-fortune", 27.0);
+		previous.set(path + ".strength", 9.0);
+		assertDoesNotThrow(() -> previous.save(file));
+		PlayerProfileStorage storage = new PlayerProfileStorage(file);
+		PlayerProfile first = new PlayerProfile(playerId);
+		storage.loadPlayerProfile(first);
+		assertEquals(0, first.getMiningXP());
+		assertEquals(0, first.getCombatXP());
+		assertEquals(0.0, first.getMiningFortune());
+		assertEquals(0.0, first.getStrength());
+		storage.savePlayerProfile(first);
+		storage.saveFile();
+		PlayerProfile second = new PlayerProfile(playerId);
+		new PlayerProfileStorage(file).loadPlayerProfile(second);
+		assertEquals(0, second.getMiningXP());
+		assertEquals(0.0, second.getMiningFortune());
+	}
+
+	@Test
+	void currentFormatPersistsXpAndBaseStatsWithoutLegacyReset() {
+		File file = temporaryDirectory.resolve("current-player.yml").toFile();
+		UUID id = UUID.randomUUID();
+		PlayerProfile profile = new PlayerProfile(id);
+		profile.setMiningLVL(5);
+		profile.setCombatLvl(3);
+		profile.setMiningFortune(7);
+		PlayerProfileStorage writer = new PlayerProfileStorage(file);
+		writer.savePlayerProfile(profile);
+		writer.saveFile();
+		PlayerProfile restored = new PlayerProfile(id);
+		new PlayerProfileStorage(file).loadPlayerProfile(restored);
+		assertEquals(SkillXpCurve.totalXpForLevel(5), restored.getMiningXP());
+		assertEquals(3, restored.getCombatLvl());
+		assertEquals(7, restored.getMiningFortune());
 	}
 }

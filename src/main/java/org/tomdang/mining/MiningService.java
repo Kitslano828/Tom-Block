@@ -168,13 +168,12 @@ public class MiningService implements AbilityMiningHandler {
 
 	private void updateMiningXP(PlayerProfile playerProfile, Player player, MiningBlock block) {
 		int previousLevel = playerProfile.getMiningLVL();
-		double previousFortune = playerProfile.getMiningFortune();
 		miningLevel.updatePlayerMiningXP(block.getXp(), playerProfile);
 		Component text = Component.text(playerProfile.getMiningProgress().maxLevel() ? "Mining MAX LEVEL"
 				: playerProfile.getMiningProgress().xpIntoLevel() + " / " + playerProfile.getMiningProgress().xpNeededForNextLevel() + " Mining XP")
 				.color(NamedTextColor.DARK_AQUA);
 		playerActionBarService.showTemporaryMessage(player, text, 40);
-		miningLevel.playerMiningLevelUp(player, playerProfile, previousLevel, previousFortune);
+		miningLevel.playerMiningLevelUp(player, playerProfile, previousLevel);
 	}
 
 	private void processMinedBlock(Player player, PlayerProfile playerProfile, Block worldBlock, MiningBlock blockDefinition, MiningTool miningTool) {

@@ -11,9 +11,9 @@ import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.skill.SkillXpCurve;
 
 public class CombatLevel {
-	/** XP and rewards have already changed in PlayerProfile; this only presents the level-up. */
+	/** XP has changed; the skill modifier provider derives the reward. This only presents it. */
 	public void playerCombatLevelUp(EntityDeathEvent event, PlayerProfile profile, int previousLevel,
-	                                double previousStrength, PlayerActionBarService actionBar) {
+	                                PlayerActionBarService actionBar) {
 		if (profile.getCombatLvl() <= previousLevel) return;
 		Player player = event.getEntity().getKiller();
 		if (player == null) return;
@@ -23,7 +23,8 @@ public class CombatLevel {
 		player.sendMessage("§3<COMBAT>----------------------------------------");
 		player.sendMessage("§3<COMBAT>                 COMBAT LEVEL UP");
 		player.sendMessage("§3<COMBAT>             Combat Level: " + previousLevel + " ---> " + profile.getCombatLvl());
-		player.sendMessage("§3<COMBAT>             Strength: " + previousStrength + " ---> " + profile.getStrength());
+		player.sendMessage("§3<COMBAT>             Skill Strength: " + (previousLevel * 2)
+				+ " ---> " + (profile.getCombatLvl() * 2));
 		player.sendMessage("§3<COMBAT>----------------------------------------");
 	}
 

@@ -23,7 +23,7 @@ public class PlayerProfileStorage {
 		data.createSection(path);
 		data.set(path + ".mining-xp", 0L);
 		data.set(path + ".combat-xp", 0L);
-		data.set(path + ".skill-xp-version", 1);
+		data.set(path + ".skill-reward-version", 2);
 		saveStats(path, player);
 	}
 
@@ -34,7 +34,8 @@ public class PlayerProfileStorage {
 		data.set(path + ".combat-xp", player.getCombatXP());
 		data.set(path + ".mining-level", null);
 		data.set(path + ".combat-level", null);
-		data.set(path + ".skill-xp-version", 1);
+		data.set(path + ".skill-xp-version", null);
+		data.set(path + ".skill-reward-version", 2);
 		saveStats(path, player);
 	} // I would assume that data.save(file) would be in Main file
 
@@ -42,13 +43,16 @@ public class PlayerProfileStorage {
 	public void loadPlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		loadStats(path, player);
-		long miningXp = data.getLong(path + ".mining-xp", 0);
-		long combatXp = data.getLong(path + ".combat-xp", 0);
-		if (data.contains(path + ".skill-xp-version") || !data.contains(path)) {
-			player.restoreSkillXp(miningXp, combatXp);
+		if (data.getInt(path + ".skill-reward-version", 0) >= 2) {
+			player.restoreSkillXp(data.getLong(path + ".mining-xp", 0),
+					data.getLong(path + ".combat-xp", 0));
 		} else {
-			player.restoreLegacySkillXp(miningXp, data.getInt(path + ".mining-level", 1),
-					combatXp, data.getInt(path + ".combat-level", 1));
+			// Old profiles mixed earned rewards into these base stats. There is no
+			// reliable way to separate them from manually edited values; reset only
+			// these two stats and both skills. Other stored stats are preserved.
+			player.restoreSkillXp(0, 0);
+			player.getStats().reset(PlayerStatType.MINING_FORTUNE);
+			player.getStats().reset(PlayerStatType.STRENGTH);
 		}
 	}
 

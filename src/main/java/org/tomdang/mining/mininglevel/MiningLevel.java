@@ -17,8 +17,8 @@ public class MiningLevel {
 		this.playerActionBarService = playerActionBarService;
 	}
 
-	/** XP and rewards have already changed in PlayerProfile; this only presents the level-up. */
-	public void playerMiningLevelUp(Player player, PlayerProfile profile, int previousLevel, double previousFortune) {
+	/** XP has changed; the skill modifier provider derives the reward. This only presents it. */
+	public void playerMiningLevelUp(Player player, PlayerProfile profile, int previousLevel) {
 		if (profile.getMiningLVL() <= previousLevel) return;
 		player.playSound(player, Sound.ITEM_GOAT_HORN_SOUND_3, 1.5f, 2.0f);
 		playerActionBarService.showTemporaryMessage(player, Component.text("MINING LEVEL UP")
@@ -26,7 +26,8 @@ public class MiningLevel {
 		player.sendMessage("§3<MINING>----------------------------------------");
 		player.sendMessage("§3<MINING>                 Mining LEVEL UP");
 		player.sendMessage("§3<MINING>             Mining Level: " + previousLevel + " ---> " + profile.getMiningLVL());
-		player.sendMessage("§3<MINING>             Mining Fortune: " + previousFortune + " ---> " + profile.getMiningFortune());
+		player.sendMessage("§3<MINING>             Skill Fortune: " + (previousLevel * 4)
+				+ " ---> " + (profile.getMiningLVL() * 4));
 		player.sendMessage("§3<MINING>----------------------------------------");
 	}
 

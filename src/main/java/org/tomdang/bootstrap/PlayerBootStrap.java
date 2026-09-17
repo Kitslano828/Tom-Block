@@ -21,6 +21,7 @@ import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.modifier.PlayerStatModifierCalculator;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProviderRegistry;
+import org.tomdang.player.skill.SkillStatModifierProvider;
 import org.tomdang.player.stats.rule.PlayerStatRuleRegistry;
 import org.tomdang.player.stats.modifier.cap.PlayerStatCapModifierProviderRegistry;
 import org.tomdang.customitemframework.stats.HeldItemStatCapModifierProvider;
@@ -63,6 +64,7 @@ public class PlayerBootStrap {
 		statModifierProviderRegistry = new PlayerStatModifierProviderRegistry();
 		statModifierProviderRegistry.register("armor", armorStatModifierProvider);
 		statModifierProviderRegistry.register("held-item", heldItemStatModifierProvider);
+		statModifierProviderRegistry.register("skills", new SkillStatModifierProvider(playerProfileService));
 		PlayerStatModifierCalculator playerStatModifierCalculator = new PlayerStatModifierCalculator(statRuleRegistry);
 		statCapModifierProviderRegistry = new PlayerStatCapModifierProviderRegistry();
 		statCapModifierProviderRegistry.register("armor", new ArmorStatCapModifierProvider(customArmorService));

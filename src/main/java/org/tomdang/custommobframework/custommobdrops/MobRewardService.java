@@ -62,12 +62,11 @@ public class MobRewardService {
 
 		public void givePlayerCombatXP(EntityDeathEvent event, PlayerProfile player, CustomMob customMob) {
 			int previousLevel = player.getCombatLvl();
-			double previousStrength = player.getStrength();
 			combatLevel.updatePlayerCombatXP(customMob.getXpAmount(), player);
 			Component text = Component.text(player.getCombatProgress().maxLevel() ? "Combat MAX LEVEL"
 					: player.getCombatProgress().xpIntoLevel() + " / " + player.getCombatProgress().xpNeededForNextLevel() + " Combat XP").color(NamedTextColor.DARK_AQUA);
 			playerActionBarService.showTemporaryMessage(Objects.requireNonNull(event.getEntity().getKiller()), text, 40);
-			combatLevel.playerCombatLevelUp(event, player, previousLevel, previousStrength, playerActionBarService);
+			combatLevel.playerCombatLevelUp(event, player, previousLevel, playerActionBarService);
 		}
 }
 
