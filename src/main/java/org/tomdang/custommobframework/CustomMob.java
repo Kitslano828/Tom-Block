@@ -5,6 +5,7 @@ import org.bukkit.entity.EntityType;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.custommobframework.custommobdrops.CustomMobDrop;
 import org.tomdang.combat.eligibility.AttackEligibilityRule;
+import org.tomdang.custommobframework.behavior.MobBehaviorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class CustomMob {
 	private final boolean burnsInDaylight;
 	@Getter
 	private final AttackEligibilityRule attackEligibilityRule;
+	@Getter
+	private final MobBehaviorType behavior;
 
 	public CustomMob(String id, EntityType entityType, String name, double maxHealth, double damage, MobType mobType,
 	                 int xpAmount, boolean burnsInDaylight) {
@@ -40,7 +43,15 @@ public class CustomMob {
 
 	public CustomMob(String id, EntityType entityType, String name, double maxHealth, double damage, MobType mobType,
 	                 int xpAmount, boolean burnsInDaylight, AttackEligibilityRule attackEligibilityRule) {
+		this(id, entityType, name, maxHealth, damage, mobType, xpAmount, burnsInDaylight,
+				attackEligibilityRule, MobBehaviorType.VANILLA);
+	}
+
+	public CustomMob(String id, EntityType entityType, String name, double maxHealth, double damage, MobType mobType,
+	                 int xpAmount, boolean burnsInDaylight, AttackEligibilityRule attackEligibilityRule,
+	                 MobBehaviorType behavior) {
 		if (attackEligibilityRule == null) throw new IllegalArgumentException("attackEligibilityRule cannot be null");
+		if (behavior == null) throw new IllegalArgumentException("behavior cannot be null");
 		customMobDrops = new ArrayList<>();
 		this.id = id;
 		this.entityType = entityType;
@@ -51,6 +62,7 @@ public class CustomMob {
 		this.xpAmount = xpAmount;
 		this.burnsInDaylight = burnsInDaylight;
 		this.attackEligibilityRule = attackEligibilityRule;
+		this.behavior = behavior;
 	}
 
 	public void addMobDrops(CustomItem customItem, int amount, double chance) {

@@ -4,6 +4,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.tomdang.custommobframework.MobType;
 import org.tomdang.combat.eligibility.AttackEligibilityRule;
+import org.tomdang.custommobframework.behavior.MobBehaviorType;
 
 import java.util.List;
 import java.util.Set;
@@ -20,14 +21,22 @@ public record CustomMobDefinition(
 	List<String> allowedSpawnRegions,
 	MobPopulationRule population,
 	AttackEligibilityRule attackEligibilityRule,
-	List<CustomMobDropDefinition> drops
+	List<CustomMobDropDefinition> drops,
+	MobBehaviorType behavior
 ) {
+	public CustomMobDefinition(String id, EntityType entityType, String displayName, double maxHealth,
+	                           double damage, MobType mobType, int xp, boolean burnsInDaylight,
+	                           List<String> allowedSpawnRegions, MobPopulationRule population,
+	                           AttackEligibilityRule attackEligibilityRule, List<CustomMobDropDefinition> drops) {
+		this(id, entityType, displayName, maxHealth, damage, mobType, xp, burnsInDaylight,
+				allowedSpawnRegions, population, attackEligibilityRule, drops, MobBehaviorType.VANILLA);
+	}
 	public CustomMobDefinition(String id, EntityType entityType, String displayName, double maxHealth,
 	                           double damage, MobType mobType, int xp, boolean burnsInDaylight,
 	                           List<String> allowedSpawnRegions, MobPopulationRule population,
 	                           List<CustomMobDropDefinition> drops) {
 		this(id, entityType, displayName, maxHealth, damage, mobType, xp, burnsInDaylight,
-				allowedSpawnRegions, population, new AttackEligibilityRule(Set.of()), drops);
+				allowedSpawnRegions, population, new AttackEligibilityRule(Set.of()), drops, MobBehaviorType.VANILLA);
 	}
 
 	public CustomMobDefinition {
@@ -57,6 +66,7 @@ public record CustomMobDefinition(
 		}
 		if (drops == null) throw new IllegalArgumentException("drops cannot be null");
 		if (attackEligibilityRule == null) throw new IllegalArgumentException("attackEligibilityRule cannot be null");
+		if (behavior == null) throw new IllegalArgumentException("behavior cannot be null");
 		allowedSpawnRegions = List.copyOf(allowedSpawnRegions);
 		if (population != null && !population.mobId().equals(id)) {
 			throw new IllegalArgumentException("population mobId must match definition ID");

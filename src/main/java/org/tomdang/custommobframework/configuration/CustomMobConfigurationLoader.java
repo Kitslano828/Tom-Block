@@ -6,6 +6,7 @@ import org.bukkit.entity.EntityType;
 import org.tomdang.custommobframework.MobType;
 import org.tomdang.combat.eligibility.AttackCapability;
 import org.tomdang.combat.eligibility.AttackEligibilityRule;
+import org.tomdang.custommobframework.behavior.MobBehaviorType;
 
 import java.io.Reader;
 import java.util.ArrayList;
@@ -36,7 +37,8 @@ public class CustomMobConfigurationLoader {
 					loadAllowedSpawnRegions(mob, id),
 					loadPopulation(mob, id),
 					loadAttackEligibility(mob, id),
-					loadDrops(mob, id)
+					loadDrops(mob, id),
+					parseEnum(MobBehaviorType.class, mob.getString("behavior", "VANILLA"), id, "behavior")
 			));
 		}
 		return List.copyOf(definitions);

@@ -71,6 +71,17 @@ class CustomMobConfigurationLoaderTest {
 	}
 
 	@Test
+	void behaviorDefaultsToVanillaAndCanOptIntoFloatingWander() {
+		assertEquals(org.tomdang.custommobframework.behavior.MobBehaviorType.VANILLA,
+				load(validConfiguration()).getFirst().behavior());
+		assertEquals(org.tomdang.custommobframework.behavior.MobBehaviorType.FLOATING_WANDER,
+				load(validConfiguration().replace("    entity-type: ZOMBIE",
+						"    entity-type: ZOMBIE\n    behavior: FLOATING_WANDER")).getFirst().behavior());
+		assertInvalid(validConfiguration().replace("    entity-type: ZOMBIE",
+				"    entity-type: ZOMBIE\n    behavior: UNKNOWN"), "UNKNOWN");
+	}
+
+	@Test
 	void populationIsOptionalAndBadLimitsAreRejected() {
 		String population = """
 				    population:

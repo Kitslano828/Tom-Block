@@ -29,7 +29,8 @@ bootstrap. The authoritative profile file is the runtime file under
 
 Each mob in `mobs/mobs.yml` may have `allowed-spawn-regions` (an empty or absent list
 means unrestricted) and an optional `population` section. The latter currently
-supports one ambient **ground-mob** population per mob definition:
+supports one ambient population per mob definition. `placement` defaults to
+`GROUND`; `AIR` requires `minimum-y` and `maximum-y`:
 
 ```yaml
 population:
@@ -42,6 +43,16 @@ population:
   minimum-spawn-distance: 16
   maximum-spawn-distance: 40
 ```
+
+`max-near-player` optionally limits the number of matching mobs near a spawn
+candidate; it defaults to `max-alive`. The configured `max-alive` remains the
+whole-region ceiling. Spawn candidates are only searched near online players.
+
+Mob `behavior` defaults to `VANILLA`. `FLOATING_WANDER` disables the carrier's
+vanilla AI and item pickup, then moves it slowly through unobstructed, loaded
+blocks inside its allowed region and configured population Y range. The jellyfish
+uses this behavior while the training zombie keeps vanilla AI. This movement is
+local wandering, not an obstacle-routing pathfinder.
 
 The population rule checks already-loaded chunks near players; it does not load
 distant chunks. It counts loaded mobs of that type in the region, including old

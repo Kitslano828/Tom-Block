@@ -20,6 +20,7 @@ import org.tomdang.custommobframework.configuration.CustomMobConfigurationLoader
 import org.tomdang.custommobframework.configuration.CustomMobDefinition;
 import org.tomdang.custommobframework.configuration.CustomMobDefinitionRegistrar;
 import org.tomdang.custommobframework.presentation.JellyfishPresentationService;
+import org.tomdang.custommobframework.behavior.CustomMobBehaviorService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ public class MobBootStrap {
 	private final CustomMobSpawnPointRegistry customMobSpawnPointRegistry;
 	private final MobPopulationService mobPopulationService;
 	private final JellyfishPresentationService jellyfishPresentationService;
+	private final CustomMobBehaviorService customMobBehaviorService;
 	@Getter
 	private final NamespacedKey mobVisualVariantKey;
 	@Getter
@@ -87,6 +89,9 @@ public class MobBootStrap {
 		mobPopulationService = new MobPopulationService(instance, customMobRegistry, customMobSpawner,
 				customMobContextRegistry, regionResolver, customMobKey, populationRuleKey, populationRules);
 		new CustomMobDefinitionRegistrar(customMobRegistry, customItemRegistry).registerDefinitions(definitions);
+		customMobBehaviorService = new CustomMobBehaviorService(instance, customMobRegistry,
+				mobRegionConfinementPolicy, customMobKey, populationRuleKey, populationRules);
+		customMobSpawner.addSpawnObserver(customMobBehaviorService::track);
 		jellyfishPresentationService = new JellyfishPresentationService(
 				instance, customMobKey, currentHealthKey, mobVisualVariantKey, customMobRegistry);
 		customMobSpawner.addSpawnObserver(jellyfishPresentationService::trackIfJellyfish);
@@ -127,11 +132,13 @@ public class MobBootStrap {
 	}
 
 	public void startPresentations() {
+		customMobBehaviorService.start();
 		jellyfishPresentationService.start();
 	}
 
 	public void stopPresentations() {
 		jellyfishPresentationService.stop();
+		customMobBehaviorService.stop();
 	}
 
 	public void stopPopulations() {
