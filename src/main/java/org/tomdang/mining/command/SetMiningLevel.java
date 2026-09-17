@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
+import org.tomdang.player.skill.SkillXpCurve;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,8 @@ public class SetMiningLevel implements CommandExecutor, TabCompleter {
 
 		try {
 			level = Integer.parseInt(levelText);
-			if (level < 0) {
-				sender.sendMessage("LEVEL CANNOT BE BELOW 0");
+			if (level < 0 || level > SkillXpCurve.MAX_LEVEL) {
+				sender.sendMessage("LEVEL MUST BE BETWEEN 0 AND 100");
 				return true;
 			}
 		} catch (NumberFormatException exception) {
@@ -58,7 +59,8 @@ public class SetMiningLevel implements CommandExecutor, TabCompleter {
 		targetProfile.setMiningLVL(level);
 
 
-		sender.sendMessage("§a§lSet " + playerName + "'s Mining Level to " + level + "!");
+		sender.sendMessage("§a§lSet " + playerName + "'s Mining Level to " + level
+				+ " (" + targetProfile.getMiningXP() + " total XP)!");
 
 		return true;
 	}

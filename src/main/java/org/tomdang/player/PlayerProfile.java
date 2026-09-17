@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.tomdang.player.playerresource.PlayerResource;
 import org.tomdang.player.stats.PlayerStatBlock;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.skill.SkillProgress;
+import org.tomdang.player.skill.SkillXpCurve;
 
 import java.util.UUID;
 
@@ -15,14 +17,52 @@ public class PlayerProfile {
 	@Getter
 	private final UUID uuid;
 
-	@Getter @Setter
-	private int miningXP = 0;
-	@Getter @Setter
-	private int miningLVL = 1;
-	@Getter @Setter
-	private int combatXP = 0;
-	@Getter @Setter
-	private int combatLvl = 1;
+	@Getter
+	private long miningXP = 0;
+	@Getter
+	private long combatXP = 0;
+
+	public int getMiningLVL() { return SkillXpCurve.levelForXp(miningXP); }
+	public int getCombatLvl() { return SkillXpCurve.levelForXp(combatXP); }
+	public SkillProgress getMiningProgress() { return SkillProgress.fromTotalXp(miningXP); }
+	public SkillProgress getCombatProgress() { return SkillProgress.fromTotalXp(combatXP); }
+
+	public void setMiningXP(long totalXp) {
+		int previous = getMiningLVL();
+		int next = SkillXpCurve.levelForXp(totalXp);
+		miningXP = Math.min(totalXp, SkillXpCurve.totalXpForLevel(SkillXpCurve.MAX_LEVEL));
+		stats.add(PlayerStatType.MINING_FORTUNE, 4.0 * (next - previous));
+	}
+
+	public void setCombatXP(long totalXp) {
+		int previous = getCombatLvl();
+		int next = SkillXpCurve.levelForXp(totalXp);
+		combatXP = Math.min(totalXp, SkillXpCurve.totalXpForLevel(SkillXpCurve.MAX_LEVEL));
+		stats.add(PlayerStatType.STRENGTH, 2.0 * (next - previous));
+	}
+
+	public void setMiningLVL(int level) { setMiningXP(SkillXpCurve.totalXpForLevel(level)); }
+	public void setCombatLvl(int level) { setCombatXP(SkillXpCurve.totalXpForLevel(level)); }
+
+	/** Load an old profile whose skill bonuses are already baked into its saved base stats. */
+	public void restoreLegacySkillXp(long miningXp, int oldMiningLevel, long combatXp, int oldCombatLevel) {
+		SkillXpCurve.levelForXp(miningXp);
+		SkillXpCurve.levelForXp(combatXp);
+		int oldMining = Math.clamp(oldMiningLevel, 0, 100);
+		int oldCombat = Math.clamp(oldCombatLevel, 0, 100);
+		this.miningXP = Math.min(Math.max(miningXp, SkillXpCurve.totalXpForLevel(oldMining)), SkillXpCurve.totalXpForLevel(100));
+		this.combatXP = Math.min(Math.max(combatXp, SkillXpCurve.totalXpForLevel(oldCombat)), SkillXpCurve.totalXpForLevel(100));
+		stats.add(PlayerStatType.MINING_FORTUNE, 4.0 * (getMiningLVL() - oldMining));
+		stats.add(PlayerStatType.STRENGTH, 2.0 * (getCombatLvl() - oldCombat));
+	}
+
+	/** Load the new XP-only format without replaying saved rewards. */
+	public void restoreSkillXp(long miningXp, long combatXp) {
+		SkillXpCurve.levelForXp(miningXp);
+		SkillXpCurve.levelForXp(combatXp);
+		this.miningXP = Math.min(miningXp, SkillXpCurve.totalXpForLevel(100));
+		this.combatXP = Math.min(combatXp, SkillXpCurve.totalXpForLevel(100));
+	}
 
 	@Getter
 	private final PlayerStatBlock stats = new PlayerStatBlock();
@@ -40,11 +80,13 @@ public class PlayerProfile {
 	}
 
 	public void increaseMiningXP(int amount) {
-		this.miningXP += amount;
+		if (amount < 0) throw new IllegalArgumentException("XP award cannot be negative");
+		setMiningXP(Math.addExact(miningXP, amount));
 	}
 
 	public void increaseCombatXP(int amount) {
-		this.combatXP += amount;
+		if (amount < 0) throw new IllegalArgumentException("XP award cannot be negative");
+		setCombatXP(Math.addExact(combatXP, amount));
 	}
 
 	public void increaseMiningFortune(double amount) {
@@ -108,12 +150,15 @@ public class PlayerProfile {
 
 	public void resetAllStats() {
 		stats.resetAll();
+		// Skill rewards are earned progression, not removable equipment bonuses.
+		stats.add(PlayerStatType.MINING_FORTUNE, 4.0 * getMiningLVL());
+		stats.add(PlayerStatType.STRENGTH, 2.0 * getCombatLvl());
 		if (health.getCurrent() > getMaximumHealth()) health.setCurrent(getMaximumHealth());
 		if (energy.getCurrent() > getMaximumEnergy()) energy.setCurrent(getMaximumEnergy());
 	}
 
 	public void increaseMiningLevel(int amount) {
-		this.miningLVL += amount;
+		setMiningLVL(Math.addExact(getMiningLVL(), amount));
 	}
 
 	public boolean isDead() {

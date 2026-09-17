@@ -41,10 +41,10 @@ public class SetMiningXP implements CommandExecutor, TabCompleter {
 
 		PlayerProfile targetProfile = playerProfileService.getPlayerProfileFromMap(target.getUniqueId());
 
-		int xp;
+		long xp;
 
 		try {
-			xp = Integer.parseInt(xpText);
+			xp = Long.parseLong(xpText);
 			if (xp < 0) {
 				sender.sendMessage("XP CANNOT BE BELOW 0");
 				return true;
@@ -57,7 +57,8 @@ public class SetMiningXP implements CommandExecutor, TabCompleter {
 		targetProfile.setMiningXP(xp);
 
 
-		sender.sendMessage("§a§lSet " + playerName + "'s Mining xp to " + xp + "!");
+		sender.sendMessage("§a§lSet " + playerName + "'s Mining XP to " + xp
+				+ " (level " + targetProfile.getMiningLVL() + ")!");
 
 		return true;
 	}

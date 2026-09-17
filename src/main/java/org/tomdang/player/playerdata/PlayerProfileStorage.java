@@ -21,10 +21,9 @@ public class PlayerProfileStorage {
 	public void createPlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		data.createSection(path);
-		data.set(path + ".mining-xp", 0);
-		data.set(path + ".mining-level", 1);
-		data.set(path + ".combat-xp", 0);
-		data.set(path + ".combat-level", 1);
+		data.set(path + ".mining-xp", 0L);
+		data.set(path + ".combat-xp", 0L);
+		data.set(path + ".skill-xp-version", 1);
 		saveStats(path, player);
 	}
 
@@ -32,20 +31,25 @@ public class PlayerProfileStorage {
 	public void savePlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		data.set(path + ".mining-xp", player.getMiningXP());
-		data.set(path + ".mining-level", player.getMiningLVL());
 		data.set(path + ".combat-xp", player.getCombatXP());
-		data.set(path + ".combat-level", player.getCombatLvl());
+		data.set(path + ".mining-level", null);
+		data.set(path + ".combat-level", null);
+		data.set(path + ".skill-xp-version", 1);
 		saveStats(path, player);
 	} // I would assume that data.save(file) would be in Main file
 
 	// This should happen when a player joins the game after a restart / or a crash
 	public void loadPlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
-		player.setMiningXP(data.getInt(path + ".mining-xp"));
-		player.setMiningLVL(data.getInt(path + ".mining-level"));
-		player.setCombatXP(data.getInt(path + ".combat-xp"));
-		player.setCombatLvl(data.getInt(path + ".combat-level"));
 		loadStats(path, player);
+		long miningXp = data.getLong(path + ".mining-xp", 0);
+		long combatXp = data.getLong(path + ".combat-xp", 0);
+		if (data.contains(path + ".skill-xp-version") || !data.contains(path)) {
+			player.restoreSkillXp(miningXp, combatXp);
+		} else {
+			player.restoreLegacySkillXp(miningXp, data.getInt(path + ".mining-level", 1),
+					combatXp, data.getInt(path + ".combat-level", 1));
+		}
 	}
 
 	private void saveStats(String playerPath, PlayerProfile player) {

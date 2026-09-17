@@ -5,12 +5,14 @@ import org.junit.jupiter.api.io.TempDir;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.skill.SkillXpCurve;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class PlayerProfileStorageTest {
 
@@ -77,5 +79,37 @@ class PlayerProfileStorageTest {
 		assertEquals(PlayerStatType.MINING_FORTUNE.getDefaultValue(), profile.getMiningFortune(), 0.000001);
 		assertEquals(PlayerStatType.MAX_HEALTH.getDefaultValue(), profile.getMaximumHealth(), 0.000001);
 		assertEquals(PlayerStatType.MAX_ENERGY.getDefaultValue(), profile.getMaximumEnergy(), 0.000001);
+	}
+
+	@Test
+	void legacyLevelRaisesXpWithoutReplayingAlreadySavedReward() {
+		File file = temporaryDirectory.resolve("legacy-player.yml").toFile();
+		UUID playerId = UUID.randomUUID();
+		String path = "players." + playerId;
+		YamlConfiguration legacy = new YamlConfiguration();
+		legacy.set(path + ".mining-xp", 0);
+		legacy.set(path + ".mining-level", 10);
+		legacy.set(path + ".combat-xp", 0);
+		legacy.set(path + ".combat-level", 8);
+		legacy.set(path + ".mining-fortune", 36.0);
+		legacy.set(path + ".strength", 14.0);
+		assertDoesNotThrow(() -> legacy.save(file));
+		PlayerProfile profile = new PlayerProfile(playerId);
+		PlayerProfileStorage storage = new PlayerProfileStorage(file);
+		storage.loadPlayerProfile(profile);
+		assertEquals(10, profile.getMiningLVL());
+		assertEquals(8, profile.getCombatLvl());
+		assertEquals(SkillXpCurve.totalXpForLevel(10), profile.getMiningXP());
+		assertEquals(36.0, profile.getMiningFortune());
+		assertEquals(14.0, profile.getStrength());
+		storage.savePlayerProfile(profile);
+		storage.saveFile();
+		YamlConfiguration migrated = YamlConfiguration.loadConfiguration(file);
+		assertEquals(1, migrated.getInt(path + ".skill-xp-version"));
+		assertEquals(false, migrated.contains(path + ".mining-level"));
+		PlayerProfile reloaded = new PlayerProfile(playerId);
+		new PlayerProfileStorage(file).loadPlayerProfile(reloaded);
+		assertEquals(profile.getMiningXP(), reloaded.getMiningXP());
+		assertEquals(profile.getMiningFortune(), reloaded.getMiningFortune());
 	}
 }
