@@ -49,7 +49,8 @@ public class PlayerNpcActorPresentation implements ActorPresentation, MovableAct
 		Collection<Player> players = actorAudienceResolver.resolvePlayers(key);
 
 		String requestedProfileName = playerNpcProfileNameFactory.create(instance.getInstanceID());
-		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(location, requestedProfileName);
+		PlayerNPC playerNPC = playerNpcLifecycleService.createNpc(
+				location, requestedProfileName, instance.getActorDefinition().getSkin());
 		UUID npcUUID = playerNPC.getProfileUUID();
 		String profileName = playerNPC.getProfileName();
 		ActorCollisionPolicy collisionPolicy = instance.getActorDefinition().getActorCollisionPolicy();

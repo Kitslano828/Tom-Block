@@ -7,10 +7,22 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.nameplate.ActorNameplate;
 import org.tomdang.actorframework.nameplate.ActorNameplateLine;
+import org.tomdang.actorframework.skin.ActorSkin;
 
 import java.util.List;
+import java.util.Map;
 
 public class ActorConfigurationConverter {
+	private final Map<String, ActorSkin> skins;
+
+	public ActorConfigurationConverter() {
+		this(Map.of());
+	}
+
+	public ActorConfigurationConverter(Map<String, ActorSkin> skins) {
+		if (skins == null) throw new IllegalArgumentException("skins cannot be null");
+		this.skins = Map.copyOf(skins);
+	}
 
 	public ActorNameplateLine toNameplateLine(ActorNameplateLineConfigurationDefinition definition) {
 		if (definition == null) {
@@ -47,6 +59,10 @@ public class ActorConfigurationConverter {
 
 		// Construct the domain nameplate object
 		ActorNameplate nameplate = new ActorNameplate(convertedLines);
+		ActorSkin skin = definition.skinId() == null ? null : skins.get(definition.skinId());
+		if (definition.skinId() != null && skin == null)
+			throw new IllegalArgumentException("Actor " + definition.actorID()
+					+ " references unknown skin " + definition.skinId());
 
 		// Map and return the complete ActorDefinition
 		return new ActorDefinition(
@@ -57,7 +73,8 @@ public class ActorConfigurationConverter {
 				definition.interactionID(),
 				definition.damagePolicy(),
 				definition.collisionPolicy(),
-				nameplate
+				nameplate,
+				skin
 		);
 	}
 

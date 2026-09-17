@@ -56,6 +56,9 @@ class ActorConfigurationBootStrapTest {
 		when(plugin.getResource("actors/actors.yml")).thenReturn(
 				new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))
 		);
+		when(plugin.getResource("actors/skins.yml")).thenReturn(
+				new ByteArrayInputStream("skins: {}".getBytes(StandardCharsets.UTF_8))
+		);
 
 		new ActorConfigurationBootStrap(
 				plugin,

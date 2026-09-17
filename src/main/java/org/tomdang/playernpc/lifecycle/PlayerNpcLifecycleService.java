@@ -12,6 +12,7 @@ import org.tomdang.playernpc.nms.NmsPlayerNpcViewer;
 import org.tomdang.playernpc.runtime.PlayerNPC;
 import org.tomdang.playernpc.runtime.PlayerNpcRegistry;
 import org.tomdang.playernpc.runtime.PlayerNpcVisibilityRegistry;
+import org.tomdang.actorframework.skin.ActorSkin;
 
 import java.util.Set;
 import java.util.UUID;
@@ -66,7 +67,11 @@ public class PlayerNpcLifecycleService {
 	}
 
 	public PlayerNPC createNpc(Location location, String profileName) {
-		PlayerNPC playerNPC = nmsPlayerNpcFactory.create(location, profileName);
+		return createNpc(location, profileName, (ActorSkin) null);
+	}
+
+	public PlayerNPC createNpc(Location location, String profileName, ActorSkin skin) {
+		PlayerNPC playerNPC = nmsPlayerNpcFactory.create(location, profileName, skin);
 		playerNpcRegistry.register(playerNPC);
 		return playerNPC;
 	}

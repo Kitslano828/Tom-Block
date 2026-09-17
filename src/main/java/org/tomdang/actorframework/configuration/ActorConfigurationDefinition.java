@@ -16,8 +16,17 @@ public record ActorConfigurationDefinition(
 		String interactionID,
 		ActorDamagePolicy damagePolicy,
 		ActorCollisionPolicy collisionPolicy,
-		List<ActorNameplateLineConfigurationDefinition> nameplateLines
+		List<ActorNameplateLineConfigurationDefinition> nameplateLines,
+		String skinId
 ) {
+	public ActorConfigurationDefinition(String actorID, String displayName, ActorAudienceScope audienceScope,
+	                                    String presentationTypeID, String interactionID,
+	                                    ActorDamagePolicy damagePolicy, ActorCollisionPolicy collisionPolicy,
+	                                    List<ActorNameplateLineConfigurationDefinition> nameplateLines) {
+		this(actorID, displayName, audienceScope, presentationTypeID, interactionID,
+				damagePolicy, collisionPolicy, nameplateLines, null);
+	}
+
 	public ActorConfigurationDefinition {
 		if (actorID == null || actorID.isBlank()) {
 			throw new IllegalArgumentException("actorID cannot be null or blank");
@@ -43,6 +52,7 @@ public record ActorConfigurationDefinition(
 		if (nameplateLines == null) {
 			throw new IllegalArgumentException("nameplateLines cannot be null");
 		}
+		if (skinId != null && skinId.isBlank()) throw new IllegalArgumentException("skinId cannot be blank");
 		if (nameplateLines.stream().anyMatch(Objects::isNull)) {
 			throw new IllegalArgumentException("nameplateLines cannot contain null elements");
 		}

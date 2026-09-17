@@ -10,8 +10,10 @@ import org.tomdang.actorframework.combat.ActorDamagePolicy;
 import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.nameplate.ActorNameplateLine;
 import org.tomdang.actorframework.nameplate.ActorNameplateLineRole;
+import org.tomdang.actorframework.skin.ActorSkin;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,6 +23,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ActorConfigurationConverterTest {
+	@Test
+	void resolvesNamedSkinAndRejectsUnknownSkin() {
+		ActorConfigurationDefinition actor = new ActorConfigurationDefinition(
+				"SMITH", "Smith", ActorAudienceScope.GLOBAL, "PLAYER_NPC", null,
+				ActorDamagePolicy.PROTECTED, ActorCollisionPolicy.PASS_THROUGH,
+				List.of(line(ActorNameplateLineRole.NAME, "Smith", null, false, true)), "BLACKSMITH");
+		ActorSkin skin = new ActorSkin("BLACKSMITH", "dGVzdA==", null);
+		assertEquals(skin, new ActorConfigurationConverter(Map.of("BLACKSMITH", skin))
+				.toActorDefinition(actor).getSkin());
+		assertTrue(assertThrows(IllegalArgumentException.class,
+				() -> converter.toActorDefinition(actor)).getMessage().contains("BLACKSMITH"));
+	}
 
 	private final ActorConfigurationConverter converter = new ActorConfigurationConverter();
 

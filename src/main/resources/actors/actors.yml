@@ -1,6 +1,7 @@
 actors:
   PACKET_SMITH:
     display-name: "Blacksmith"
+    # skin: BLACKSMITH  # Define BLACKSMITH in actors/skins.yml first.
     audience-scope: GLOBAL
     presentation-type: PLAYER_NPC
     interaction-id: BLACKSMITH_INTERACTION
@@ -30,6 +31,31 @@ actors:
         name:
           role: NAME
           text: "Blacksmith"
+          visible-while-moving: true
+        interaction:
+          role: INTERACTION
+          text: "INTERACT"
+          color: "#FFEA00"
+          bold: true
+
+  JELLYFISH_MAN:
+    display-name: "Jellyfish Man"
+    skin: MUSHROOM_MAN
+    audience-scope: GLOBAL
+    presentation-type: PLAYER_NPC
+    interaction-id: BLACKSMITH_DIALOGUE_INTERACTION
+    damage-policy: PROTECTED
+    collision-policy: PASS_THROUGH
+    nameplate:
+      lines:
+        status:
+          role: STATUS
+          text: "SHOP"
+          color: "#ADD8E6"
+          bold: true
+        name:
+          role: NAME
+          text: "Jellyfish Man"
           visible-while-moving: true
         interaction:
           role: INTERACTION

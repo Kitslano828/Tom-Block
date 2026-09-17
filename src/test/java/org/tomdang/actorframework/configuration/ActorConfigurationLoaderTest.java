@@ -97,6 +97,14 @@ class ActorConfigurationLoaderTest {
 	}
 
 	@Test
+	void loadsOptionalSkinId() {
+		assertNull(load(minimalActor()).getFirst().skinId());
+		assertEquals("BLACKSMITH", load(minimalActor().replace(
+				"    presentation-type: PLAYER_NPC",
+				"    presentation-type: PLAYER_NPC\n    skin: BLACKSMITH")).getFirst().skinId());
+	}
+
+	@Test
 	void loadDefinitionsRejectsMissingOrEmptyActorsSection() {
 		assertAll(
 				() -> assertThrows(IllegalArgumentException.class, () -> load("other: {}")),

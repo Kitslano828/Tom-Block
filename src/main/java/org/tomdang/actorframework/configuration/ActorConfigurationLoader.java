@@ -34,6 +34,7 @@ public class ActorConfigurationLoader {
 			String displayName = requireString(actorSection, "display-name", actorId);
 			ActorAudienceScope audienceScope = parseEnum(actorSection, "audience-scope", actorId, ActorAudienceScope.class);
 			String presentationTypeId = requireString(actorSection, "presentation-type", actorId);
+			String skinId = optionalString(actorSection, "skin", "Actor " + actorId);
 			String interactionId = optionalString(actorSection, "interaction-id", "Actor " + actorId);
 			ActorDamagePolicy damagePolicy = parseEnum(actorSection, "damage-policy", actorId, ActorDamagePolicy.class);
 			ActorCollisionPolicy collisionPolicy = parseEnum(actorSection, "collision-policy", actorId, ActorCollisionPolicy.class);
@@ -76,7 +77,8 @@ public class ActorConfigurationLoader {
 					interactionId,
 					damagePolicy,
 					collisionPolicy,
-					nameplateLines
+					nameplateLines,
+					skinId
 			));
 		}
 

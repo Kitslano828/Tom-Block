@@ -5,6 +5,7 @@ import org.tomdang.actorframework.audience.ActorAudienceScope;
 import org.tomdang.actorframework.collision.ActorCollisionPolicy;
 import org.tomdang.actorframework.combat.ActorDamagePolicy;
 import org.tomdang.actorframework.nameplate.ActorNameplate;
+import org.tomdang.actorframework.skin.ActorSkin;
 
 public class ActorDefinition {
 
@@ -24,12 +25,21 @@ public class ActorDefinition {
 	private final ActorCollisionPolicy actorCollisionPolicy;
 	@Getter
 	private final ActorNameplate actorNameplate;
+	@Getter
+	private final ActorSkin skin;
 
 
 	public ActorDefinition(String actorID, String displayName, ActorAudienceScope actorAudienceScope,
-						   String presentationTypeID, String interactionID, ActorDamagePolicy damagePolicy,
-						   ActorCollisionPolicy actorCollisionPolicy, ActorNameplate actorNameplate
+					   String presentationTypeID, String interactionID, ActorDamagePolicy damagePolicy,
+					   ActorCollisionPolicy actorCollisionPolicy, ActorNameplate actorNameplate
 	) {
+		this(actorID, displayName, actorAudienceScope, presentationTypeID, interactionID,
+				damagePolicy, actorCollisionPolicy, actorNameplate, null);
+	}
+
+	public ActorDefinition(String actorID, String displayName, ActorAudienceScope actorAudienceScope,
+	                       String presentationTypeID, String interactionID, ActorDamagePolicy damagePolicy,
+	                       ActorCollisionPolicy actorCollisionPolicy, ActorNameplate actorNameplate, ActorSkin skin) {
 		if (actorID == null) throw new IllegalArgumentException("actor id cannot be null");
 		if (displayName == null) throw new IllegalArgumentException("Name cannot be null");
 		if (actorID.isBlank()) throw new IllegalArgumentException("Actor ID cannot be blank!");
@@ -52,6 +62,7 @@ public class ActorDefinition {
 		this.damagePolicy = damagePolicy;
 		this.actorCollisionPolicy = actorCollisionPolicy;
 		this.actorNameplate = actorNameplate;
+		this.skin = skin;
 	}
 
 	public boolean hasInteraction() {

@@ -11,7 +11,7 @@ server copies are not overwritten by a new JAR.
 | Items | `items/items.yml`, `items/weapons.yml`, `items/armor.yml` | JAR |
 | Mining and crafting | `mining/mining-tools.yml`, `mining/mining-blocks.yml`, `crafting/recipes.yml` | JAR |
 | Mobs | `mobs/mobs.yml` | JAR |
-| Actors and dialogue | `actors/actors.yml`, `actors/dialogues.yml`, `actors/spawn-points.yml` | JAR |
+| Actors and dialogue | `actors/actors.yml`, `actors/skins.yml`, `actors/dialogues.yml`, `actors/spawn-points.yml` | JAR |
 | Combat and stats | `combat/combat.yml`, `stats/stat-rules.yml`, `stats/stat-presentations.yml`, `stats/stat-categories.yml` | JAR |
 | World and movement | `regions.yml`, `region-stat-caps.yml`, `region-visualization.yml`, `movement-speed.yml` | server directory |
 | Plugin declaration | `plugin.yml` | JAR |
@@ -64,6 +64,24 @@ region; manually spawned mobs with allowed regions are confined to those regions
 
 Moving the JAR-bundled templates does not move any server-side files or reset
 player profiles and region brush edits.
+
+## Player NPC skins
+
+An actor using `PLAYER_NPC` may specify `skin: BLACKSMITH` in `actors/actors.yml`.
+The ID must exist in `actors/skins.yml`:
+
+```yaml
+skins:
+  BLACKSMITH:
+    value: "<base64-encoded textures property>"
+    signature: "<matching signature, if supplied>"
+```
+
+Use the `textures` property value and its matching signature from a skin profile,
+not a PNG path or a resource-pack model ID. The signature is optional in the
+configuration but recommended when available. Unknown IDs and invalid base64
+values fail during startup. Actors without `skin` keep the default player-NPC
+appearance. Both YAML files are bundled in the JAR; edit, rebuild, and restart.
 
 ## Basic attack calculation profiles
 

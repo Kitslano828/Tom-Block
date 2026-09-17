@@ -8,6 +8,7 @@ spawn-points:
       x: 93.5
       y: 76
       z: 187.5
+
   TALKING_BLACKSMITH_TEST:
     actor-id: TALKING_BLACKSMITH
     audience:
@@ -17,3 +18,13 @@ spawn-points:
       x: 197.5
       y: 73
       z: -76.5
+
+  JELLYFISH_MAN_SPAWN:
+    actor-id: JELLYFISH_MAN
+    audience:
+      scope: GLOBAL
+    location:
+      world: world
+      x: 1247.5
+      y: 74
+      z: -130.5
