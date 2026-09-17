@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.combat.damage.BasicAttackCalculationProfile;
 
 import java.io.StringReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CustomItemConfigurationLoaderTest {
 
 	private final CustomItemConfigurationLoader loader = new CustomItemConfigurationLoader();
+
+	@Test
+	void bundledNetUsesFishingPowerInsteadOfCombatDamage() throws Exception {
+		try (var stream = getClass().getClassLoader().getResourceAsStream("items/items.yml")) {
+			if (stream == null) throw new IllegalStateException("Bundled items.yml is missing");
+			CustomItemDefinition net = loader.loadDefinitions(new InputStreamReader(stream, StandardCharsets.UTF_8))
+					.stream().filter(item -> item.id().equals("JELLYFISH_NET")).findFirst().orElseThrow();
+			assertEquals(10.0, net.statModifiers().get(PlayerStatType.JELLYFISH_POWER));
+			assertEquals(0.0, net.statModifiers().get(PlayerStatType.DAMAGE));
+			assertEquals(BasicAttackCalculationProfile.JELLYFISH_HUNTING,
+					net.combatProfile().basicAttackCalculationProfile());
+		}
+	}
 
 	@Test
 	void validConfigurationLoadsEveryField() {

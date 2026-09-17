@@ -33,6 +33,21 @@ mobs:
     mob-type: COMMON_MOB
     xp: 0
     burns-in-daylight: false
-    allowed-spawn-regions: []
+    # The large hunting habitat is defined in regions.yml.
+    allowed-spawn-regions:
+      - JELLYFISH_HUNTING_GROUNDS
+    population:
+      region: JELLYFISH_HUNTING_GROUNDS
+      placement: AIR
+      minimum-y: 65
+      maximum-y: 135
+      max-alive: 30
+      max-near-player: 6
+      interval-ticks: 40
+      activation-radius: 48
+      despawn-radius: 80
+      despawn-grace-ticks: 200
+      minimum-spawn-distance: 12
+      maximum-spawn-distance: 40
     accepted-attack-capabilities:
       - JELLYFISH_HUNTING

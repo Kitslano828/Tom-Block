@@ -13,10 +13,14 @@ import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.damage.CriticalHitRoller;
 import org.tomdang.combat.damage.RandomCriticalHitRoller;
 import org.tomdang.combat.damage.PlayerAttackResult;
+import org.tomdang.combat.damage.BasicAttackCalculationProfile;
+import org.tomdang.combat.damage.JellyfishHuntingDamageCalculator;
+import org.tomdang.combat.damage.BasicAttackCalculationService;
 import org.tomdang.combat.attackspeed.AttackReadinessCalculation;
 import org.tomdang.combat.attackspeed.AttackReadinessDamageScaler;
 import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
 import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
+import org.tomdang.combat.attackspeed.AttackRecoveryStatSelector;
 import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
@@ -29,7 +33,6 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.PlayerStatValueFormatter;
-import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.Optional;
 import java.util.Set;
@@ -41,11 +44,11 @@ public class CombatService {
 	private final PlayerStatsService playerStatsService;
 	private final PlayerResourceService playerResourceService;
 	private final CustomMobHealthService customMobHealthService;
-	private final PlayerDamageCalculator playerDamageCalculator;
-	private final CriticalHitRoller criticalHitRoller;
+	private final BasicAttackCalculationService basicAttackCalculationService;
 	private final PlayerAttackReadinessService attackReadinessService;
 	private final AttackReadinessDamageScaler readinessDamageScaler;
 	private final HeldItemCombatResolver heldItemCombatResolver;
+	private final AttackRecoveryStatSelector recoveryStatSelector = new AttackRecoveryStatSelector();
 	private final PlayerCombatHitPublisher hitPublisher;
 
 	public CombatService(PlayerProfileService playerProfileService, CustomMobResolver customMobResolver,
@@ -79,8 +82,8 @@ public class CombatService {
 		this.playerStatsService = playerStatsService;
 		this.playerResourceService = playerResourceService;
 		this.customMobHealthService = customMobHealthService;
-		this.playerDamageCalculator = playerDamageCalculator;
-		this.criticalHitRoller = criticalHitRoller;
+		this.basicAttackCalculationService = new BasicAttackCalculationService(playerStatsService,
+				playerDamageCalculator, criticalHitRoller, new JellyfishHuntingDamageCalculator());
 		this.attackReadinessService = attackReadinessService;
 		this.readinessDamageScaler = readinessDamageScaler;
 		this.heldItemCombatResolver = heldItemCombatResolver;
@@ -118,7 +121,7 @@ public class CombatService {
 			customMobHealthService.rejectedAttack(player, (LivingEntity) event.getEntity());
 			return;
 		}
-		PlayerCombatHitContext context = createHitContext(player, (LivingEntity) event.getEntity());
+		PlayerCombatHitContext context = createHitContext(player, (LivingEntity) event.getEntity(), attackingItem);
 		if (!customMobHealthService.damageMob(player, context.target(), context.damage(), source)) return;
 		hitPublisher.publish(context);
 		String prefix = context.critical() ? "CRITICAL HIT! " : "";
@@ -129,12 +132,15 @@ public class CombatService {
 	public PlayerCombatHitContext createHitContext(Player player, LivingEntity target) {
 		if (player == null) throw new IllegalArgumentException("player cannot be null");
 		if (target == null) throw new IllegalArgumentException("target cannot be null");
-		CustomItem heldItem = heldItemCombatResolver.resolve(player);
+		return createHitContext(player, target, heldItemCombatResolver.resolve(player));
+	}
+
+	private PlayerCombatHitContext createHitContext(Player player, LivingEntity target, CustomItem heldItem) {
 		long baseRecoveryTicks = heldItemCombatResolver.resolveBaseRecoveryTicks(heldItem);
 		AttackReadinessCalculation readiness = attackReadinessService.consume(
 				player.getUniqueId(), baseRecoveryTicks,
-				playerStatsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED));
-		PlayerAttackResult fullAttack = attackResult(player);
+				recoveryStatSelector.select(player, heldItem, playerStatsService));
+		PlayerAttackResult fullAttack = attackResult(player, heldItem);
 		double scaledDamage = readinessDamageScaler.scale(fullAttack.damage(), readiness.readiness());
 		return new PlayerCombatHitContext(
 				player,
@@ -154,12 +160,14 @@ public class CombatService {
 	}
 
 	public PlayerAttackResult attackResult(Player player) {
-		double totalDamage = playerStatsService.getTotalDamage(player);
-		double totalStrength = playerStatsService.getTotalStrength(player);
-		double criticalChance = playerStatsService.getTotalCritChance(player);
-		double criticalDamage = playerStatsService.getTotalCritDamage(player);
-		boolean critical = criticalHitRoller.isCritical(criticalChance);
-		return playerDamageCalculator.calculateBasicAttack(totalDamage, totalStrength, criticalDamage, critical);
+		return basicAttackCalculationService.calculate(player, BasicAttackCalculationProfile.COMBAT);
+	}
+
+	private PlayerAttackResult attackResult(Player player, CustomItem heldItem) {
+		BasicAttackCalculationProfile profile = heldItem == null
+				? BasicAttackCalculationProfile.COMBAT
+				: heldItem.getCombatProfile().basicAttackCalculationProfile();
+		return basicAttackCalculationService.calculate(player, profile);
 	}
 
 	public void mobHitPlayer(EntityDamageByEntityEvent event) {

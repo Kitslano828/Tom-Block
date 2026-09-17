@@ -74,6 +74,16 @@ The project is divided into several major areas:
 
 ## Building
 
+For the local Windows Paper server, run `scripts/run-local-server.bat` (the
+IntelliJ `TomBlock` Run configuration points to this script). It first runs
+`prepareLocalServer`: Gradle builds and tests the plugin, packages only
+`pack.mcmeta` and `assets/`, copies the JAR and ZIP into the local server, and
+updates its local resource-pack SHA-1. Stop the local Paper server before
+running it. The Ubuntu build server and public GitHub release are separate;
+this local task never deploys to either one.
+
+An ordinary Gradle `build` only builds and tests; it does not deploy files.
+
 TomBlock currently targets:
 
 - Java 25

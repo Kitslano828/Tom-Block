@@ -6,6 +6,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.junit.jupiter.api.Test;
 import org.tomdang.combat.damage.PlayerDamageCalculator;
 import org.tomdang.combat.damage.PlayerAttackResult;
+import org.tomdang.combat.damage.BasicAttackCalculationProfile;
 import org.tomdang.combat.attackspeed.AttackReadinessCalculator;
 import org.tomdang.combat.attackspeed.AttackReadinessDamageScaler;
 import org.tomdang.combat.attackspeed.PlayerAttackReadinessService;
@@ -16,6 +17,8 @@ import org.tomdang.customitemframework.combat.CombatDamageType;
 import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
 import org.tomdang.combat.hit.PlayerCombatHitPublisher;
 import org.tomdang.customitemframework.CustomItemResolver;
+import org.tomdang.customitemframework.CustomItem;
+import org.tomdang.customitemframework.combat.CustomItemCombatProfile;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.customitemframework.Rarity;
 import org.tomdang.customitemframework.stats.CustomItemStatCapModifiers;
@@ -31,6 +34,9 @@ import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.UUID;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 import org.bukkit.Material;
@@ -43,11 +49,72 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 
 class CombatServiceTest {
+	@Test
+	void netHitUsesFishingStatsAndNeverReadsStrengthOrCrit() {
+		Player player = mock(Player.class);
+		when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+		PlayerInventory inventory = mock(PlayerInventory.class);
+		ItemStack stack = mock(ItemStack.class);
+		when(player.getInventory()).thenReturn(inventory);
+		when(inventory.getItemInMainHand()).thenReturn(stack);
+		CustomItem net = mock(CustomItem.class);
+		when(net.getCombatProfile()).thenReturn(new CustomItemCombatProfile(Optional.empty(), Optional.empty(),
+				OptionalLong.empty(), Set.of(), BasicAttackCalculationProfile.JELLYFISH_HUNTING));
+		CustomItemResolver items = mock(CustomItemResolver.class);
+		when(items.getCustomItem(stack)).thenReturn(net);
+		PlayerStatsService stats = mock(PlayerStatsService.class);
+		when(stats.getTotalStat(player, PlayerStatType.JELLYFISH_POWER)).thenReturn(10.0, 20.0);
+		when(stats.getTotalStat(player, PlayerStatType.JELLYFISH_DAMAGE_BONUS)).thenReturn(50.0);
+		var criticalRoller = mock(org.tomdang.combat.damage.CriticalHitRoller.class);
+		CombatService service = new CombatService(mock(PlayerProfileService.class), mock(CustomMobResolver.class),
+				stats, mock(PlayerResourceService.class), mock(CustomMobHealthService.class),
+				new PlayerDamageCalculator(), criticalRoller, readinessService(() -> 100),
+				new AttackReadinessDamageScaler(), heldResolver(items), hitPublisher());
+
+		PlayerCombatHitContext first = service.createHitContext(player, mock(LivingEntity.class));
+		PlayerCombatHitContext upgraded = service.createHitContext(player, mock(LivingEntity.class));
+
+		assertEquals(15.0, first.fullDamage());
+		assertEquals(30.0, upgraded.fullDamage());
+		assertEquals(false, first.critical());
+		verify(stats, never()).getTotalStrength(player);
+		verify(stats, never()).getTotalDamage(player);
+		verify(stats, never()).getTotalCritChance(player);
+		verify(criticalRoller, never()).isCritical(anyDouble());
+	}
+
+	@Test
+	void rejectedAttackDoesNotCalculateDamageOrAdvanceReadiness() {
+		Player player = mock(Player.class);
+		PlayerInventory inventory = mock(PlayerInventory.class);
+		when(player.getInventory()).thenReturn(inventory);
+		LivingEntity jellyfish = mock(LivingEntity.class);
+		EntityDamageByEntityEvent event = mock(EntityDamageByEntityEvent.class);
+		when(event.getDamager()).thenReturn(player);
+		when(event.getEntity()).thenReturn(jellyfish);
+		CustomMobResolver mobs = mock(CustomMobResolver.class);
+		when(mobs.getCustomMob(jellyfish)).thenReturn(mock(CustomMob.class));
+		CustomMobHealthService health = mock(CustomMobHealthService.class);
+		PlayerStatsService stats = mock(PlayerStatsService.class);
+		CombatService service = new CombatService(mock(PlayerProfileService.class), mobs,
+				stats, mock(PlayerResourceService.class), health, new PlayerDamageCalculator(),
+				readinessService(() -> 100), new AttackReadinessDamageScaler(),
+				heldResolver(mock(CustomItemResolver.class)), hitPublisher());
+
+		service.damageMob(event);
+
+		verify(event).setCancelled(true);
+		verify(health).rejectedAttack(player, jellyfish);
+		verify(health, never()).damageMob(eq(player), eq(jellyfish), anyDouble(), any(AttackSource.class));
+		verify(stats, never()).getTotalDamage(player);
+	}
+
 	@Test
 	void attackResultUsesCriticalStatsAndInjectedRoller() {
 		Player player = mock(Player.class);

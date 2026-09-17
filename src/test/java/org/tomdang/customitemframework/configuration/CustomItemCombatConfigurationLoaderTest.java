@@ -3,6 +3,7 @@ package org.tomdang.customitemframework.configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.tomdang.combat.eligibility.AttackCapability;
+import org.tomdang.combat.damage.BasicAttackCalculationProfile;
 import org.tomdang.customitemframework.combat.CombatDamageType;
 import org.tomdang.customitemframework.combat.CombatWeightClass;
 
@@ -22,6 +23,15 @@ class CustomItemCombatConfigurationLoaderTest {
 		assertTrue(profile.damageType().isEmpty());
 		assertTrue(profile.baseRecoveryTicks().isEmpty());
 		assertTrue(profile.attackCapabilities().isEmpty());
+		assertEquals(BasicAttackCalculationProfile.COMBAT, profile.basicAttackCalculationProfile());
+	}
+
+	@Test
+	void loadsJellyfishHuntingCalculationProfile() {
+		var profile = loader.load(section("basic-attack-calculation: JELLYFISH_HUNTING\n"), "JELLYFISH_NET");
+		assertEquals(BasicAttackCalculationProfile.JELLYFISH_HUNTING, profile.basicAttackCalculationProfile());
+		assertThrows(IllegalArgumentException.class,
+				() -> loader.load(section("basic-attack-calculation: UNKNOWN\n"), "JELLYFISH_NET"));
 	}
 
 	@Test

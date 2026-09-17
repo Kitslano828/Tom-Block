@@ -2,6 +2,7 @@ package org.tomdang.customitemframework.configuration;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.tomdang.combat.eligibility.AttackCapability;
+import org.tomdang.combat.damage.BasicAttackCalculationProfile;
 import org.tomdang.customitemframework.combat.CombatDamageType;
 import org.tomdang.customitemframework.combat.CombatWeightClass;
 import org.tomdang.customitemframework.combat.CustomItemCombatProfile;
@@ -61,7 +62,10 @@ public class CustomItemCombatConfigurationLoader {
 				if (!capabilities.add(parsed)) throw new IllegalArgumentException(itemId + " has a duplicate capability " + parsed);
 			}
 		}
-		return new CustomItemCombatProfile(weight, damage, recovery, capabilities);
+		BasicAttackCalculationProfile calculationProfile = parseOptionalEnum(section, itemId,
+				"basic-attack-calculation", BasicAttackCalculationProfile.class)
+				.orElse(BasicAttackCalculationProfile.COMBAT);
+		return new CustomItemCombatProfile(weight, damage, recovery, capabilities, calculationProfile);
 	}
 
 	private <E extends Enum<E>> Optional<E> parseOptionalEnum(ConfigurationSection section, String itemId,

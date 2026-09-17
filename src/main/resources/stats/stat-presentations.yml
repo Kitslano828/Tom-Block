@@ -41,6 +41,20 @@ stat-presentations:
     material: DIAMOND_PICKAXE
     visible: true
 
+  JELLYFISH_POWER:
+    symbol: "ଳ"
+    color: "#55FFFF"
+    description: "Base capture damage dealt by jellyfish-hunting attacks."
+    material: FISHING_ROD
+    visible: true
+
+  JELLYFISH_DAMAGE_BONUS:
+    symbol: "%"
+    color: "#55FFFF"
+    description: "Percentage bonus to jellyfish-hunting capture damage."
+    material: PRISMARINE_SHARD
+    visible: true
+
   MAX_ENERGY:
     symbol: "⚡"
     color: "#00AA00"

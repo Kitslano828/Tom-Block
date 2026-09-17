@@ -1,11 +1,12 @@
 items:
   JELLYFISH_NET:
-    material: FISHING_ROD
+    material: STICK
     display-name: "Jellyfish Net"
     rarity: COMMON
     category: TEST_ITEM
     stats:
-      damage: 10.0
+      jellyfish-power: 10.0
+    basic-attack-calculation: JELLYFISH_HUNTING
     attack-capabilities:
       - JELLYFISH_HUNTING
 

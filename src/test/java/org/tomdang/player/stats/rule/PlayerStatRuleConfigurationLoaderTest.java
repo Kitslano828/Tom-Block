@@ -90,6 +90,10 @@ class PlayerStatRuleConfigurationLoaderTest {
 				    cap: null
 				  MINING_FORTUNE:
 				    cap: null
+				  JELLYFISH_POWER:
+				    cap: null
+				  JELLYFISH_DAMAGE_BONUS:
+				    cap: null
 				  ABILITY_HASTE:
 				    cap: null
 				  ATTACK_SPEED:

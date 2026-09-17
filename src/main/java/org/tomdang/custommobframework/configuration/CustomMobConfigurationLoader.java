@@ -75,7 +75,17 @@ public class CustomMobConfigurationLoader {
 				requireInt(section, mobId, "despawn-radius"),
 				requireLong(section, mobId, "despawn-grace-ticks"),
 				requireInt(section, mobId, "minimum-spawn-distance"),
-				requireInt(section, mobId, "maximum-spawn-distance"));
+				requireInt(section, mobId, "maximum-spawn-distance"),
+				parseEnum(MobSpawnPlacement.class, section.getString("placement", "GROUND"), mobId, "placement"),
+				optionalInt(section, mobId, "minimum-y"),
+				optionalInt(section, mobId, "maximum-y"),
+				section.contains("max-near-player") ? requireInt(section, mobId, "max-near-player")
+						: requireInt(section, mobId, "max-alive"));
+	}
+
+	private Integer optionalInt(ConfigurationSection section, String id, String field) {
+		if (!section.contains(field)) return null;
+		return requireInt(section, id, field);
 	}
 
 	private long requireLong(ConfigurationSection section, String id, String field) {

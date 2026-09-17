@@ -16,11 +16,13 @@ import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobRegistry;
 import org.tomdang.custommobframework.CustomMobSpawner;
 import org.tomdang.custommobframework.configuration.MobPopulationRule;
+import org.tomdang.custommobframework.configuration.MobSpawnPlacement;
 import org.tomdang.custommobframework.custommobcontext.CustomMobContextRegistry;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 import org.tomdang.region.resolution.RegionResolver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,16 +89,30 @@ public final class MobPopulationService {
 		CustomMob mob = mobs.getCustomMob(rule.mobId());
 		if (mob == null) return;
 
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+		if (!players.isEmpty()) Collections.rotate(players, (int) (now / rule.intervalTicks() % players.size()));
+		for (Player player : players) {
 			if (!eligible(player)) continue;
-			Location candidate = findGroundCandidate(rule, player);
+			Location candidate = findCandidate(rule, player);
 			if (candidate == null) continue;
+			if (countNearby(rule, candidate) >= rule.maxNearPlayer()) continue;
 			Entity spawned = spawner.createCustomMob(mob, candidate, null);
 			if (spawned == null) continue;
 			spawned.getPersistentDataContainer().set(populationKey, PersistentDataType.STRING, rule.id());
 			lastNearby.put(spawned.getUniqueId(), now);
 			return; // At most one new mob per rule per cycle.
 		}
+	}
+
+	int countNearby(MobPopulationRule rule, Location location) {
+		int count = 0;
+		double radiusSquared = (double) rule.activationRadius() * rule.activationRadius();
+		for (Entity entity : location.getWorld().getEntities()) {
+			if (!entity.isValid() || entity.isDead()) continue;
+			if (!rule.mobId().equals(entity.getPersistentDataContainer().get(mobKey, PersistentDataType.STRING))) continue;
+			if (entity.getLocation().distanceSquared(location) <= radiusSquared) count++;
+		}
+		return count;
 	}
 
 	private int countAndClean(MobPopulationRule rule, long now, Map<UUID, Long> lastNearby) {
@@ -142,7 +158,7 @@ public final class MobPopulationService {
 		return alive;
 	}
 
-	Location findGroundCandidate(MobPopulationRule rule, Player player) {
+	Location findCandidate(MobPopulationRule rule, Player player) {
 		World world = player.getWorld();
 		Location origin = player.getLocation();
 		for (int attempt = 0; attempt < CANDIDATES_PER_CYCLE; attempt++) {
@@ -152,19 +168,34 @@ public final class MobPopulationService {
 			int x = (int) Math.floor(origin.getX() + Math.cos(angle) * distance);
 			int z = (int) Math.floor(origin.getZ() + Math.sin(angle) * distance);
 			if (!world.isChunkLoaded(x >> 4, z >> 4)) continue;
-			int y = world.getHighestBlockYAt(x, z);
-			if (y < world.getMinHeight() || y + 2 >= world.getMaxHeight()) continue;
-			Block ground = world.getBlockAt(x, y, z);
-			Block feet = world.getBlockAt(x, y + 1, z);
-			Block head = world.getBlockAt(x, y + 2, z);
-			if (!ground.getType().isSolid() || !feet.isPassable() || !head.isPassable()) continue;
-			Location location = new Location(world, x + 0.5, y + 1, z + 0.5);
+			int feetY;
+			if (rule.placement() == MobSpawnPlacement.GROUND) {
+				int groundY = world.getHighestBlockYAt(x, z);
+				feetY = groundY + 1;
+				if (groundY < world.getMinHeight() || feetY + 1 >= world.getMaxHeight()) continue;
+				if (rule.minimumY() != null && (feetY < rule.minimumY() || feetY > rule.maximumY())) continue;
+				Block ground = world.getBlockAt(x, groundY, z);
+				if (!ground.getType().isSolid()) continue;
+			} else {
+				int lower = Math.max(rule.minimumY(), world.getMinHeight());
+				int upper = Math.min(rule.maximumY(), world.getMaxHeight() - 2);
+				if (lower > upper) continue;
+				feetY = ThreadLocalRandom.current().nextInt(lower, upper + 1);
+			}
+			Block feet = world.getBlockAt(x, feetY, z);
+			Block head = world.getBlockAt(x, feetY + 1, z);
+			if (!feet.isPassable() || !head.isPassable()) continue;
+			Location location = new Location(world, x + 0.5, feetY, z + 0.5);
 			if (regions.regionsAt(positions.fromLocation(location)).stream()
 					.noneMatch(region -> rule.regionId().equals(region.id()))) continue;
 			if (!playerNearby(location, rule.activationRadius())) continue;
 			return location;
 		}
 		return null;
+	}
+
+	Location findGroundCandidate(MobPopulationRule rule, Player player) {
+		return findCandidate(rule, player);
 	}
 
 	private boolean playerNearby(Location location, int radius) {

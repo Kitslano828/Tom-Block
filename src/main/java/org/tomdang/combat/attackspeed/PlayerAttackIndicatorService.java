@@ -7,7 +7,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.tomdang.customitemframework.CustomItem;
 import org.tomdang.player.playerresource.PlayerStatsService;
-import org.tomdang.player.stats.PlayerStatType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,7 @@ public final class PlayerAttackIndicatorService {
 	private final PlayerStatsService statsService;
 	private final AttackRecoveryCalculator recoveryCalculator;
 	private final AttackIndicatorAttributeCalculator attributeCalculator;
+	private final AttackRecoveryStatSelector recoveryStatSelector = new AttackRecoveryStatSelector();
 	private final Map<UUID, Double> originalBaseValues = new HashMap<>();
 	private BukkitTask updateTask;
 
@@ -68,7 +68,7 @@ public final class PlayerAttackIndicatorService {
 		long baseRecoveryTicks = heldItemCombatResolver.resolveBaseRecoveryTicks(heldItem);
 		OptionalLong recovery = recoveryCalculator.calculate(
 				baseRecoveryTicks,
-				statsService.getTotalStat(player, PlayerStatType.ATTACK_SPEED)
+				recoveryStatSelector.select(player, heldItem, statsService)
 		);
 		if (recovery.isEmpty()) return;
 		double desiredAttributeValue = attributeCalculator.desiredValue(recovery.getAsLong());

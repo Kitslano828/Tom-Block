@@ -102,6 +102,10 @@ class PlayerStatPresentationConfigurationLoaderTest {
 				""" + entry("⚔", "#FF5555", "Damage", "IRON_SWORD") + """
 				  MINING_FORTUNE:
 				""" + entry("⛏❀", "#EDC140", "Fortune", "GOLDEN_PICKAXE") + """
+				  JELLYFISH_POWER:
+				""" + entry("✧", "#55FFFF", "Jellyfish power", "FISHING_ROD") + """
+				  JELLYFISH_DAMAGE_BONUS:
+				""" + entry("%", "#55FFFF", "Jellyfish bonus", "PRISMARINE_SHARD") + """
 				  MAX_ENERGY:
 				""" + entry("⚡", "#00AA00", "Energy", "EMERALD") + """
 				  ABILITY_HASTE:

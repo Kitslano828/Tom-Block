@@ -87,6 +87,20 @@ class CustomMobConfigurationLoaderTest {
 		assertInvalid(validConfiguration().replace("max-alive: 3", "max-alive: 0"), "population limits");
 		assertInvalid(validConfiguration().replace("despawn-radius: 80", "despawn-radius: 48"),
 				"population limits");
+		CustomMobDefinition airMob = load(validConfiguration().replace(
+				"      maximum-spawn-distance: 40",
+				"      maximum-spawn-distance: 40\n      placement: AIR\n      minimum-y: 65\n      maximum-y: 90")).getFirst();
+		assertEquals(MobSpawnPlacement.AIR, airMob.population().placement());
+		assertEquals(90, airMob.population().maximumY());
+		CustomMobDefinition spreadMob = load(validConfiguration().replace(
+				"      max-alive: 3", "      max-alive: 30\n      max-near-player: 6")).getFirst();
+		assertEquals(6, spreadMob.population().maxNearPlayer());
+		assertInvalid(validConfiguration().replace("      max-alive: 3",
+				"      max-alive: 3\n      max-near-player: 4"), "population limits");
+		assertInvalid(validConfiguration().replace("      maximum-spawn-distance: 40",
+				"      maximum-spawn-distance: 40\n      placement: AIR"), "population placement");
+		assertInvalid(validConfiguration().replace("      maximum-spawn-distance: 40",
+				"      maximum-spawn-distance: 40\n      placement: OCEAN"), "OCEAN");
 	}
 
 	@Test

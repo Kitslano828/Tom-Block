@@ -53,3 +53,17 @@ region; manually spawned mobs with allowed regions are confined to those regions
 
 Moving the JAR-bundled templates does not move any server-side files or reset
 player profiles and region brush edits.
+
+## Basic attack calculation profiles
+
+Generic items may set `basic-attack-calculation` in `items/items.yml`. If omitted,
+the profile is `COMBAT`, which uses Damage, Strength, Crit Chance, and Crit Damage.
+The Jellyfish Net uses `JELLYFISH_HUNTING`, which instead reads the Fishing stats
+`jellyfish-power` and `jellyfish-damage-bonus`. A bonus of 50 means 50% more
+capture damage: `power * (1 + bonus / 100)`. Ordinary combat Attack Speed does
+not shorten net recovery; net upgrades can set `base-recovery-ticks` directly.
+
+`attack-capabilities` remains a separate target-eligibility rule. A calculation
+profile chooses numbers; it does not grant permission to damage a mob. During
+development, `/setstat jellyfish-damage-bonus 50` can simulate a future skill
+shop bonus. That command changes the player's base stat, not a purchased perk.

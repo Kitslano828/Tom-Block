@@ -40,3 +40,22 @@ regions:
     overrides:
       inclusions: {}
       exclusions: {}
+  JELLYFISH_HUNTING_GROUNDS:
+    priority: 10
+    tags:
+      - JELLYFISH_HUNTING
+    shape:
+      cuboids:
+        main:
+          world: world
+          minimum:
+            x: 1138
+            y: 65
+            z: -270
+          maximum:
+            x: 1342
+            y: 136
+            z: -82
+    overrides:
+      inclusions: {}
+      exclusions: {}

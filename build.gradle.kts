@@ -7,6 +7,8 @@ import java.net.http.HttpResponse
 import java.time.Duration
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.net.InetSocketAddress
+import java.net.Socket
 
 plugins {
     java
@@ -63,9 +65,84 @@ val localServerDirectory = file("C:/Users/tomda/Desktop/26.2")
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    from(layout.projectDirectory.dir("resource-pack"))
+    from(layout.projectDirectory.dir("resource-pack")) {
+        include("pack.mcmeta", "assets/**")
+    }
     archiveFileName.set(resourcePackArchiveName)
     destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
+}
+
+val prepareLocalServer by tasks.registering {
+    group = "development"
+    description = "Builds TomBlock and prepares the Windows Paper server plugin and required resource pack."
+    dependsOn(tasks.named("build"), packageResourcePack)
+
+    doLast {
+        val serverProperties = localServerDirectory.resolve("server.properties")
+        val pluginsDirectory = localServerDirectory.resolve("plugins")
+        if (!serverProperties.isFile || !pluginsDirectory.isDirectory) {
+            throw GradleException("Local Paper server not found at $localServerDirectory")
+        }
+        val port = serverProperties.readLines().firstOrNull { it.startsWith("server-port=") }
+            ?.substringAfter('=')?.toIntOrNull() ?: 25565
+        val serverRunning = try {
+            Socket().use { socket ->
+                socket.connect(InetSocketAddress("127.0.0.1", port), 250)
+                true
+            }
+        } catch (_: java.io.IOException) {
+            false
+        }
+        if (serverRunning) {
+            throw GradleException("Stop the local Paper server on port $port before preparing its plugin JAR")
+        }
+
+        val jar = tasks.jar.get().archiveFile.get().asFile
+        val pack = packageResourcePack.get().archiveFile.get().asFile
+        val serverPackDirectory = localServerDirectory.resolve("resource-pack")
+        serverPackDirectory.mkdirs()
+        jar.copyTo(pluginsDirectory.resolve("TomBlock.jar"), overwrite = true)
+        pack.copyTo(serverPackDirectory.resolve(resourcePackArchiveName), overwrite = true)
+
+        val digest = MessageDigest.getInstance("SHA-1")
+        val hash = pack.inputStream().use { input ->
+            val buffer = ByteArray(8192)
+            var bytesRead = input.read(buffer)
+            while (bytesRead != -1) {
+                digest.update(buffer, 0, bytesRead)
+                bytesRead = input.read(buffer)
+            }
+            digest.digest().joinToString("") { byte ->
+                (byte.toInt() and 0xff).toString(16).padStart(2, '0')
+            }
+        }
+        val replacements = mapOf(
+            "require-resource-pack" to "true",
+            "resource-pack" to "http\\://127.0.0.1\\:8123/$resourcePackArchiveName",
+            "resource-pack-sha1" to hash
+        )
+        val updatedKeys = mutableSetOf<String>()
+        val updatedLines = serverProperties.readLines().map { line ->
+            val key = replacements.keys.firstOrNull { candidate -> line.startsWith("$candidate=") }
+            if (key == null) line else {
+                updatedKeys.add(key)
+                "$key=${replacements.getValue(key)}"
+            }
+        }.toMutableList()
+        replacements.forEach { (key, value) ->
+            if (key !in updatedKeys) updatedLines.add("$key=$value")
+        }
+        serverProperties.copyTo(serverProperties.resolveSibling("server.properties.tomblock-backup"), overwrite = true)
+        val temporaryProperties = Files.createTempFile(serverProperties.parentFile.toPath(), "server.properties.", ".tmp")
+        try {
+            Files.writeString(temporaryProperties,
+                updatedLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+            Files.move(temporaryProperties, serverProperties.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        } finally {
+            Files.deleteIfExists(temporaryProperties)
+        }
+        logger.lifecycle("Prepared local TomBlock.jar and resource pack (SHA-1 $hash)")
+    }
 }
 
 val deployResourcePackToServer by tasks.registering {
