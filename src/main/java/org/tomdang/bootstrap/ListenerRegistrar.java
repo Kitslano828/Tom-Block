@@ -46,6 +46,8 @@ import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 import org.tomdang.player.stats.presentation.PlayerStatsCategoryMenuConfiguration;
 import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
 import org.tomdang.player.stats.presentation.PlayerStatsBreakdownMenuConfiguration;
+import org.tomdang.player.skill.menu.SkillMenuConfiguration;
+import org.tomdang.player.skill.menu.SkillsMenuListener;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorVisibilityService;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
@@ -72,6 +74,7 @@ public class ListenerRegistrar {
 							 PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
 							 PlayerStatsCategoryMenuConfiguration playerStatsCategoryMenuConfiguration,
 							 PlayerStatsBreakdownMenuConfiguration playerStatsBreakdownMenuConfiguration,
+							 SkillMenuConfiguration skillMenuConfiguration,
 							 RegionBrushListener regionBrushListener,
 							 PlayerMovementSpeedListener movementSpeedListener
 	){
@@ -125,6 +128,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(playerCombatComboListener, instance);
 		instance.getServer().getPluginManager().registerEvents(mobDeathListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerMenuListener, instance);
+		instance.getServer().getPluginManager().registerEvents(new SkillsMenuListener(playerProfileService, skillMenuConfiguration, playerStatPresentationRegistry), instance);
 		instance.getServer().getPluginManager().registerEvents(playerEquipArmorListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerHeldItemRefreshListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerRegainHealthListener, instance);

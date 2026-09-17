@@ -257,8 +257,8 @@ public class TomBlock extends JavaPlugin {
 				playerProfileService,
 				customItemStackFactory,
 				mobBootStrap.getCustomMobResolver(),
-				combatBootStrap.getCombatLevel(),
-				playerActionBarService
+				new org.tomdang.player.skill.SkillProgressionService(),
+				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService)
 		);
 
 
@@ -346,6 +346,7 @@ public class TomBlock extends JavaPlugin {
 				new org.tomdang.region.bukkit.BukkitBlockPositionAdapter(),
 				regionBootStrap.getRegionVisualizationSettings()
 		);
+		SkillMenuBootstrap skillMenuBootstrap = new SkillMenuBootstrap(this);
 		new CommandRegistrar(
 				this,
 				playerProfileService,
@@ -366,6 +367,7 @@ public class TomBlock extends JavaPlugin {
 				playerInventoryItemRefreshService,
 				playerStatPresentationBootStrap.getRegistry(),
 				playerStatPresentationBootStrap.getOverviewConfiguration(),
+				skillMenuBootstrap.configuration(),
 				regionBootStrap.getRegionResolver(),
 				regionBootStrap.getRegionRegistry(),
 				regionBootStrap.getRegionEditingService(),
@@ -407,6 +409,7 @@ public class TomBlock extends JavaPlugin {
 				playerStatPresentationBootStrap.getOverviewConfiguration(),
 				playerStatPresentationBootStrap.getCategoryMenuConfiguration(),
 				playerStatPresentationBootStrap.getBreakdownMenuConfiguration(),
+				skillMenuBootstrap.configuration(),
 				regionBrushListener,
 				playerMovementSpeedBootStrap.getListener()
 				);

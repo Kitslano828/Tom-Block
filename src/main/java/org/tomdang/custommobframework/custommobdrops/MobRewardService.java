@@ -1,37 +1,35 @@
 package org.tomdang.custommobframework.custommobdrops;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
-import org.tomdang.combat.combatlevel.CombatLevel;
+import org.tomdang.player.skill.SkillProgressionService;
+import org.tomdang.player.skill.SkillProgressPresenter;
+import org.tomdang.player.skill.SkillType;
 import org.tomdang.customitemframework.CustomItemCreator;
 import org.tomdang.customitemframework.CustomItemStackFactory;
 import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
-import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
-import java.util.Objects;
 
 public class MobRewardService {
 
 	private final PlayerProfileService playerProfileService;
 	private final CustomItemStackFactory customItemStackFactory;
 	private final CustomMobResolver customMobResolver;
-	private final CombatLevel combatLevel;
-	private final PlayerActionBarService playerActionBarService;
+	private final SkillProgressionService skillProgression;
+	private final SkillProgressPresenter skillPresenter;
 
 	public MobRewardService(PlayerProfileService playerProfileService, CustomItemStackFactory customItemStackFactory,
-							CustomMobResolver customMobResolver, CombatLevel combatLevel, PlayerActionBarService playerActionBarService
+							CustomMobResolver customMobResolver, SkillProgressionService skillProgression, SkillProgressPresenter skillPresenter
 	) {
 		this.playerProfileService = playerProfileService;
 		this.customItemStackFactory = customItemStackFactory;
 		this.customMobResolver = customMobResolver;
-		this.combatLevel = combatLevel;
-		this.playerActionBarService = playerActionBarService;
+		this.skillProgression = skillProgression;
+		this.skillPresenter = skillPresenter;
 	}
 
 	public void givePlayerMobDrops(EntityDeathEvent event) {
@@ -61,12 +59,9 @@ public class MobRewardService {
 		}
 
 		public void givePlayerCombatXP(EntityDeathEvent event, PlayerProfile player, CustomMob customMob) {
-			int previousLevel = player.getCombatLvl();
-			combatLevel.updatePlayerCombatXP(customMob.getXpAmount(), player);
-			Component text = Component.text(player.getCombatProgress().maxLevel() ? "Combat MAX LEVEL"
-					: player.getCombatProgress().xpIntoLevel() + " / " + player.getCombatProgress().xpNeededForNextLevel() + " Combat XP").color(NamedTextColor.DARK_AQUA);
-			playerActionBarService.showTemporaryMessage(Objects.requireNonNull(event.getEntity().getKiller()), text, 40);
-			combatLevel.playerCombatLevelUp(event, player, previousLevel, playerActionBarService);
+			Player killer = event.getEntity().getKiller();
+			if (killer == null) return;
+			skillPresenter.showAward(killer, skillProgression.awardXp(player, SkillType.COMBAT, customMob.getXpAmount()));
 		}
 }
 

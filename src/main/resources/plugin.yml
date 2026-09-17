@@ -5,18 +5,13 @@ author: TomDang
 api-version: 26.2
 
 commands:
-  setmininglvl:
-    description: set the mining level of a player
-    aliases:
-      mlvl
+  setskill:
+    description: sets one of your skills to a level or total XP amount
+    usage: /setskill <skill> <lvl|xp> <amount>
   getmininglvl:
     description: get the mining level of a player
     aliases:
       mining
-  setminingxp:
-    description: set the mining xp of a player
-    aliases:
-      miningxp
   giveminingtool:
     description: give the sender a custom mining tool
   giveweapon:
@@ -30,6 +25,8 @@ commands:
     usage: /spawncustommob <name> [color]
   stats:
     description: returns a customGUI of the sender's stats
+  skills:
+    description: opens your skill levels and XP progress
   setstat:
     description: sets one of the sender's base stats or resets all base stats
     usage: /setstat <stat> <amount> or /setstat reset

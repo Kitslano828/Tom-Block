@@ -20,7 +20,6 @@ import org.tomdang.mining.configuration.miningtool.MiningToolDefinition;
 import org.tomdang.mining.configuration.miningtool.MiningToolDefinitionRegistrar;
 import org.tomdang.mining.customminingability.miningspreadability.MiningSpreadAbility;
 import org.tomdang.mining.miningblock.MiningBlockRegistry;
-import org.tomdang.mining.mininglevel.MiningLevel;
 import org.tomdang.mining.miningstats.MiningFortune;
 import org.tomdang.mining.miningtool.MiningToolCreator;
 import org.tomdang.mining.miningtool.MiningToolRegistry;
@@ -101,13 +100,15 @@ public class MiningBootstrap {
 				miningToolRegistry,
 				customItemRegistry
 		);
-		MiningLevel miningLevel = new MiningLevel(playerActionBarService);
+		org.tomdang.player.skill.SkillProgressionService skillProgression = new org.tomdang.player.skill.SkillProgressionService();
+		org.tomdang.player.skill.SkillProgressPresenter skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService);
 		MiningFortune miningFortune = new MiningFortune();
 		MiningRegenerationService miningRegenerationService = new MiningRegenerationService(instance);
 		this.miningService = new MiningService(
 				playerProfileService,
 				miningBlockRegistry,
-				miningLevel,
+				skillProgression,
+				skillPresenter,
 				miningToolResolver,
 				miningFortune,
 				miningRegenerationService,

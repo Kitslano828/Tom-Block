@@ -3,7 +3,6 @@ package org.tomdang.player.skill;
 import org.bukkit.entity.Player;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
-import org.tomdang.player.stats.PlayerStatType;
 import org.tomdang.player.stats.evaluation.PlayerStatContributionSource;
 import org.tomdang.player.stats.modifier.PlayerStatModifier;
 import org.tomdang.player.stats.modifier.PlayerStatModifierProvider;
@@ -28,11 +27,11 @@ public final class SkillStatModifierProvider implements PlayerStatModifierProvid
 		if (profile == null) throw new IllegalStateException("Player profile is not loaded");
 		List<PlayerStatModifier> result = new ArrayList<>(2);
 		if (profile.getMiningLVL() > 0) result.add(new PlayerStatModifier(
-				PlayerStatType.MINING_FORTUNE, "skill:mining:fortune",
-				PlayerStatContributionSource.SKILL, "Mining Skill", profile.getMiningLVL() * 4.0));
+				SkillType.MINING.rewardStat(), "skill:mining:fortune",
+				PlayerStatContributionSource.SKILL, "Mining Skill", SkillType.MINING.rewardAt(profile.getMiningLVL())));
 		if (profile.getCombatLvl() > 0) result.add(new PlayerStatModifier(
-				PlayerStatType.STRENGTH, "skill:combat:strength",
-				PlayerStatContributionSource.SKILL, "Combat Skill", profile.getCombatLvl() * 2.0));
+				SkillType.COMBAT.rewardStat(), "skill:combat:strength",
+				PlayerStatContributionSource.SKILL, "Combat Skill", SkillType.COMBAT.rewardAt(profile.getCombatLvl())));
 		return List.copyOf(result);
 	}
 }

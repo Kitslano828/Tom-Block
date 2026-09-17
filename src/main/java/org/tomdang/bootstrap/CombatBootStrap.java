@@ -14,7 +14,6 @@ import org.tomdang.combat.attackspeed.AttackRecoveryCalculator;
 import org.tomdang.combat.attackspeed.HeldItemCombatResolver;
 import org.tomdang.combat.configuration.CombatTimingConfiguration;
 import org.tomdang.combat.configuration.CombatTimingConfigurationLoader;
-import org.tomdang.combat.combatlevel.CombatLevel;
 import org.tomdang.combat.combo.ComboTimingCalculator;
 import org.tomdang.combat.combo.ComboTimingConfiguration;
 import org.tomdang.combat.combo.ComboTimingConfigurationLoader;
@@ -54,8 +53,6 @@ import java.util.Optional;
 public class CombatBootStrap {
 
 	@Getter
-	private final CombatLevel combatLevel;
-	@Getter
 	private final CombatService combatService;
 	@Getter
 	private final WeaponRegistry weaponRegistry;
@@ -78,7 +75,6 @@ public class CombatBootStrap {
 						   CustomMobResolver customMobResolver, CustomMobHealthService customMobHealthService
 	) {
 
-		combatLevel = new CombatLevel();
 
 
 		AbilityDamageService abilityDamageService = new AbilityDamageService(customMobHealthService);

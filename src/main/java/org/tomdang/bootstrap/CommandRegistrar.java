@@ -25,8 +25,7 @@ import org.tomdang.dialogueframework.command.DialogueChoiceCommand;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.mining.command.GetMiningTool;
 import org.tomdang.mining.command.GiveMiningLevel;
-import org.tomdang.mining.command.SetMiningLevel;
-import org.tomdang.mining.command.SetMiningXP;
+import org.tomdang.player.skill.command.SetSkillCommand;
 import org.tomdang.mining.miningtool.MiningToolRegistry;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.command.HealCommand;
@@ -38,6 +37,8 @@ import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
 import org.tomdang.player.stats.presentation.PlayerStatsOverviewConfiguration;
+import org.tomdang.player.skill.menu.SkillMenuConfiguration;
+import org.tomdang.player.skill.menu.SkillsCommand;
 import org.tomdang.playernpc.command.NmsPlayerNpcTestCommand;
 import org.tomdang.playernpc.lifecycle.PlayerNpcLifecycleService;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
@@ -61,6 +62,7 @@ public class CommandRegistrar {
 	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
 	                        PlayerStatPresentationRegistry playerStatPresentationRegistry,
 	                        PlayerStatsOverviewConfiguration playerStatsOverviewConfiguration,
+	                        SkillMenuConfiguration skillMenuConfiguration,
 	                        RegionResolver regionResolver,
 	                        RegionRegistry regionRegistry,
 	                        RegionEditingService regionEditingService,
@@ -72,17 +74,15 @@ public class CommandRegistrar {
 	                        CustomItemStackFactory customItemStackFactory
 	) {
 		// COMMANDS
-		SetMiningLevel setMiningLevel = new SetMiningLevel(playerProfileService);
-		instance.getCommand("setmininglvl").setExecutor(setMiningLevel);
-		instance.getCommand("setmininglvl").setTabCompleter(setMiningLevel);
+		instance.getCommand("skills").setExecutor(new SkillsCommand(playerProfileService, skillMenuConfiguration, playerStatPresentationRegistry));
+		SetSkillCommand setSkill = new SetSkillCommand(playerProfileService);
+		instance.getCommand("setskill").setExecutor(setSkill);
+		instance.getCommand("setskill").setTabCompleter(setSkill);
 
 		GiveMiningLevel giveMiningLevel = new GiveMiningLevel(playerProfileService);
 		instance.getCommand("getmininglvl").setExecutor(giveMiningLevel);
 		instance.getCommand("getmininglvl").setTabCompleter(giveMiningLevel);
 
-		SetMiningXP setMiningXP = new SetMiningXP(playerProfileService);
-		instance.getCommand("setminingxp").setExecutor(setMiningXP);
-		instance.getCommand("setminingxp").setTabCompleter(setMiningXP);
 
 		GetMiningTool getMiningTool = new GetMiningTool(miningToolRegistry);
 		instance.getCommand("giveminingtool").setExecutor(getMiningTool);

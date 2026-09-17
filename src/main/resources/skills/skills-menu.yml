@@ -1,0 +1,29 @@
+skills-menu:
+  title: Your Skills
+  background-material: GRAY_STAINED_GLASS_PANE
+  overview-accent-material: LIGHT_GRAY_STAINED_GLASS_PANE
+  accent-slots: [0, 8, 45, 53]
+  progress-empty-material: BLACK_STAINED_GLASS_PANE
+  navigation:
+    close-material: BARRIER
+    close-slot: 49
+    back-material: ARROW
+    back-slot: 45
+    detail-slot: 22
+  skills:
+    mining:
+      name: Mining
+      description: Earn Mining XP by mining valuable blocks.
+      material: DIAMOND_PICKAXE
+      accent-material: LIGHT_BLUE_STAINED_GLASS_PANE
+      progress-material: CYAN_STAINED_GLASS_PANE
+      color: '#55FFFF'
+      slot: 21
+    combat:
+      name: Combat
+      description: Earn Combat XP by defeating custom mobs.
+      material: IRON_SWORD
+      accent-material: RED_STAINED_GLASS_PANE
+      progress-material: RED_STAINED_GLASS_PANE
+      color: '#FF5555'
+      slot: 23

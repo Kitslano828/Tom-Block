@@ -1,7 +1,6 @@
 package org.tomdang.mining;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Color;
@@ -18,7 +17,9 @@ import org.tomdang.mining.customminingability.MiningBlockReactiveAbility;
 import org.tomdang.mining.miningblock.MiningBlock;
 import org.tomdang.mining.miningblock.MiningBlockRegistry;
 import org.tomdang.mining.miningdrops.MiningDrop;
-import org.tomdang.mining.mininglevel.MiningLevel;
+import org.tomdang.player.skill.SkillProgressionService;
+import org.tomdang.player.skill.SkillProgressPresenter;
+import org.tomdang.player.skill.SkillType;
 import org.tomdang.mining.miningstats.MiningFortune;
 import org.tomdang.mining.miningtool.MiningTool;
 import org.tomdang.mining.miningtool.MiningToolResolver;
@@ -37,7 +38,8 @@ public class MiningService implements AbilityMiningHandler {
 	private final MiningFortune miningFortune;
 	private final PlayerProfileService playerProfileService;
 	private final MiningBlockRegistry miningBlockRegistry;
-	private final MiningLevel miningLevel;
+	private final SkillProgressionService skillProgression;
+	private final SkillProgressPresenter skillPresenter;
 	private final MiningToolResolver miningToolResolver;
 	private final MiningRegenerationService miningRegenerationService;
 	private final PlayerActionBarService playerActionBarService;
@@ -47,12 +49,13 @@ public class MiningService implements AbilityMiningHandler {
 
 
 	public MiningService(PlayerProfileService playerProfileService, MiningBlockRegistry miningBlockRegistry,
-						 MiningLevel miningLevel, MiningToolResolver miningToolResolver, MiningFortune miningFortune,
+						 SkillProgressionService skillProgression, SkillProgressPresenter skillPresenter, MiningToolResolver miningToolResolver, MiningFortune miningFortune,
 						MiningRegenerationService miningRegenerationService, PlayerActionBarService playerActionBarService,
 						 PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService, CustomItemStackFactory customItemStackFactory) {
 		this.playerProfileService = playerProfileService;
 		this.miningBlockRegistry = miningBlockRegistry;
-		this.miningLevel = miningLevel;
+		this.skillProgression = skillProgression;
+		this.skillPresenter = skillPresenter;
 		this.miningToolResolver = miningToolResolver;
 		this.miningFortune = miningFortune;
 		this.miningRegenerationService = miningRegenerationService;
@@ -167,13 +170,7 @@ public class MiningService implements AbilityMiningHandler {
 	}
 
 	private void updateMiningXP(PlayerProfile playerProfile, Player player, MiningBlock block) {
-		int previousLevel = playerProfile.getMiningLVL();
-		miningLevel.updatePlayerMiningXP(block.getXp(), playerProfile);
-		Component text = Component.text(playerProfile.getMiningProgress().maxLevel() ? "Mining MAX LEVEL"
-				: playerProfile.getMiningProgress().xpIntoLevel() + " / " + playerProfile.getMiningProgress().xpNeededForNextLevel() + " Mining XP")
-				.color(NamedTextColor.DARK_AQUA);
-		playerActionBarService.showTemporaryMessage(player, text, 40);
-		miningLevel.playerMiningLevelUp(player, playerProfile, previousLevel);
+		skillPresenter.showAward(player, skillProgression.awardXp(playerProfile, SkillType.MINING, block.getXp()));
 	}
 
 	private void processMinedBlock(Player player, PlayerProfile playerProfile, Block worldBlock, MiningBlock blockDefinition, MiningTool miningTool) {
