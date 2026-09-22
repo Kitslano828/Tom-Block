@@ -1,4 +1,23 @@
 items:
+  ROOKIE_AXE:
+    material: WOODEN_AXE
+    display-name: "Rookie Axe"
+    rarity: COMMON
+    category: FORAGING_TOOL
+    stats:
+      foraging-power: 20.0
+      foraging-speed: 0.0
+
+  FORESTER_AXE:
+    material: IRON_AXE
+    display-name: "Forester Axe"
+    rarity: UNCOMMON
+    category: FORAGING_TOOL
+    stats:
+      foraging-power: 35.0
+      foraging-speed: 20.0
+      foraging-fortune: 25.0
+
   JELLYFISH_NET:
     material: STICK
     display-name: "Jellyfish Net"

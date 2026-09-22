@@ -1,0 +1,7 @@
+collections:
+  OAK_LOG:
+    display-name: Oak Log Collection
+    category: FORAGING
+    material: OAK_LOG
+    counter: "FORAGING:OAK_LOGS_BROKEN"
+    milestones: [50, 100, 250, 500, 1000, 2500, 5000]

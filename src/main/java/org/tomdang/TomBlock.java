@@ -97,6 +97,10 @@ import org.tomdang.island.block.IslandBlockInteractionListener;
 import org.tomdang.island.block.IslandBlockPolicyService;
 import org.tomdang.island.block.PostgresBlockOriginStore;
 import org.tomdang.island.block.RegisteredResourceRegistry;
+import org.tomdang.collection.CollectionConfigurationLoader;
+import org.tomdang.collection.CollectionMenuListener;
+import org.tomdang.collection.CollectionService;
+import org.tomdang.collection.CollectionsCommand;
 
 import java.io.File;
 
@@ -189,8 +193,14 @@ public class TomBlock extends JavaPlugin {
 		ForagingTreeStore foragingTreeStore = new ForagingTreeStore(new File(getDataFolder(), "foraging-trees.yml"));
 		ForagingService foragingService = new ForagingService(
 				this, foragingTrees, playerBootStrap.getPlayerCounterService(), playerProfileService,
-				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService), foragingTreeStore);
+				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService), foragingTreeStore,
+				customItemResolver, playerStatsService);
 		foragingTreeStore.load(TreeModel.modelOak()).forEach(foragingService::registerExisting);
+		CollectionService collectionService = new CollectionService(
+				new CollectionConfigurationLoader().load(getResource("collections.yml")),
+				playerBootStrap.getPlayerCounterService());
+		getCommand("collections").setExecutor(new CollectionsCommand(collectionService));
+		getServer().getPluginManager().registerEvents(new CollectionMenuListener(), this);
 		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees));
 		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
 		IslandContextService islandContexts = new IslandContextService(islandPresets);

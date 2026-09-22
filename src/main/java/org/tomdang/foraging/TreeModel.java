@@ -6,12 +6,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.tomdang.player.counter.CounterKey;
 
 public record TreeModel(String id, Material logMaterial, Material leafMaterial,
-		List<BlockOffset> logs, Set<BlockOffset> leaves) {
+		List<BlockOffset> logs, Set<BlockOffset> leaves, int tier, double durability,
+		double requiredPower, long xp, int regenerationSeconds, CounterKey collectionKey) {
 	public TreeModel {
 		logs = List.copyOf(logs);
 		leaves = Set.copyOf(leaves);
+		if (tier < 1 || durability <= 0 || requiredPower < 0 || xp < 0 || regenerationSeconds < 0 || collectionKey == null)
+			throw new IllegalArgumentException("Invalid tree progression settings");
 	}
 
 	public static TreeModel modelOak() {
@@ -34,6 +38,7 @@ public record TreeModel(String id, Material logMaterial, Material leafMaterial,
 		leaves.add(new BlockOffset(-1, 6, 0));
 		leaves.add(new BlockOffset(0, 6, 1));
 		leaves.add(new BlockOffset(0, 6, -1));
-		return new TreeModel("MODEL_OAK", Material.OAK_LOG, Material.OAK_LEAVES, logs, leaves);
+		return new TreeModel("MODEL_OAK", Material.OAK_LOG, Material.OAK_LEAVES, logs, leaves,
+				1, 100.0, 10.0, 70L, 30, CounterKey.of("FORAGING:OAK_LOGS_BROKEN"));
 	}
 }

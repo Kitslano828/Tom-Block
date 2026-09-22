@@ -92,6 +92,10 @@ class PlayerStatRuleConfigurationLoaderTest {
 				    cap: null
 				  FORAGING_FORTUNE:
 				    cap: null
+				  FORAGING_POWER:
+				    cap: null
+				  FORAGING_SPEED:
+				    cap: null
 				  JELLYFISH_POWER:
 				    cap: null
 				  JELLYFISH_DAMAGE_BONUS:

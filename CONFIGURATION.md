@@ -41,6 +41,12 @@ Runtime state is not content to casually replace:
 - Island interaction precedence is: player-placed origin, registered resource,
   then ordinary terrain. This prevents placed ores/logs from receiving mining
   or foraging rewards.
+- `collections.yml` maps player-facing collections and milestones to permanent
+  counter keys. Runtime totals remain in PostgreSQL; collection presentation and
+  balancing remain in Git.
+- Custom axes are ordinary entries in `items/items.yml` with category
+  `FORAGING_TOOL` and `foraging-power`, `foraging-speed`, and optional
+  `foraging-fortune` stats.
 
 ## PostgreSQL player profiles
 

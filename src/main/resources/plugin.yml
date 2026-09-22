@@ -91,8 +91,15 @@ commands:
     description: Creates or travels to your private island
     usage: /island [home|leave]
     permission: tomblock.island
+  collections:
+    description: Opens your resource collection progress
+    usage: /collections
+    permission: tomblock.collections
 
 permissions:
+  tomblock.collections:
+    description: Allows viewing personal collections
+    default: true
   tomblock.island:
     description: Allows access to private islands
     default: true
