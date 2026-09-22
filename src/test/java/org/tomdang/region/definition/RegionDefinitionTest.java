@@ -25,6 +25,7 @@ class RegionDefinitionTest {
 				new RegionOverrides(Set.of(included), Set.of(excluded)));
 
 		assertEquals("village", definition.id());
+		assertEquals("village", definition.displayName());
 		assertEquals(Set.of("safe"), definition.tags());
 		assertTrue(definition.directlyContains(position(1)));
 		assertFalse(definition.directlyContains(excluded));
@@ -51,6 +52,8 @@ class RegionDefinitionTest {
 		assertThrows(IllegalArgumentException.class,
 				() -> definition("village", Optional.empty(), new HashSet<>(java.util.Arrays.asList((String) null))));
 		assertThrows(IllegalArgumentException.class, () -> definition("village", Optional.empty(), Set.of(" ")));
+		assertThrows(IllegalArgumentException.class, () -> new RegionDefinition(
+				"village", " ", Optional.empty(), 0, Set.of(), shape(), RegionOverrides.empty()));
 		assertThrows(IllegalArgumentException.class, () -> new RegionDefinition(
 				"village", Optional.empty(), 0, Set.of(), null, RegionOverrides.empty()));
 		assertThrows(IllegalArgumentException.class, () -> new RegionDefinition(

@@ -1,6 +1,6 @@
 mining-blocks:
   STONE:
-    block-strength: 0
+    block-strength: 10
     breaking-power: 0
     xp: 1
     regeneration-time-seconds: 5
@@ -15,7 +15,7 @@ mining-blocks:
         affected-by-fortune: false
 
   COAL_ORE:
-    block-strength: 0
+    block-strength: 12
     breaking-power: 1
     xp: 3
     regeneration-time-seconds: 5
@@ -30,7 +30,7 @@ mining-blocks:
         affected-by-fortune: false
 
   IRON_ORE:
-    block-strength: 0
+    block-strength: 20
     breaking-power: 1
     xp: 5
     regeneration-time-seconds: 7
@@ -45,7 +45,7 @@ mining-blocks:
         affected-by-fortune: false
 
   DIAMOND_ORE:
-    block-strength: 0
+    block-strength: 35
     breaking-power: 2
     xp: 8
     regeneration-time-seconds: 10
@@ -60,7 +60,7 @@ mining-blocks:
         affected-by-fortune: false
 
   IRON_BLOCK:
-    block-strength: 0
+    block-strength: 60
     breaking-power: 3
     xp: 12
     regeneration-time-seconds: 15

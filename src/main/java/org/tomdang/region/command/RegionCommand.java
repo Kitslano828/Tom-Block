@@ -232,7 +232,8 @@ public final class RegionCommand implements CommandExecutor, TabCompleter {
 
 	private Component formatRegion(RegionDefinition region) {
 		String tags = region.tags().isEmpty() ? "" : " tags=" + String.join("|", region.tags());
-		return Component.text(region.id(), NamedTextColor.AQUA)
+		return Component.text(region.displayName(), NamedTextColor.AQUA)
+				.append(Component.text(" (" + region.id() + ")", NamedTextColor.GRAY))
 				.append(Component.text(" [priority=" + region.priority() + tags + "]", NamedTextColor.DARK_GRAY));
 	}
 

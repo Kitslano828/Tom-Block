@@ -1,0 +1,19 @@
+# Add open-ended progression counters here. The key is permanent once released;
+# display text and limits may be updated later without losing player values.
+counters:
+  FORAGING:OAK_LOGS_BROKEN:
+    display-name: Oak Logs Broken
+    category: FORAGING
+    description: Total oak logs harvested from registered renewable trees.
+    unit: BLOCKS
+    default: 0
+    minimum: 0
+    enabled: true
+  ACTIVITY:COLONIES_COMPLETED:
+    display-name: Colonies Completed
+    category: ACTIVITIES
+    description: Total critter colonies successfully cleared.
+    unit: COUNT
+    default: 0
+    minimum: 0
+    enabled: true

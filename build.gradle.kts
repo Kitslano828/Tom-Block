@@ -9,6 +9,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.zip.ZipFile
 
 plugins {
     java
@@ -24,6 +25,11 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("26.2.build.87-stable")
+
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("org.flywaydb:flyway-core:13.7.0")
+    implementation("org.flywaydb:flyway-database-postgresql:13.7.0")
+    runtimeOnly("org.postgresql:postgresql:42.7.8")
 
     compileOnly("org.projectlombok:lombok:1.18.46")
     annotationProcessor("org.projectlombok:lombok:1.18.46")
@@ -46,6 +52,19 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.jar {
     archiveFileName = "TomBlock.jar"
+    exclude("maps/world.png")
+}
+
+val islandEdgeJar by tasks.registering(Jar::class) {
+    group = "build"
+    description = "Builds the isolated southwest-island boundary and void-generator plugin."
+    dependsOn(tasks.classes)
+    archiveFileName = "TomBlock-Island-Edge.jar"
+    destinationDirectory.set(layout.buildDirectory.dir("island-edge"))
+    from(sourceSets.main.get().output) {
+        include("org/tomdang/islandedge/**")
+    }
+    from("src/island-edge/resources")
 }
 
 tasks.test {
@@ -62,9 +81,48 @@ val copyPluginToServer by tasks.registering(Copy::class) {
 val resourcePackArchiveName = "TomBlock-Resource-Pack.zip"
 val localServerDirectory = file("C:/Users/tomda/Desktop/26.2")
 
+val generateVillageMapHudAssets by tasks.registering(Exec::class) {
+    group = "build"
+    description = "Regenerates the village map HUD textures from the calibrated world PNG."
+    val java25 = javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+    commandLine(
+        java25.get().executablePath.asFile.absolutePath,
+        "scripts/GenerateVillageMapHudAssets.java",
+        "src/main/resources/maps/world.png",
+        "resource-pack/assets/tomblock/textures/font"
+    )
+    inputs.file("src/main/resources/maps/world.png")
+    inputs.file("scripts/GenerateVillageMapHudAssets.java")
+    outputs.files(
+        "resource-pack/assets/tomblock/textures/font/village_map.png",
+        "resource-pack/assets/tomblock/textures/font/village_markers.png",
+        "resource-pack/assets/tomblock/font/village_map.json",
+        "resource-pack/assets/tomblock/font/village_markers.json",
+        "resource-pack/assets/tomblock/textures/font/village_follow_map.png",
+        "resource-pack/assets/tomblock/textures/font/village_follow_markers.png",
+        "resource-pack/assets/tomblock/font/village_follow_map.json",
+        "resource-pack/assets/tomblock/font/village_follow_markers.json",
+        "resource-pack/assets/tomblock/font/village_follow_map_small.json",
+        "resource-pack/assets/tomblock/font/village_follow_markers_small.json",
+        "resource-pack/assets/tomblock/textures/font/hud_follow_map.png",
+        "resource-pack/assets/tomblock/textures/font/hud_follow_markers.png",
+        "resource-pack/assets/tomblock/font/hud_follow_map.json",
+        "resource-pack/assets/tomblock/font/hud_follow_markers.json",
+        "resource-pack/assets/tomblock/textures/font/hud_world_map.png",
+        "resource-pack/assets/tomblock/font/hud_world_map.json",
+        "resource-pack/assets/tomblock/textures/font/hud_centered_map.png",
+        "resource-pack/assets/tomblock/font/hud_centered_map.json",
+        "resource-pack/assets/tomblock/textures/font/hud_centered_markers.png",
+        "resource-pack/assets/tomblock/font/hud_centered_markers.json"
+    )
+}
+
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
+    dependsOn(generateVillageMapHudAssets)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**")
     }
@@ -72,10 +130,24 @@ val packageResourcePack by tasks.registering(Zip::class) {
     destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
 }
 
+val packageMapHudExperiment by tasks.registering(Zip::class) {
+    group = "build"
+    description = "Packages an opt-in 26.2 map HUD pack that filters dark GUI rectangles."
+    dependsOn(generateVillageMapHudAssets)
+    from(layout.projectDirectory.dir("resource-pack")) {
+        include("pack.mcmeta", "assets/**")
+    }
+    from(layout.projectDirectory.dir("resource-pack-experiments/transparent-map-sidebar")) {
+        include("assets/**")
+    }
+    archiveFileName.set("TomBlock-MapHud-Experiment.zip")
+    destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
+}
+
 val prepareLocalServer by tasks.registering {
     group = "development"
     description = "Builds TomBlock and prepares the Windows Paper server plugin and required resource pack."
-    dependsOn(tasks.named("build"), packageResourcePack)
+    dependsOn(tasks.named("build"), packageResourcePack, packageMapHudExperiment)
 
     doLast {
         val serverProperties = localServerDirectory.resolve("server.properties")
@@ -98,10 +170,17 @@ val prepareLocalServer by tasks.registering {
         }
 
         val jar = tasks.jar.get().archiveFile.get().asFile
-        val pack = packageResourcePack.get().archiveFile.get().asFile
+        val worldMap = file("src/main/resources/maps/world.png")
+        val useMapHudExperiment = providers.gradleProperty("tomblockMapHudExperiment")
+            .orNull?.toBoolean() == true
+        val pack = if (useMapHudExperiment) packageMapHudExperiment.get().archiveFile.get().asFile
+            else packageResourcePack.get().archiveFile.get().asFile
         val serverPackDirectory = localServerDirectory.resolve("resource-pack")
+        val serverMapDirectory = pluginsDirectory.resolve("TomBlock/maps")
         serverPackDirectory.mkdirs()
+        serverMapDirectory.mkdirs()
         jar.copyTo(pluginsDirectory.resolve("TomBlock.jar"), overwrite = true)
+        worldMap.copyTo(serverMapDirectory.resolve("world.png"), overwrite = true)
         pack.copyTo(serverPackDirectory.resolve(resourcePackArchiveName), overwrite = true)
 
         val digest = MessageDigest.getInstance("SHA-1")
@@ -141,7 +220,32 @@ val prepareLocalServer by tasks.registering {
         } finally {
             Files.deleteIfExists(temporaryProperties)
         }
-        logger.lifecycle("Prepared local TomBlock.jar and resource pack (SHA-1 $hash)")
+        logger.lifecycle("Prepared local TomBlock.jar and ${if (useMapHudExperiment) "experimental map HUD" else "normal"} resource pack (SHA-1 $hash)")
+    }
+}
+
+tasks.register("verifyLocalServerPack") {
+    group = "development"
+    description = "Checks which TomBlock resource pack the local server actually serves."
+    doLast {
+        val archive = localServerDirectory.resolve("resource-pack/$resourcePackArchiveName")
+        val properties = localServerDirectory.resolve("server.properties")
+        if (!archive.isFile || !properties.isFile) {
+            throw GradleException("Local server pack or server.properties is missing")
+        }
+        val hash = MessageDigest.getInstance("SHA-1").digest(Files.readAllBytes(archive.toPath()))
+            .joinToString("") { byte -> (byte.toInt() and 0xff).toString(16).padStart(2, '0') }
+        val configuredHash = properties.readLines().firstOrNull { it.startsWith("resource-pack-sha1=") }
+            ?.substringAfter('=')
+        val experimental = ZipFile(archive).use { zip ->
+            zip.getEntry("assets/minecraft/shaders/core/gui.vsh") != null
+        }
+        logger.lifecycle("Local server pack: ${if (experimental) "EXPERIMENTAL" else "NORMAL"}")
+        logger.lifecycle("File SHA-1: $hash")
+        logger.lifecycle("Configured SHA-1: ${configuredHash ?: "missing"}")
+        if (!hash.equals(configuredHash, ignoreCase = true)) {
+            throw GradleException("server.properties hash does not match the served pack")
+        }
     }
 }
 

@@ -58,6 +58,7 @@ class MiningBlockConfigurationLoaderTest {
 	@Test
 	void missingAndNegativeBlockNumbersAreRejected() {
 		assertInvalid(validConfiguration().replace("    block-strength: 4\n", ""), "block-strength");
+		assertInvalid(validConfiguration().replace("block-strength: 4", "block-strength: 0"), "block-strength");
 		assertInvalid(validConfiguration().replace("breaking-power: 2", "breaking-power: -1"), "breaking-power");
 		assertInvalid(validConfiguration().replace("xp: 5", "xp: -1"), "xp");
 		assertInvalid(validConfiguration().replace("regeneration-time-seconds: 7", "regeneration-time-seconds: -1"), "regeneration-time-seconds");

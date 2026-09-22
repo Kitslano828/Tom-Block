@@ -1,0 +1,8 @@
+database:
+  # Keep disabled until the PostgreSQL role/database and password environment variable exist.
+  enabled: false
+  jdbc-url: jdbc:postgresql://127.0.0.1:5432/tomblock
+  username: tomblock
+  password-environment: TOMBLOCK_DB_PASSWORD
+  maximum-pool-size: 4
+  connection-timeout-ms: 5000

@@ -29,6 +29,8 @@ public class MiningBlockConfigurationLoader {
 
 			Material material = parseMaterial(materialName);
 			int blockStrength = requireNonNegativeInt(section, materialName, "block-strength");
+			if (blockStrength == 0)
+				throw new IllegalArgumentException("Mining block " + materialName + " must have positive block-strength");
 			int breakingPower = requireNonNegativeInt(section, materialName, "breaking-power");
 			int xp = requireNonNegativeInt(section, materialName, "xp");
 			long regenerationTime = requireNonNegativeLong(section, materialName, "regeneration-time-seconds");

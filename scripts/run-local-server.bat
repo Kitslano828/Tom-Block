@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0.."
-call gradlew.bat prepareLocalServer
+call gradlew.bat prepareLocalServer %*
 if errorlevel 1 (
     echo Local server preparation failed. Paper was not started.
     exit /b 1

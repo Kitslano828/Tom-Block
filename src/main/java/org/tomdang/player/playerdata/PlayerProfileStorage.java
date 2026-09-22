@@ -7,7 +7,7 @@ import org.tomdang.player.stats.PlayerStatType;
 
 import java.io.File;
 
-public class PlayerProfileStorage {
+public class PlayerProfileStorage implements PlayerProfileRepository {
 
 	private final File file;
 	private final YamlConfiguration data;
@@ -18,20 +18,22 @@ public class PlayerProfileStorage {
 	}
 
 	// for first time joiners
-	public void createPlayerProfile(PlayerProfile player) {
+	public synchronized void createPlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		data.createSection(path);
 		data.set(path + ".mining-xp", 0L);
 		data.set(path + ".combat-xp", 0L);
+		data.set(path + ".foraging-xp", 0L);
 		data.set(path + ".skill-reward-version", 2);
 		saveStats(path, player);
 	}
 
 	// Does this happen when a player leave the game / disconnect?
-	public void savePlayerProfile(PlayerProfile player) {
+	public synchronized void savePlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		data.set(path + ".mining-xp", player.getMiningXP());
 		data.set(path + ".combat-xp", player.getCombatXP());
+		data.set(path + ".foraging-xp", player.getForagingXP());
 		data.set(path + ".mining-level", null);
 		data.set(path + ".combat-level", null);
 		data.set(path + ".skill-xp-version", null);
@@ -40,12 +42,12 @@ public class PlayerProfileStorage {
 	} // I would assume that data.save(file) would be in Main file
 
 	// This should happen when a player joins the game after a restart / or a crash
-	public void loadPlayerProfile(PlayerProfile player) {
+	public synchronized void loadPlayerProfile(PlayerProfile player) {
 		String path = "players." + player.getUuid();
 		loadStats(path, player);
 		if (data.getInt(path + ".skill-reward-version", 0) >= 2) {
 			player.restoreSkillXp(data.getLong(path + ".mining-xp", 0),
-					data.getLong(path + ".combat-xp", 0));
+					data.getLong(path + ".combat-xp", 0), data.getLong(path + ".foraging-xp", 0));
 		} else {
 			// Old profiles mixed earned rewards into these base stats. There is no
 			// reliable way to separate them from manually edited values; reset only
@@ -72,16 +74,26 @@ public class PlayerProfileStorage {
 		}
 	}
 
-	public boolean storageContainsPlayer(String path) {
+	public synchronized boolean storageContainsPlayer(String path) {
 		return data.contains(path);
 	}
 
-	public void saveFile()  {
+	@Override
+	public synchronized boolean containsPlayer(java.util.UUID playerId) {
+		return storageContainsPlayer("players." + playerId);
+	}
+
+	public synchronized void saveFile()  {
 		try {
 			data.save(file);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public void flush() {
+		saveFile();
 	}
 
 }

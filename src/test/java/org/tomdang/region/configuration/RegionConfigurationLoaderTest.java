@@ -21,6 +21,7 @@ class RegionConfigurationLoaderTest {
 
 		assertAll(
 				() -> assertEquals("LIBRARY", definition.id()),
+				() -> assertEquals("Old Library", definition.displayName()),
 				() -> assertEquals("VILLAGE", definition.parentId().orElseThrow()),
 				() -> assertEquals(25, definition.priority()),
 				() -> assertEquals(Set.of("SAFE", "INDOORS"), definition.tags()),
@@ -33,6 +34,7 @@ class RegionConfigurationLoaderTest {
 	@Test
 	void appliesOptionalDefaults() {
 		String yaml = validYaml()
+				.replace("    display-name: Old Library\n", "")
 				.replace("    parent: VILLAGE\n", "")
 				.replace("    priority: 25\n", "")
 				.replace("    tags: [SAFE, INDOORS]\n", "")
@@ -41,6 +43,7 @@ class RegionConfigurationLoaderTest {
 		RegionConfigurationDefinition definition = load(yaml).getFirst();
 
 		assertTrue(definition.parentId().isEmpty());
+		assertEquals("LIBRARY", definition.displayName());
 		assertEquals(0, definition.priority());
 		assertTrue(definition.tags().isEmpty());
 		assertTrue(definition.inclusions().isEmpty());
@@ -53,6 +56,32 @@ class RegionConfigurationLoaderTest {
 	}
 
 	@Test
+	void loadsPolygonOnlyRegion() {
+		String yaml = """
+				regions:
+				  ISLAND:
+				    display-name: Mushroom Island
+				    shape:
+				      polygons:
+				        main:
+				          world: world
+				          minimum-y: -64
+				          maximum-y: 319
+				          vertices:
+				            - { x: 0, z: 0 }
+				            - { x: 10, z: 0 }
+				            - { x: 0, z: 10 }
+				""";
+		RegionConfigurationDefinition definition = load(yaml).getFirst();
+		assertTrue(definition.cuboids().isEmpty());
+		assertEquals(1, definition.polygons().size());
+		assertEquals("Mushroom Island", definition.displayName());
+		assertEquals(3, definition.polygons().getFirst().vertices().size());
+		assertTrue(new RegionConfigurationConverter().convert(definition)
+				.directlyContains(new BlockPosition("world", 2, 64, 2)));
+	}
+
+	@Test
 	void rejectsMissingRootsShapesAndCuboids() {
 		assertAll(
 				() -> assertThrows(IllegalArgumentException.class, () -> loader.loadDefinitions(null)),
@@ -61,7 +90,9 @@ class RegionConfigurationLoaderTest {
 				() -> assertThrows(IllegalArgumentException.class,
 						() -> load(validYaml().replace("    shape:\n", "    wrong-shape:\n"))),
 				() -> assertThrows(IllegalArgumentException.class,
-						() -> load(validYaml().replace("      cuboids:\n        main:\n", "      cuboids: {}\n      removed:\n        main:\n")))
+						() -> load(validYaml().replace("      cuboids:\n        main:\n", "      cuboids: {}\n      removed:\n        main:\n"))),
+				() -> assertThrows(IllegalArgumentException.class,
+						() -> load("regions:\n  LIBRARY:\n    shape:\n      cuboids: invalid\n"))
 		);
 	}
 
@@ -70,6 +101,8 @@ class RegionConfigurationLoaderTest {
 		assertAll(
 				() -> assertThrows(IllegalArgumentException.class,
 						() -> load(validYaml().replace("parent: VILLAGE", "parent: 42"))),
+				() -> assertThrows(IllegalArgumentException.class,
+						() -> load(validYaml().replace("display-name: Old Library", "display-name: 42"))),
 				() -> assertThrows(IllegalArgumentException.class,
 						() -> load(validYaml().replace("priority: 25", "priority: high"))),
 				() -> assertThrows(IllegalArgumentException.class,
@@ -100,6 +133,7 @@ class RegionConfigurationLoaderTest {
 		return """
 				regions:
 				  LIBRARY:
+				    display-name: Old Library
 				    parent: VILLAGE
 				    priority: 25
 				    tags: [SAFE, INDOORS]

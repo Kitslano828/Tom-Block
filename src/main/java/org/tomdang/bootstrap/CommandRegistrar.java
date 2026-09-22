@@ -7,6 +7,7 @@ import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
 import org.tomdang.actorframework.movement.ActorFollowService;
 import org.tomdang.actorframework.movement.LinearActorMovementService;
+import org.tomdang.actorframework.movement.GroundActorMovementService;
 import org.tomdang.combat.command.GetWeapon;
 import org.tomdang.combat.weapons.WeaponRegistry;
 import org.tomdang.crafting.command.ForgeCommand;
@@ -57,7 +58,7 @@ public class CommandRegistrar {
 	                        CustomArmorService customArmorService, PlayerStatsService playerStatsService, CustomArmorRegistry customArmorRegistry,
 	                        PlayerResourceService playerResourceService, MiningToolRegistry miningToolRegistry, DialogueSessionService dialogueSessionService,
 	                        DialogueController dialogueController, PlayerNpcLifecycleService playerNpcLifecycleService,
-	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService,
+	                        ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, GroundActorMovementService groundActorMovementService, ActorLifecycleService actorLifecycleService,
 	                        ActorFollowService actorFollowService,
 	                        PlayerInventoryItemRefreshService playerInventoryItemRefreshService,
 	                        PlayerStatPresentationRegistry playerStatPresentationRegistry,
@@ -132,7 +133,7 @@ public class CommandRegistrar {
 		NmsPlayerNpcTestCommand nmsPlayerNpcTestCommand = new NmsPlayerNpcTestCommand(playerNpcLifecycleService);
 		instance.getCommand("spawnnmsnpc").setExecutor(nmsPlayerNpcTestCommand);
 
-		MoveActorTestCommand moveActorTestCommand = new MoveActorTestCommand(actorInstanceRegistry, linearActorMovementService, actorLifecycleService);
+		MoveActorTestCommand moveActorTestCommand = new MoveActorTestCommand(actorInstanceRegistry, groundActorMovementService, actorLifecycleService);
 		instance.getCommand("moveactortest").setExecutor(moveActorTestCommand);
 
 		FollowTestCommand followTestCommand = new FollowTestCommand(actorFollowService, actorInstanceRegistry);

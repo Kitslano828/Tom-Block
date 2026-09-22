@@ -11,14 +11,21 @@ import java.util.Set;
 
 public record RegionDefinition(
 		String id,
+		String displayName,
 		Optional<String> parentId,
 		int priority,
 		Set<String> tags,
 		RegionShape shape,
 		RegionOverrides overrides
 ) {
+	public RegionDefinition(String id, Optional<String> parentId, int priority, Set<String> tags,
+			RegionShape shape, RegionOverrides overrides) {
+		this(id, id, parentId, priority, tags, shape, overrides);
+	}
+
 	public RegionDefinition {
 		id = requireIdentifier(id, "id");
+		displayName = requireIdentifier(displayName, "displayName");
 		if (parentId == null) throw new IllegalArgumentException("parentId cannot be null");
 		parentId = parentId.map(value -> requireIdentifier(value, "parentId"));
 		if (tags == null) throw new IllegalArgumentException("tags cannot be null");

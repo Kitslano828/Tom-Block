@@ -5,7 +5,8 @@ import org.tomdang.player.stats.PlayerStatType;
 
 public enum SkillType {
 	MINING(PlayerStatType.MINING_FORTUNE, 4),
-	COMBAT(PlayerStatType.STRENGTH, 2);
+	COMBAT(PlayerStatType.STRENGTH, 2),
+	FORAGING(PlayerStatType.FORAGING_FORTUNE, 2);
 
 	private final PlayerStatType rewardStat;
 	private final double rewardPerLevel;
@@ -20,6 +21,7 @@ public enum SkillType {
 		return switch (this) {
 			case MINING -> profile.getMiningProgress();
 			case COMBAT -> profile.getCombatProgress();
+			case FORAGING -> profile.getForagingProgress();
 		};
 	}
 
@@ -28,6 +30,7 @@ public enum SkillType {
 		switch (this) {
 			case MINING -> profile.setMiningXP(totalXp);
 			case COMBAT -> profile.setCombatXP(totalXp);
+			case FORAGING -> profile.setForagingXP(totalXp);
 		}
 	}
 

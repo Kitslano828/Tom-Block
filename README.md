@@ -32,7 +32,11 @@ One of my current goals is to become more independent in planning features and m
 - Animated NPC dialogue
 - Clickable dialogue choices
 - Registered dialogue actions that can trigger gameplay behavior
-- YAML-based player profile persistence
+- PostgreSQL player profiles, skill progression, counters, and private-island ownership
+- Flyway-managed database migrations with one-time legacy YAML profile import
+- Persistent private islands with generated ocean presets and idle unloading
+- Registered renewable foraging trees with sequential breaking and regeneration
+- Region-aware minimap HUD and exported-world map items
 - JUnit and Mockito tests for selected systems
 
 ## Example Gameplay Path
@@ -83,6 +87,20 @@ running it. The Ubuntu build server and public GitHub release are separate;
 this local task never deploys to either one.
 
 An ordinary Gradle `build` only builds and tests; it does not deploy files.
+
+To build, upload, and optionally restart the definitive Ubuntu test server, use:
+
+```powershell
+.\scripts\Deploy-BuildServer.ps1
+.\scripts\Deploy-BuildServer.ps1 -Restart
+```
+
+The script runs the tests, builds the Paper plugin JAR, uploads it atomically,
+deploys the external world-map image, retains `TomBlock.jar.previous`, and
+restores that JAR if the restarted systemd service fails its health check.
+Third-party database libraries are loaded through Paper and are not shaded into
+the plugin. It does not publish the resource pack; use
+`Publish-ResourcePack.ps1` for pack releases.
 
 TomBlock currently targets:
 

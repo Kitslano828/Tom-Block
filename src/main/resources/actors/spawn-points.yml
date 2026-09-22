@@ -6,7 +6,7 @@ spawn-points:
     location:
       world: world
       x: 93.5
-      y: 76
+      y: 71
       z: 187.5
 
   TALKING_BLACKSMITH_TEST:
@@ -27,4 +27,4 @@ spawn-points:
       world: world
       x: 1247.5
       y: 74
-      z: -130.5
+      z: -130.5   

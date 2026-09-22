@@ -49,7 +49,7 @@ import org.tomdang.mining.miningtool.MiningToolCreator;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
-import org.tomdang.player.playerdata.PlayerProfileStorage;
+import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.playernpc.integration.actor.PlayerNpcActorInteractionService;
@@ -72,6 +72,22 @@ import org.tomdang.region.bukkit.PlayerRegionTransitionEvent;
 import org.tomdang.region.bukkit.RegionTrackingDebugService;
 import org.tomdang.region.bukkit.RegionSpeedRefreshListener;
 import org.tomdang.region.tracking.PlayerRegionTrackingService;
+import org.tomdang.worldmap.MapTestCommand;
+import org.tomdang.worldmap.MapHudCommand;
+import org.tomdang.worldmap.MapGiveCommand;
+import org.tomdang.worldmap.MapTestService;
+import org.tomdang.worldmap.VillageMapGrid;
+import org.tomdang.worldmap.WorldMapItemCommand;
+import org.tomdang.worldmap.WorldMapItemService;
+import org.tomdang.foraging.ForagingListener;
+import org.tomdang.foraging.ForagingService;
+import org.tomdang.foraging.ForagingTreeCommand;
+import org.tomdang.foraging.ForagingTreeRegistry;
+import org.tomdang.foraging.ForagingTreeStore;
+import org.tomdang.foraging.TreeModel;
+import org.tomdang.island.PrivateIslandCommand;
+import org.tomdang.island.PrivateIslandWorldListener;
+import org.tomdang.island.PrivateIslandWorldService;
 
 import java.io.File;
 
@@ -86,11 +102,12 @@ public class TomBlock extends JavaPlugin {
 	private ActorBootStrap actorBootStrap;
 	private RegionBrushVisualizationTask regionBrushVisualizationTask;
 	private PlayerMovementSpeedBootStrap playerMovementSpeedBootStrap;
+	private MapTestService mapTestService;
 
 
 	@Override
 	public void onEnable() {
-		System.out.println("Plugin Enabled");
+		getLogger().info("Plugin enabled.");
 
 
 
@@ -154,11 +171,23 @@ public class TomBlock extends JavaPlugin {
 		);
 
 		PlayerProfileService playerProfileService = playerBootStrap.getPlayerProfileService();
-		PlayerProfileStorage playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
+		PlayerProfileRepository playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
 		PlayerStatsService playerStatsService = playerBootStrap.getPlayerStatsService();
 		PlayerResourceService playerResourceService = playerBootStrap.getPlayerResourceService();
-		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
+		ForagingTreeRegistry foragingTrees = new ForagingTreeRegistry();
+		ForagingTreeStore foragingTreeStore = new ForagingTreeStore(new File(getDataFolder(), "foraging-trees.yml"));
+		ForagingService foragingService = new ForagingService(
+				this, foragingTrees, playerBootStrap.getPlayerCounterService(), playerProfileService,
+				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService), foragingTreeStore);
+		foragingTreeStore.load(TreeModel.modelOak()).forEach(foragingService::registerExisting);
+		getServer().getPluginManager().registerEvents(new ForagingListener(foragingService), this);
+		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees));
+		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this);
+		getServer().getPluginManager().registerEvents(new PrivateIslandWorldListener(this, privateIslandWorlds), this);
+		getCommand("island").setExecutor(new PrivateIslandCommand(
+				this, playerBootStrap.getPrivateIslandService(), privateIslandWorlds));
+		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
 		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
 		ItemRefreshBootStrap itemRefreshBootStrap = new ItemRefreshBootStrap(
@@ -189,6 +218,15 @@ public class TomBlock extends JavaPlugin {
 				actorAudienceIDKey,
 				actorSpawnPointIDKey
 		);
+		mapTestService = new MapTestService(this,
+				new VillageMapGrid(regionBootStrap.getRegionRegistry().require("STARTER_VILLAGE")),
+				actorBootStrap.getBukkitActorCollisionService());
+		getCommand("maptest").setExecutor(new MapTestCommand(mapTestService));
+		getCommand("maphud").setExecutor(new MapHudCommand(mapTestService));
+		WorldMapItemService worldMapItems = new WorldMapItemService(this);
+		getCommand("mapimage").setExecutor(new WorldMapItemCommand(worldMapItems));
+		getCommand("map").setExecutor(new MapGiveCommand(worldMapItems, false));
+		getCommand("minimap").setExecutor(new MapGiveCommand(worldMapItems, true));
 		ActorResolver actorResolver = actorBootStrap.getActorResolver();
 		ActorInteractionService actorInteractionService = actorBootStrap.getActorInteractionService();
 		ActorDamageService actorDamageService = actorBootStrap.getActorDamageService();
@@ -362,6 +400,7 @@ public class TomBlock extends JavaPlugin {
 				playerNpcLifecycleService,
 				actorBootStrap.getActorInstanceRegistry(),
 				actorBootStrap.getLinearActorMovementService(),
+				actorBootStrap.getGroundActorMovementService(),
 				actorBootStrap.getActorLifecycleService(),
 				actorBootStrap.getActorFollowService(),
 				playerInventoryItemRefreshService,
@@ -387,6 +426,7 @@ public class TomBlock extends JavaPlugin {
 				customAbilityService,
 				mobRewardService,
 				miningBootstrap.getMiningService(),
+				miningBootstrap.getMiningProgressService(),
 				combatBootStrap.getCombatService(),
 				mobBootStrap.getCustomMobRespawnService(),
 				craftingService,
@@ -424,10 +464,12 @@ public class TomBlock extends JavaPlugin {
 
 		actorReconciliationService.reconcileSpawnPoints();
 		regionBrushVisualizationTask.start();
+		getLogger().info("TomBlock startup complete.");
 	}
 
 	@Override
 	public void onDisable() {
+		if (mapTestService != null) mapTestService.stop();
 		if (mobBootStrap != null) mobBootStrap.stopPopulations();
 		if (mobBootStrap != null) mobBootStrap.stopPresentations();
 		if (regionBrushVisualizationTask != null) {

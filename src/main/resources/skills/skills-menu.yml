@@ -27,3 +27,11 @@ skills-menu:
       progress-material: RED_STAINED_GLASS_PANE
       color: '#FF5555'
       slot: 23
+    foraging:
+      name: Foraging
+      description: Earn Foraging XP by harvesting renewable trees.
+      material: DIAMOND_AXE
+      accent-material: LIME_STAINED_GLASS_PANE
+      progress-material: GREEN_STAINED_GLASS_PANE
+      color: '#55FF55'
+      slot: 22

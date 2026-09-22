@@ -24,6 +24,7 @@ class RegionConfigurationConverterTest {
 
 		assertInstanceOf(CuboidRegionShape.class, definition.shape());
 		assertEquals("VILLAGE", definition.id());
+		assertEquals("Village Square", definition.displayName());
 		assertTrue(definition.directlyContains(position(5)));
 	}
 
@@ -43,7 +44,7 @@ class RegionConfigurationConverterTest {
 	}
 
 	private RegionConfigurationDefinition configuration(List<RegionCuboidConfigurationDefinition> cuboids) {
-		return new RegionConfigurationDefinition("VILLAGE", Optional.empty(), 10, Set.of("SAFE"), cuboids,
+		return new RegionConfigurationDefinition("VILLAGE", "Village Square", Optional.empty(), 10, Set.of("SAFE"), cuboids,
 				Set.of(position(50)), Set.of(position(6)));
 	}
 

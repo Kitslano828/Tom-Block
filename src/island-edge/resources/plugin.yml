@@ -1,0 +1,5 @@
+name: TomBlockIslandEdge
+version: 1.0
+main: org.tomdang.islandedge.IslandEdgePlugin
+api-version: '26.2'
+load: STARTUP

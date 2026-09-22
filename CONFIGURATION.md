@@ -14,13 +14,63 @@ server copies are not overwritten by a new JAR.
 | Actors and dialogue | `actors/actors.yml`, `actors/skins.yml`, `actors/dialogues.yml`, `actors/spawn-points.yml` | JAR |
 | Combat and stats | `combat/combat.yml`, `stats/stat-rules.yml`, `stats/stat-presentations.yml`, `stats/stat-categories.yml` | JAR |
 | World and movement | `regions.yml`, `region-stat-caps.yml`, `region-visualization.yml`, `movement-speed.yml` | server directory |
+| Progression counters | `counter-definitions.yml` | JAR, synchronized into PostgreSQL |
+| Database connection | `database.yml` | server directory; password comes from the environment |
+| Private foraging trees | `foraging-trees.yml` | runtime server data |
 | Plugin declaration | `plugin.yml` | JAR |
 
-Two files are runtime data, not content templates to casually replace:
+Regions may set `display-name` for player-facing text (for example, `Mushroom Island`). The YAML key remains the stable internal ID used by mob spawning, stat caps, and other references. When `display-name` is omitted, it defaults to the ID. Existing server-side `plugins/TomBlock/regions.yml` files are not overwritten by a plugin build; add new display names there explicitly when deploying.
 
-- `plugins/TomBlock/playerprofiles.yml` stores player progress and base stats.
+Region shapes can combine `shape.cuboids` and `shape.polygons`. Each polygon has a `world`, inclusive `minimum-y` and `maximum-y`, and at least three `{ x, z }` vertices. Polygon edges count as inside. Locations should use a higher `priority` than surrounding wilderness territories. The local server's region file has been synced with the current source template; deploy the updated plugin JAR before restarting against polygon definitions.
+
+Runtime state is not content to casually replace:
+
+- PostgreSQL stores profiles, skills, counters, and private-island identity.
+- `plugins/TomBlock/playerprofiles.yml` is retained only as a legacy import source.
+- `plugins/TomBlock/foraging-trees.yml` stores registered tree positions.
 - `plugins/TomBlock/region-overrides.yml` stores block-level region brush edits.
+- Private island world folders store the actual Minecraft blocks.
 
+## PostgreSQL player profiles
+
+TomBlock can use PostgreSQL for player profiles while retaining `playerprofiles.yml` as a read-only migration source. PostgreSQL is disabled by default. On the first join of a player who exists only in YAML, TomBlock loads the legacy profile, writes it to PostgreSQL, and logs the imported UUID. Subsequent loads use PostgreSQL. The YAML file is not deleted or rewritten by this migration path.
+
+Create a dedicated role and database from an administrator `psql` session, substituting a private password:
+
+```sql
+CREATE ROLE tomblock LOGIN PASSWORD 'replace-this-password';
+CREATE DATABASE tomblock OWNER tomblock;
+```
+
+Start the server once to create `plugins/TomBlock/database.yml`, stop it, then set `database.enabled` to `true`. Do not place the password in YAML. Set the password in the environment that launches Paper:
+
+```powershell
+$env:TOMBLOCK_DB_PASSWORD = 'your-private-password'
+```
+
+On Linux/systemd, use an environment file readable only by the service account and reference it with `EnvironmentFile=`. Never commit that file. The configured PostgreSQL role needs ownership of the `tomblock` database. Flyway applies the versioned SQL files under `src/main/resources/db/migration/` before repositories start. Existing prototype databases are baselined at V1, so the counter framework begins with V2 without recreating profile tables.
+
+Profile reads happen during Paper's asynchronous pre-login event. Saves use a single transaction so the profile row and all base-stat rows either succeed or roll back together.
+
+### Expandable counters
+
+Open-ended values such as blocks mined, mob kills, collection progress, and activity completions use the counter framework rather than new profile columns. Definitions live in the JAR-bundled `src/main/resources/counter-definitions.yml` and synchronize into PostgreSQL whenever TomBlock starts. This prevents an older server-side copy from hiding definitions added by a later build. The key is a permanent namespaced identifier:
+
+```yaml
+counters:
+  BLOCK_MINED:OAK_LOG:
+    display-name: Oak Logs Mined
+    category: COLLECTIONS
+    description: Total oak logs mined by this player.
+    unit: COUNT
+    default: 0
+    minimum: 0
+    enabled: true
+```
+
+Gameplay systems receive `PlayerCounterService` and call `increment(playerId, CounterKey.of("BLOCK_MINED:OAK_LOG"))`. Adding another material or mob normally requires a definition and an integration call, not a database migration. Fixed attributes involved in formulas remain in the typed player-stat system.
+
+Never edit an already deployed migration. Add the next `V<number>__description.sql` file. Flyway records completed versions in `tomblock.flyway_schema_history` and refuses inconsistent migration histories.
 `src/main/resources/playerprofiles.yml` is not loaded by the current profile
 bootstrap. The authoritative profile file is the runtime file under
 `plugins/TomBlock/`; do not edit the bundled sample expecting player changes.

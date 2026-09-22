@@ -1,0 +1,10 @@
+# Exported top-down world image: maps/world.png in the TomBlock plugin data folder.
+# Calibrated from the untrimmed 1:1 uNmINeD export (3200 x 2304 blocks/pixels).
+# Re-export with the same area if replacing the image, or update these bounds.
+world: world
+local-diameter-blocks: 256
+bounds:
+  minimum-x: -1536
+  minimum-z: -1152
+  maximum-x: 1663
+  maximum-z: 1151

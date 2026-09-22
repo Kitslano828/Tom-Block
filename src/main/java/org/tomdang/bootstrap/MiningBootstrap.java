@@ -11,6 +11,7 @@ import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.CustomItemStackFactory;
 import org.tomdang.mining.MiningRegenerationService;
 import org.tomdang.mining.MiningService;
+import org.tomdang.mining.MiningProgressService;
 import org.tomdang.customabilityframework.activeability.ActiveAbilityService;
 import org.tomdang.mining.configuration.miningblock.MiningBlockConfigurationLoader;
 import org.tomdang.mining.configuration.miningblock.MiningBlockDefinition;
@@ -40,6 +41,8 @@ public class MiningBootstrap {
 	private final MiningToolRegistry miningToolRegistry;
 	@Getter
 	private final MiningService miningService;
+	@Getter
+	private final MiningProgressService miningProgressService;
 	@Getter
 	private final MiningToolCreator miningToolCreator;
 
@@ -117,6 +120,8 @@ public class MiningBootstrap {
 				activeAbilityService,
 				customItemStackFactory
 		);
+		this.miningProgressService = new MiningProgressService(instance, miningBlockRegistry,
+				miningToolResolver, playerProfileService, playerStatsService);
 
 	}
 }

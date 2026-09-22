@@ -65,6 +65,8 @@ public class ActorBootStrap {
 	@Getter
 	private final LinearActorMovementService linearActorMovementService;
 	@Getter
+	private final GroundActorMovementService groundActorMovementService;
+	@Getter
 	private final ActorMovementTaskService actorMovementTaskService;
 	@Getter
 	private final ActorFollowService actorFollowService;
@@ -116,6 +118,9 @@ public class ActorBootStrap {
 		actorFollowService = new ActorFollowService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService, horizontalFacingCalculator);
 
 		linearActorMovementService = new LinearActorMovementService(actorPresentationService, linearMovementStepCalculator, actorMovementTaskService);
+		GroundTraversalPolicy groundTraversalPolicy = new GroundTraversalPolicy();
+		groundActorMovementService = new GroundActorMovementService(actorPresentationService, actorMovementTaskService,
+				new GroundPathPlanner(groundTraversalPolicy), groundTraversalPolicy, linearMovementStepCalculator);
 
 		actorInteractionRegistry = new ActorInteractionRegistry();
 

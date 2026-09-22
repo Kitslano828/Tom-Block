@@ -10,7 +10,7 @@ import java.util.List;
 
 public class MiningBlock {
 	@Getter
-	private final int blockStrength; // To be used later on (for how long it takes to break the block)
+	private final int blockStrength;
 	@Getter
 	private final int breakingPower; // To be used later on (for tool requirement)
 	@Getter

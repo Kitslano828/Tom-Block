@@ -39,7 +39,7 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.command.PlayerMenuListener;
 import org.tomdang.player.listener.PlayerConnectionListener;
 import org.tomdang.player.listener.PlayerRegainHealthListener;
-import org.tomdang.player.playerdata.PlayerProfileStorage;
+import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.presentation.PlayerStatPresentationRegistry;
@@ -58,8 +58,8 @@ import org.tomdang.player.movement.PlayerMovementSpeedListener;
 public class ListenerRegistrar {
 
 	public ListenerRegistrar(TomBlock instance, PlayerProfileService playerProfileService,
-	                         PlayerProfileStorage playerProfileStorage, PlayerResourceService playerResourceService,
-	                         CustomAbilityService customAbilityService, MobRewardService mobRewardService, MiningService miningService,
+	                         PlayerProfileRepository playerProfileStorage, PlayerResourceService playerResourceService,
+	                         CustomAbilityService customAbilityService, MobRewardService mobRewardService, MiningService miningService, org.tomdang.mining.MiningProgressService miningProgressService,
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 	                         PlayerAttackReadinessService playerAttackReadinessService,
 	                         PlayerAttackIndicatorService playerAttackIndicatorService,
@@ -89,7 +89,7 @@ public class ListenerRegistrar {
 				dialogueSessionService,
 				dialogueController
 		);
-		MiningListener miningListener = new MiningListener(miningService);
+		MiningListener miningListener = new MiningListener(miningService, miningProgressService);
 		MobHitListener mobHitListener = new MobHitListener(combatService);
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
 		PlayerAttackReadinessListener playerAttackReadinessListener =

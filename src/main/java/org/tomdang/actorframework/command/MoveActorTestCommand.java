@@ -10,21 +10,22 @@ import org.tomdang.actorframework.audience.ActorAudienceKey;
 import org.tomdang.actorframework.instance.ActorInstance;
 import org.tomdang.actorframework.instance.ActorInstanceRegistry;
 import org.tomdang.actorframework.lifecycle.ActorLifecycleService;
-import org.tomdang.actorframework.movement.LinearActorMovementService;
+import org.tomdang.actorframework.movement.GroundActorMovementService;
+import org.tomdang.actorframework.movement.GroundPathResult;
 
 public class MoveActorTestCommand implements CommandExecutor {
 
 	private final ActorInstanceRegistry actorInstanceRegistry;
-	private final LinearActorMovementService linearActorMovementService;
+	private final GroundActorMovementService groundActorMovementService;
 	private final ActorLifecycleService actorLifecycleService;
 
-	public MoveActorTestCommand(ActorInstanceRegistry actorInstanceRegistry, LinearActorMovementService linearActorMovementService, ActorLifecycleService actorLifecycleService) {
+	public MoveActorTestCommand(ActorInstanceRegistry actorInstanceRegistry, GroundActorMovementService groundActorMovementService, ActorLifecycleService actorLifecycleService) {
 		if (actorInstanceRegistry == null) throw new IllegalArgumentException("actorInstanceRegistry cannot be null");
-		if (linearActorMovementService == null) throw new IllegalArgumentException("linearActorMovementService cannot be null");
+		if (groundActorMovementService == null) throw new IllegalArgumentException("groundActorMovementService cannot be null");
 		if (actorLifecycleService == null) throw new IllegalArgumentException("actorLifecycleService cannot be null");
 
 		this.actorInstanceRegistry = actorInstanceRegistry;
-		this.linearActorMovementService = linearActorMovementService;
+		this.groundActorMovementService = groundActorMovementService;
 		this.actorLifecycleService = actorLifecycleService;
 	}
 
@@ -54,9 +55,10 @@ public class MoveActorTestCommand implements CommandExecutor {
 
 		Location destination = player.getLocation();
 
-		linearActorMovementService.moveTo(instance, destination, 0.2);
-
-		player.sendMessage("Actor moved to " + destination);
+		GroundPathResult result = groundActorMovementService.moveTo(instance, destination, 0.2);
+		player.sendMessage(result.status() == GroundPathResult.Status.FOUND
+				? "Actor following ground route to " + destination
+				: "Actor cannot route there: " + result.status());
 
 		return true;
 	}

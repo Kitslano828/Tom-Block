@@ -3,8 +3,33 @@ version: 1.0
 main: org.tomdang.TomBlock
 author: TomDang
 api-version: 26.2
+libraries:
+  - com.zaxxer:HikariCP:7.0.2
+  - org.postgresql:postgresql:42.7.8
+  - org.flywaydb:flyway-core:13.7.0
+  - org.flywaydb:flyway-database-postgresql:13.7.0
 
 commands:
+  map:
+    description: Gives a whole-world map item with your location marker
+    usage: /map
+    permission: tomblock.map
+  minimap:
+    description: Gives a player-centered local map item
+    usage: /minimap
+    permission: tomblock.map
+  maphud:
+    description: Tests static, marker-overlay, or live image HUD rendering
+    usage: /maphud <static|marker|live|centered|off>
+    permission: tomblock.admin.maphud
+  mapimage:
+    description: Gives a test map item using the exported world image
+    usage: /mapimage <full|local>
+    permission: tomblock.admin.mapimage
+  maptest:
+    description: Toggles the experimental village sidebar map
+    usage: /maptest
+    permission: tomblock.admin.maptest
   setskill:
     description: sets one of your skills to a level or total XP amount
     usage: /setskill <skill> <lvl|xp> <amount>
@@ -58,8 +83,31 @@ commands:
     description: inspects TomBlock region membership at the sender's current block
     usage: /region inspect
     permission: tomblock.admin.region.inspect
+  foragingtree:
+    description: Places a registered model oak for foraging testing
+    usage: /foragingtree spawn <tree-id>
+    permission: tomblock.admin.foraging
+  island:
+    description: Creates or travels to your private island
+    usage: /island [home|leave]
+    permission: tomblock.island
 
 permissions:
+  tomblock.island:
+    description: Allows access to private islands
+    default: true
+  tomblock.map:
+    description: Allows viewing the world and local map items
+    default: true
+  tomblock.admin.maphud:
+    description: Allows testing the resource-pack village map HUD
+    default: op
+  tomblock.admin.mapimage:
+    description: Allows testing the exported world image as a map item
+    default: op
+  tomblock.admin.maptest:
+    description: Allows testing the experimental village map
+    default: op
   tomblock.admin.refreshitems:
     description: allows manual refreshing of custom items for testing
     default: op
@@ -68,4 +116,7 @@ permissions:
     default: op
   tomblock.admin.region.edit:
     description: allows editing and saving region block overrides
+    default: op
+  tomblock.admin.foraging:
+    description: Allows placement of registered foraging test trees
     default: op

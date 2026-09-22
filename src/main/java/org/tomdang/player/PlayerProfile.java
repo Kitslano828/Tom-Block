@@ -21,11 +21,14 @@ public class PlayerProfile {
 	private long miningXP = 0;
 	@Getter
 	private long combatXP = 0;
+	@Getter
+	private long foragingXP = 0;
 
 	public int getMiningLVL() { return SkillXpCurve.levelForXp(miningXP); }
 	public int getCombatLvl() { return SkillXpCurve.levelForXp(combatXP); }
 	public SkillProgress getMiningProgress() { return SkillProgress.fromTotalXp(miningXP); }
 	public SkillProgress getCombatProgress() { return SkillProgress.fromTotalXp(combatXP); }
+	public SkillProgress getForagingProgress() { return SkillProgress.fromTotalXp(foragingXP); }
 
 	public void setMiningXP(long totalXp) {
 		SkillXpCurve.levelForXp(totalXp);
@@ -36,16 +39,22 @@ public class PlayerProfile {
 		SkillXpCurve.levelForXp(totalXp);
 		combatXP = Math.min(totalXp, SkillXpCurve.totalXpForLevel(SkillXpCurve.MAX_LEVEL));
 	}
+	public void setForagingXP(long totalXp) {
+		SkillXpCurve.levelForXp(totalXp);
+		foragingXP = Math.min(totalXp, SkillXpCurve.totalXpForLevel(SkillXpCurve.MAX_LEVEL));
+	}
 
 	public void setMiningLVL(int level) { setMiningXP(SkillXpCurve.totalXpForLevel(level)); }
 	public void setCombatLvl(int level) { setCombatXP(SkillXpCurve.totalXpForLevel(level)); }
 
 	/** Restore the current XP-only format without applying stat rewards to base stats. */
-	public void restoreSkillXp(long miningXp, long combatXp) {
+	public void restoreSkillXp(long miningXp, long combatXp) { restoreSkillXp(miningXp, combatXp, 0); }
+	public void restoreSkillXp(long miningXp, long combatXp, long foragingXp) {
 		SkillXpCurve.levelForXp(miningXp);
 		SkillXpCurve.levelForXp(combatXp);
 		this.miningXP = Math.min(miningXp, SkillXpCurve.totalXpForLevel(100));
 		this.combatXP = Math.min(combatXp, SkillXpCurve.totalXpForLevel(100));
+		this.foragingXP = Math.min(foragingXp, SkillXpCurve.totalXpForLevel(100));
 	}
 
 	@Getter

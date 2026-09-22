@@ -41,6 +41,13 @@ stat-presentations:
     material: DIAMOND_PICKAXE
     visible: true
 
+  FORAGING_FORTUNE:
+    symbol: "☘"
+    color: "#55FF55"
+    description: "Increases the amount of drops received while foraging."
+    material: GOLDEN_AXE
+    visible: true
+
   JELLYFISH_POWER:
     symbol: "ଳ"
     color: "#55FFFF"

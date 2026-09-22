@@ -22,6 +22,12 @@ class StarterVillageConfigurationTest {
 					.map(new RegionConfigurationConverter()::convert).toList());
 		}
 		RegionResolver resolver = new RegionResolver(registry);
+		assertEquals("Starter Village", registry.require("STARTER_VILLAGE").displayName());
+		assertEquals("Mushroom Island", registry.require("JELLYFISH_HUNTING_GROUNDS").displayName());
+		assertTrue(registry.require("JELLYFISH_HUNTING_GROUNDS")
+				.directlyContains(new BlockPosition("world", 1230, 70, -150)));
+		assertFalse(registry.require("JELLYFISH_HUNTING_GROUNDS")
+				.directlyContains(new BlockPosition("world", 1400, 70, -300)));
 		assertTrue(resolver.regionsAt(new BlockPosition("world", 107, 68, -171)).stream()
 				.anyMatch(region -> region.id().equals("STARTER_VILLAGE")));
 		assertTrue(resolver.regionsAt(new BlockPosition("world", 295, 66, 1)).stream()

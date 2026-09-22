@@ -18,6 +18,9 @@ public enum PlayerStatType {
 	MINING_FORTUNE("mining-fortune", "Mining Fortune", PlayerStatCategory.MINING, 0.0, 0.0),
 	MINING_SPEED("mining-speed", "Mining Speed", PlayerStatCategory.MINING, 0.0, 0.0),
 
+	// Foraging Stats
+	FORAGING_FORTUNE("foraging-fortune", "Foraging Fortune", PlayerStatCategory.FORAGING, 0.0, 0.0),
+
 	// Fishing methods can select their own stats without inheriting melee Strength or Crit.
 	JELLYFISH_POWER("jellyfish-power", "Jellyfish Power", PlayerStatCategory.FISHING, 0.0, 0.0),
 	JELLYFISH_DAMAGE_BONUS("jellyfish-damage-bonus", "Jellyfish Damage Bonus", PlayerStatCategory.FISHING, 0.0, 0.0),
