@@ -12,6 +12,7 @@ class BundledConfigurationResourcesTest {
 		for (String path : List.of(
 				"actors/actors.yml", "actors/dialogues.yml", "actors/spawn-points.yml",
 				"combat/combat.yml", "crafting/recipes.yml", "collections.yml",
+				"foraging/trees.yml", "foraging/tools.yml",
 				"items/items.yml", "items/weapons.yml", "items/armor.yml",
 				"mining/mining-blocks.yml", "mining/mining-tools.yml",
 				"mobs/mobs.yml", "stats/stat-rules.yml",

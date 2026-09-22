@@ -13,7 +13,7 @@ class CounterDefinitionConfigurationLoaderTest {
 
         var definitions = new CounterDefinitionConfigurationLoader().load(resource);
 
-        assertEquals(2, definitions.size());
+        assertEquals(4, definitions.size());
         var byKey = definitions.stream().collect(java.util.stream.Collectors.toMap(
                 definition -> definition.key().value(), definition -> definition));
         assertEquals("ACTIVITIES", byKey.get("ACTIVITY:COLONIES_COMPLETED").category());

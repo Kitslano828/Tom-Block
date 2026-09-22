@@ -12,12 +12,13 @@ class CollectionConfigurationLoaderTest {
 		CollectionDefinition oak = registry.require("OAK_LOG");
 		assertEquals(Material.OAK_LOG, oak.material());
 		assertEquals("FORAGING:OAK_LOGS_BROKEN", oak.counterKey().value());
-		assertEquals(250L, oak.nextMilestone(100));
+		assertEquals(250L, oak.nextMilestone(100).amount());
 		assertNull(oak.nextMilestone(5000));
 	}
 
 	@Test void rejectsDescendingMilestones() {
 		assertThrows(IllegalArgumentException.class, () -> new CollectionDefinition("BAD", "Bad", "TEST",
-				Material.STONE, org.tomdang.player.counter.CounterKey.of("TEST:BAD"), java.util.List.of(10L, 5L)));
+				Material.STONE, org.tomdang.player.counter.CounterKey.of("TEST:BAD"),
+				java.util.List.of(new CollectionMilestone(10, 0), new CollectionMilestone(5, 0))));
 	}
 }

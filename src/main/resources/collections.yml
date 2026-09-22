@@ -4,4 +4,29 @@ collections:
     category: FORAGING
     material: OAK_LOG
     counter: "FORAGING:OAK_LOGS_BROKEN"
-    milestones: [50, 100, 250, 500, 1000, 2500, 5000]
+    milestones:
+      - {amount: 50, skill-xp: 50}
+      - {amount: 100, skill-xp: 75}
+      - {amount: 250, skill-xp: 125}
+      - {amount: 500, skill-xp: 200}
+      - {amount: 1000, skill-xp: 300}
+      - {amount: 2500, skill-xp: 500}
+      - {amount: 5000, skill-xp: 750}
+  BIRCH_LOG:
+    display-name: Birch Log Collection
+    category: FORAGING
+    material: BIRCH_LOG
+    counter: "FORAGING:BIRCH_LOGS_BROKEN"
+    milestones:
+      - {amount: 50, skill-xp: 75}
+      - {amount: 250, skill-xp: 175}
+      - {amount: 1000, skill-xp: 400}
+  SPRUCE_LOG:
+    display-name: Spruce Log Collection
+    category: FORAGING
+    material: SPRUCE_LOG
+    counter: "FORAGING:SPRUCE_LOGS_BROKEN"
+    milestones:
+      - {amount: 50, skill-xp: 100}
+      - {amount: 250, skill-xp: 250}
+      - {amount: 1000, skill-xp: 600}

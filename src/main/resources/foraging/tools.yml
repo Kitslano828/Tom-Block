@@ -1,0 +1,5 @@
+foraging-tools:
+  ROOKIE_AXE:
+    required-foraging-level: 0
+  FORESTER_AXE:
+    required-foraging-level: 5

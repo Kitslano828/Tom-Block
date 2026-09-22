@@ -1,0 +1,28 @@
+tree-models:
+  MODEL_OAK:
+    log-material: OAK_LOG
+    leaf-material: OAK_LEAVES
+    tier: 1
+    durability: 100
+    required-power: 10
+    xp: 70
+    regeneration-seconds: 30
+    collection: OAK_LOG
+  MODEL_BIRCH:
+    log-material: BIRCH_LOG
+    leaf-material: BIRCH_LEAVES
+    tier: 2
+    durability: 180
+    required-power: 25
+    xp: 120
+    regeneration-seconds: 40
+    collection: BIRCH_LOG
+  MODEL_SPRUCE:
+    log-material: SPRUCE_LOG
+    leaf-material: SPRUCE_LEAVES
+    tier: 3
+    durability: 300
+    required-power: 40
+    xp: 200
+    regeneration-seconds: 50
+    collection: SPRUCE_LOG

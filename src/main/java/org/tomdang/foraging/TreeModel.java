@@ -6,19 +6,19 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.tomdang.player.counter.CounterKey;
 
 public record TreeModel(String id, Material logMaterial, Material leafMaterial,
 		List<BlockOffset> logs, Set<BlockOffset> leaves, int tier, double durability,
-		double requiredPower, long xp, int regenerationSeconds, CounterKey collectionKey) {
+		double requiredPower, long xp, int regenerationSeconds, String collectionId) {
 	public TreeModel {
 		logs = List.copyOf(logs);
 		leaves = Set.copyOf(leaves);
-		if (tier < 1 || durability <= 0 || requiredPower < 0 || xp < 0 || regenerationSeconds < 0 || collectionKey == null)
+		if (tier < 1 || durability <= 0 || requiredPower < 0 || xp < 0 || regenerationSeconds < 0 || collectionId == null || collectionId.isBlank())
 			throw new IllegalArgumentException("Invalid tree progression settings");
 	}
 
-	public static TreeModel modelOak() {
+	public static TreeModel standard(String id, Material log, Material leavesMaterial, int tier, double durability,
+			double requiredPower, long xp, int regenerationSeconds, String collectionId) {
 		List<BlockOffset> logs = List.of(
 				new BlockOffset(0, 0, 0), new BlockOffset(0, 1, 0), new BlockOffset(0, 2, 0),
 				new BlockOffset(0, 3, 0), new BlockOffset(0, 4, 0), new BlockOffset(0, 5, 0),
@@ -38,7 +38,8 @@ public record TreeModel(String id, Material logMaterial, Material leafMaterial,
 		leaves.add(new BlockOffset(-1, 6, 0));
 		leaves.add(new BlockOffset(0, 6, 1));
 		leaves.add(new BlockOffset(0, 6, -1));
-		return new TreeModel("MODEL_OAK", Material.OAK_LOG, Material.OAK_LEAVES, logs, leaves,
-				1, 100.0, 10.0, 70L, 30, CounterKey.of("FORAGING:OAK_LOGS_BROKEN"));
+		return new TreeModel(id, log, leavesMaterial, logs, leaves,
+				tier, durability, requiredPower, xp, regenerationSeconds, collectionId);
 	}
+	public static TreeModel modelOak() { return standard("MODEL_OAK", Material.OAK_LOG, Material.OAK_LEAVES, 1, 100, 10, 70, 30, "OAK_LOG"); }
 }

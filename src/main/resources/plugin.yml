@@ -85,7 +85,7 @@ commands:
     permission: tomblock.admin.region.inspect
   foragingtree:
     description: Places a registered model oak for foraging testing
-    usage: /foragingtree spawn <tree-id>
+    usage: /foragingtree spawn <tree-id> [model-id], register <tree-id> <model-id>, or grove
     permission: tomblock.admin.foraging
   island:
     description: Creates or travels to your private island

@@ -18,7 +18,7 @@ public final class CollectionMenu implements InventoryHolder {
 		int slot = 10;
 		for (CollectionDefinition definition : service.definitions()) {
 			long amount = service.amount(player.getUniqueId(), definition);
-			Long next = definition.nextMilestone(amount);
+			CollectionMilestone next = definition.nextMilestone(amount);
 			ItemStack item = ItemStack.of(definition.material());
 			var meta = item.getItemMeta();
 			meta.displayName(Component.text(definition.displayName(), NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
@@ -27,7 +27,7 @@ public final class CollectionMenu implements InventoryHolder {
 			lore.add(Component.empty());
 			lore.add(Component.text("Collected: ", NamedTextColor.GRAY).append(Component.text(amount, NamedTextColor.YELLOW)).decoration(TextDecoration.ITALIC, false));
 			lore.add(next == null ? Component.text("All current milestones reached", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false)
-					: Component.text("Next milestone: " + amount + " / " + next, NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+					: Component.text("Next milestone: " + amount + " / " + next.amount() + " (" + next.skillXpReward() + " XP)", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
 			meta.lore(lore); item.setItemMeta(meta); inventory.setItem(slot++, item);
 			if (slot % 9 == 8) slot += 2;
 		}

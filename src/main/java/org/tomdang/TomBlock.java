@@ -84,7 +84,10 @@ import org.tomdang.foraging.ForagingService;
 import org.tomdang.foraging.ForagingTreeCommand;
 import org.tomdang.foraging.ForagingTreeRegistry;
 import org.tomdang.foraging.ForagingTreeStore;
-import org.tomdang.foraging.TreeModel;
+import org.tomdang.foraging.TreeModelConfigurationLoader;
+import org.tomdang.foraging.TreeModelRegistry;
+import org.tomdang.foraging.ForagingToolConfigurationLoader;
+import org.tomdang.foraging.ForagingToolRegistry;
 import org.tomdang.island.PrivateIslandCommand;
 import org.tomdang.island.PrivateIslandWorldListener;
 import org.tomdang.island.PrivateIslandWorldService;
@@ -189,19 +192,21 @@ public class TomBlock extends JavaPlugin {
 		PlayerStatsService playerStatsService = playerBootStrap.getPlayerStatsService();
 		PlayerResourceService playerResourceService = playerBootStrap.getPlayerResourceService();
 		PlayerActionBarService playerActionBarService = playerBootStrap.getPlayerActionBarService();
-		ForagingTreeRegistry foragingTrees = new ForagingTreeRegistry();
-		ForagingTreeStore foragingTreeStore = new ForagingTreeStore(new File(getDataFolder(), "foraging-trees.yml"));
-		ForagingService foragingService = new ForagingService(
-				this, foragingTrees, playerBootStrap.getPlayerCounterService(), playerProfileService,
-				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService), foragingTreeStore,
-				customItemResolver, playerStatsService);
-		foragingTreeStore.load(TreeModel.modelOak()).forEach(foragingService::registerExisting);
+		var skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService);
 		CollectionService collectionService = new CollectionService(
 				new CollectionConfigurationLoader().load(getResource("collections.yml")),
-				playerBootStrap.getPlayerCounterService());
+				playerBootStrap.getPlayerCounterService(), playerProfileService, skillPresenter);
 		getCommand("collections").setExecutor(new CollectionsCommand(collectionService));
 		getServer().getPluginManager().registerEvents(new CollectionMenuListener(), this);
-		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees));
+		ForagingTreeRegistry foragingTrees = new ForagingTreeRegistry();
+		ForagingTreeStore foragingTreeStore = new ForagingTreeStore(new File(getDataFolder(), "foraging-trees.yml"));
+		TreeModelRegistry treeModels = new TreeModelConfigurationLoader().load(getResource("foraging/trees.yml"));
+		ForagingToolRegistry foragingTools = new ForagingToolConfigurationLoader().load(getResource("foraging/tools.yml"));
+		ForagingService foragingService = new ForagingService(
+				this, foragingTrees, collectionService, playerProfileService, skillPresenter, foragingTreeStore,
+				customItemResolver, playerStatsService, foragingTools);
+		foragingTreeStore.load(treeModels).forEach(foragingService::registerExisting);
+		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees, treeModels));
 		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
 		IslandContextService islandContexts = new IslandContextService(islandPresets);
 		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this, islandPresets, islandContexts);

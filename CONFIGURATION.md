@@ -47,6 +47,10 @@ Runtime state is not content to casually replace:
 - Custom axes are ordinary entries in `items/items.yml` with category
   `FORAGING_TOOL` and `foraging-power`, `foraging-speed`, and optional
   `foraging-fortune` stats.
+- `foraging/trees.yml` defines renewable tree tiers, materials, durability,
+  requirements, XP, regeneration, and collection routing. `foraging/tools.yml`
+  applies skill-level requirements to registered custom axes. Runtime tree
+  coordinates remain in `plugins/TomBlock/foraging-trees.yml`.
 
 ## PostgreSQL player profiles
 

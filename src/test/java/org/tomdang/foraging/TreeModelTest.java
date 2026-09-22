@@ -14,6 +14,6 @@ class TreeModelTest {
 		assertEquals(oak.logs().size(), oak.logs().stream().distinct().count());
 		assertEquals(1, oak.tier());
 		assertEquals(100.0, oak.durability());
-		assertEquals("FORAGING:OAK_LOGS_BROKEN", oak.collectionKey().value());
+		assertEquals("OAK_LOG", oak.collectionId());
 	}
 }

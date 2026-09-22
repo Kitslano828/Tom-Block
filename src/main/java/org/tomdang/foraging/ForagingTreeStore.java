@@ -16,7 +16,7 @@ public final class ForagingTreeStore {
 	private final File file;
 	public ForagingTreeStore(File file) { this.file = file; }
 
-	public List<ForagingTree> load(TreeModel model) {
+	public List<ForagingTree> load(TreeModelRegistry models) {
 		YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 		ConfigurationSection section = yaml.getConfigurationSection("trees");
 		if (section == null) return List.of();
@@ -25,8 +25,9 @@ public final class ForagingTreeStore {
 			String path = "trees." + id;
 			World world = Bukkit.getWorld(yaml.getString(path + ".world", ""));
 			if (world == null) continue;
+			String modelId = yaml.getString(path + ".model", "MODEL_OAK");
 			result.add(new ForagingTree(id, new Location(world, yaml.getInt(path + ".x"),
-					yaml.getInt(path + ".y"), yaml.getInt(path + ".z")), model));
+					yaml.getInt(path + ".y"), yaml.getInt(path + ".z")), models.require(modelId)));
 		}
 		return result;
 	}

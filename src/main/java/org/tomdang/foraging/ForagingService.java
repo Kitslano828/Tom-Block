@@ -9,8 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.tomdang.player.counter.CounterKey;
-import org.tomdang.player.counter.PlayerCounterService;
+import org.tomdang.collection.CollectionService;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.skill.SkillProgressionService;
@@ -34,29 +33,31 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class ForagingService {
 	private final Plugin plugin;
 	private final ForagingTreeRegistry registry;
-	private final PlayerCounterService counters;
+	private final CollectionService collections;
 	private final PlayerProfileService profiles;
 	private final SkillProgressionService progression;
 	private final SkillProgressPresenter presenter;
 	private final ForagingTreeStore store;
 	private final CustomItemResolver items;
 	private final PlayerStatsService stats;
+	private final ForagingToolRegistry tools;
 	private final TreeBreakPlanner planner = new TreeBreakPlanner();
 	private final Set<String> harvesting = new HashSet<>();
 	private final Map<String, Double> damage = new HashMap<>();
 
-	public ForagingService(Plugin plugin, ForagingTreeRegistry registry, PlayerCounterService counters,
+	public ForagingService(Plugin plugin, ForagingTreeRegistry registry, CollectionService collections,
 			PlayerProfileService profiles, SkillProgressPresenter presenter, ForagingTreeStore store,
-			CustomItemResolver items, PlayerStatsService stats) {
+			CustomItemResolver items, PlayerStatsService stats, ForagingToolRegistry tools) {
 		this.plugin = plugin;
 		this.registry = registry;
-		this.counters = counters;
+		this.collections = collections;
 		this.profiles = profiles;
 		this.presenter = presenter;
 		this.progression = new SkillProgressionService();
 		this.store = store;
 		this.items = items;
 		this.stats = stats;
+		this.tools = tools;
 	}
 
 	public boolean harvest(Player player, Block struckBlock) {
@@ -65,6 +66,13 @@ public final class ForagingService {
 		CustomItem tool = items.getCustomItem(player.getInventory().getItemInMainHand());
 		if (tool == null || tool.getItemCategory() != ItemCategory.FORAGING_TOOL) {
 			player.sendActionBar(Component.text("You need a foraging axe to harvest this tree.", NamedTextColor.RED));
+			return true;
+		}
+		ForagingToolDefinition toolDefinition = tools.find(tool.getId());
+		PlayerProfile profile = profiles.getPlayerProfileFromMap(player.getUniqueId());
+		if (toolDefinition == null || profile == null) return true;
+		if (profile.getForagingProgress().level() < toolDefinition.requiredForagingLevel()) {
+			player.sendActionBar(Component.text("Requires Foraging level " + toolDefinition.requiredForagingLevel() + ".", NamedTextColor.RED));
 			return true;
 		}
 		double power = stats.getTotalStat(player, PlayerStatType.FORAGING_POWER);
@@ -102,6 +110,10 @@ public final class ForagingService {
 	}
 
 	public void registerExisting(ForagingTree tree) { registry.register(tree); }
+	public void registerNatural(ForagingTree tree) {
+		registry.register(tree);
+		store.save(registry.all());
+	}
 
 	private void breakLog(Player player, ForagingTree tree, BlockOffset offset, int step, int total, int dropMultiplier) {
 		Block block = tree.location(offset).getBlock();
@@ -114,7 +126,7 @@ public final class ForagingService {
 		block.getWorld().playSound(effect, Sound.BLOCK_WOOD_BREAK, 1.0f, pitch);
 		// Persist once per completed fall rather than issuing one database write per animation step.
 		if (step == total - 1) {
-			counters.increment(player.getUniqueId(), tree.model().collectionKey(), (long) total * dropMultiplier);
+			collections.increment(player, tree.model().collectionId(), (long) total * dropMultiplier);
 			PlayerProfile profile = profiles.getPlayerProfileFromMap(player.getUniqueId());
 			if (profile != null) presenter.showAward(player,
 					progression.awardXp(profile, SkillType.FORAGING, tree.model().xp()));

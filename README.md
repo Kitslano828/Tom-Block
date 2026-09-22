@@ -39,7 +39,7 @@ One of my current goals is to become more independent in planning features and m
 - Authoritative managed-island block policies with persistent player-placement
   origins and reward-safe mining/foraging integration
 - Persistent collections with `/collections`, custom foraging axes, and
-  durability-based connected-tree harvesting
+  configurable milestone rewards and durability-based connected-tree harvesting
 - Registered renewable foraging trees with sequential breaking and regeneration
 - Region-aware minimap HUD and exported-world map items
 - JUnit and Mockito tests for selected systems
