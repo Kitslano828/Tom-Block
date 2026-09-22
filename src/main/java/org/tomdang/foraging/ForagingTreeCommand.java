@@ -6,20 +6,48 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.tomdang.foraging.audit.TreeAuditClassification;
+import org.tomdang.foraging.audit.TreeAuditVisualizationService;
 
 public final class ForagingTreeCommand implements CommandExecutor {
 	private final ForagingService service;
 	private final ForagingTreeRegistry registry;
 	private final TreeModelRegistry models;
-	public ForagingTreeCommand(ForagingService service, ForagingTreeRegistry registry, TreeModelRegistry models) {
+	private final TreeAuditVisualizationService auditVisualization;
+	public ForagingTreeCommand(ForagingService service, ForagingTreeRegistry registry, TreeModelRegistry models,
+			TreeAuditVisualizationService auditVisualization) {
 		this.service = service;
 		this.registry = registry;
 		this.models = models;
+		this.auditVisualization = auditVisualization;
 	}
 
 	@Override public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
 			@NotNull String label, @NotNull String[] args) {
 		if (!(sender instanceof Player player)) { sender.sendMessage("Players only."); return true; }
+		if (args.length >= 1 && args[0].equalsIgnoreCase("audit")) {
+			String mode = args.length == 1 ? "all" : args[1].toLowerCase();
+			switch (mode) {
+				case "on", "all" -> {
+					auditVisualization.showAll(player);
+					player.sendMessage("§aTree audit enabled: §2green §ais confident, §6orange §ais ambiguous.");
+				}
+				case "confident" -> {
+					auditVisualization.show(player, TreeAuditClassification.CONFIDENT_TREE);
+					player.sendMessage("§aShowing confident tree candidates in green.");
+				}
+				case "ambiguous" -> {
+					auditVisualization.show(player, TreeAuditClassification.AMBIGUOUS);
+					player.sendMessage("§6Showing ambiguous tree candidates in orange.");
+				}
+				case "off" -> {
+					auditVisualization.hide(player);
+					player.sendMessage("§7Tree audit visualization disabled.");
+				}
+				default -> player.sendMessage("§cUse /foragingtree audit <all|confident|ambiguous|off>.");
+			}
+			return true;
+		}
 		if (args.length >= 1 && args[0].equalsIgnoreCase("grove")) {
 			Location origin = player.getLocation().getBlock().getLocation().add(4, 0, 0);
 			int offset = 0;

@@ -88,6 +88,8 @@ import org.tomdang.foraging.TreeModelConfigurationLoader;
 import org.tomdang.foraging.TreeModelRegistry;
 import org.tomdang.foraging.ForagingToolConfigurationLoader;
 import org.tomdang.foraging.ForagingToolRegistry;
+import org.tomdang.foraging.audit.TreeAuditRegistry;
+import org.tomdang.foraging.audit.TreeAuditVisualizationService;
 import org.tomdang.island.PrivateIslandCommand;
 import org.tomdang.island.PrivateIslandWorldListener;
 import org.tomdang.island.PrivateIslandWorldService;
@@ -106,6 +108,7 @@ import org.tomdang.collection.CollectionService;
 import org.tomdang.collection.CollectionsCommand;
 
 import java.io.File;
+import java.io.IOException;
 
 public class TomBlock extends JavaPlugin {
 
@@ -206,7 +209,15 @@ public class TomBlock extends JavaPlugin {
 				this, foragingTrees, collectionService, playerProfileService, skillPresenter, foragingTreeStore,
 				customItemResolver, playerStatsService, foragingTools);
 		foragingTreeStore.load(treeModels).forEach(foragingService::registerExisting);
-		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees, treeModels));
+		TreeAuditVisualizationService treeAuditVisualization;
+		try {
+			treeAuditVisualization = new TreeAuditVisualizationService(this,
+					TreeAuditRegistry.load(getResource("foraging/southwest-tree-audit.csv")));
+		} catch (IOException exception) {
+			throw new IllegalStateException("Could not load the Southwest Island tree audit", exception);
+		}
+		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(
+				foragingService, foragingTrees, treeModels, treeAuditVisualization));
 		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
 		IslandContextService islandContexts = new IslandContextService(islandPresets);
 		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this, islandPresets, islandContexts);
