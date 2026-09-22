@@ -30,6 +30,10 @@ Runtime state is not content to casually replace:
 - `plugins/TomBlock/foraging-trees.yml` stores registered tree positions.
 - `plugins/TomBlock/region-overrides.yml` stores block-level region brush edits.
 - Private island world folders store the actual Minecraft blocks.
+- `src/main/resources/island-presets.yml` is the authoritative definition of each
+  island's classification, tags, lifecycle, generator, spawn, travel radius, and
+  interaction policies. `PRIVATE_STARTER` is generated per owner;
+  `SOUTHWEST_PUBLIC` describes the shared `world`.
 
 ## PostgreSQL player profiles
 

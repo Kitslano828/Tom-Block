@@ -88,6 +88,9 @@ import org.tomdang.foraging.TreeModel;
 import org.tomdang.island.PrivateIslandCommand;
 import org.tomdang.island.PrivateIslandWorldListener;
 import org.tomdang.island.PrivateIslandWorldService;
+import org.tomdang.island.preset.IslandPresetConfigurationLoader;
+import org.tomdang.island.preset.IslandPresetRegistry;
+import org.tomdang.island.runtime.IslandContextService;
 
 import java.io.File;
 
@@ -183,8 +186,11 @@ public class TomBlock extends JavaPlugin {
 		foragingTreeStore.load(TreeModel.modelOak()).forEach(foragingService::registerExisting);
 		getServer().getPluginManager().registerEvents(new ForagingListener(foragingService), this);
 		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees));
-		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this);
-		getServer().getPluginManager().registerEvents(new PrivateIslandWorldListener(this, privateIslandWorlds), this);
+		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
+		IslandContextService islandContexts = new IslandContextService(islandPresets);
+		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this, islandPresets, islandContexts);
+		getServer().getPluginManager().registerEvents(
+				new PrivateIslandWorldListener(this, privateIslandWorlds, islandContexts), this);
 		getCommand("island").setExecutor(new PrivateIslandCommand(
 				this, playerBootStrap.getPrivateIslandService(), privateIslandWorlds));
 		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);

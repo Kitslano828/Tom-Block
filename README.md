@@ -34,7 +34,8 @@ One of my current goals is to become more independent in planning features and m
 - Registered dialogue actions that can trigger gameplay behavior
 - PostgreSQL player profiles, skill progression, counters, and private-island ownership
 - Flyway-managed database migrations with one-time legacy YAML profile import
-- Persistent private islands with generated ocean presets and idle unloading
+- Version-controlled public/private island presets with classifications, gameplay tags,
+  access policies, travel limits, generated oceans, and lifecycle-driven unloading
 - Registered renewable foraging trees with sequential breaking and regeneration
 - Region-aware minimap HUD and exported-world map items
 - JUnit and Mockito tests for selected systems

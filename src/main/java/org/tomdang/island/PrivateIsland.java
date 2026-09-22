@@ -11,6 +11,6 @@ public record PrivateIsland(UUID islandId, UUID ownerId, String worldName, Strin
 
 	public static PrivateIsland starter(UUID ownerId) {
 		UUID id = UUID.randomUUID();
-		return new PrivateIsland(id, ownerId, "island_" + id.toString().replace("-", ""), "STARTER_V2");
+		return new PrivateIsland(id, ownerId, "island_" + id.toString().replace("-", ""), "PRIVATE_STARTER");
 	}
 }

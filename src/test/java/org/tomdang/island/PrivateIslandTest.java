@@ -13,7 +13,7 @@ class PrivateIslandTest {
 		UUID owner = UUID.randomUUID();
 		PrivateIsland island = PrivateIsland.starter(owner);
 		assertEquals(owner, island.ownerId());
-		assertEquals("STARTER_V2", island.presetKey());
+		assertEquals("PRIVATE_STARTER", island.presetKey());
 		assertTrue(island.worldName().matches("island_[a-f0-9]{32}"));
 	}
 

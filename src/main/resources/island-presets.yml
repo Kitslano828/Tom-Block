@@ -1,0 +1,41 @@
+island-presets:
+  PRIVATE_STARTER:
+    display-name: Stranded Homestead
+    primary-type: PRIVATE
+    tags: [BUILDING, FORAGING, FARMING, CRAFTING]
+    lifecycle:
+      mode: PERSISTENT_PRIVATE
+      unload-delay-seconds: 60
+    world:
+      generator: STRANDED_OCEAN
+      travel-radius: 192
+      spawn: {x: 0.5, y: 66.0, z: 0.5}
+    interactions:
+      placement: MEMBERS
+      player-placed-breaking: MEMBERS
+      terrain-breaking: MEMBERS
+      registered-resources: MEMBERS
+      explosions: false
+      pistons: false
+      fluid-modification: false
+
+  SOUTHWEST_PUBLIC:
+    display-name: Southwest Island
+    primary-type: ADVENTURE
+    tags: [FORAGING, COMBAT, QUESTING, SOCIAL]
+    lifecycle:
+      mode: PERSISTENT_PUBLIC
+      unload-delay-seconds: 0
+    world:
+      world-name: world
+      generator: IMPORTED_OCEAN
+      travel-radius: 4096
+      spawn: {x: 0.5, y: 66.0, z: 0.5}
+    interactions:
+      placement: DENY
+      player-placed-breaking: DENY
+      terrain-breaking: DENY
+      registered-resources: EVERYONE
+      explosions: false
+      pistons: false
+      fluid-modification: false
