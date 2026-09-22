@@ -45,6 +45,8 @@ public class MiningBootstrap {
 	private final MiningProgressService miningProgressService;
 	@Getter
 	private final MiningToolCreator miningToolCreator;
+	@Getter
+	private final MiningBlockRegistry miningBlockRegistry;
 
 	public MiningBootstrap(TomBlock instance, NamespacedKey customIDKey, MiningToolCreator miningToolCreator,
 						   CustomItemRegistry customItemRegistry, CustomItemStackFactory customItemStackFactory,
@@ -60,7 +62,7 @@ public class MiningBootstrap {
 		customAbilityRegistry.registerAbility(miningSpreadAbility);
 
 
-		MiningBlockRegistry miningBlockRegistry = new MiningBlockRegistry();
+		miningBlockRegistry = new MiningBlockRegistry();
 		MiningBlockConfigurationLoader miningBlockConfigurationLoader = new MiningBlockConfigurationLoader();
 		List<MiningBlockDefinition> miningBlockDefinitions;
 		try (InputStream miningBlockConfigurationStream = instance.getResource("mining/mining-blocks.yml")) {

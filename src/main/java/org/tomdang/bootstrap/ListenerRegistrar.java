@@ -54,12 +54,15 @@ import org.tomdang.playernpc.listener.PlayerNpcConnectionListener;
 import org.tomdang.playernpc.nms.NmsPlayerNpcInteractionInterceptor;
 import org.tomdang.region.edit.RegionBrushListener;
 import org.tomdang.player.movement.PlayerMovementSpeedListener;
+import org.bukkit.block.Block;
+import java.util.function.Predicate;
 
 public class ListenerRegistrar {
 
 	public ListenerRegistrar(TomBlock instance, PlayerProfileService playerProfileService,
 	                         PlayerProfileRepository playerProfileStorage, PlayerResourceService playerResourceService,
 	                         CustomAbilityService customAbilityService, MobRewardService mobRewardService, MiningService miningService, org.tomdang.mining.MiningProgressService miningProgressService,
+	                         Predicate<Block> miningRewardEligible,
 	                         CombatService combatService, CustomMobRespawnService customMobRespawnService, CraftingService craftingService,
 	                         PlayerAttackReadinessService playerAttackReadinessService,
 	                         PlayerAttackIndicatorService playerAttackIndicatorService,
@@ -89,7 +92,7 @@ public class ListenerRegistrar {
 				dialogueSessionService,
 				dialogueController
 		);
-		MiningListener miningListener = new MiningListener(miningService, miningProgressService);
+		MiningListener miningListener = new MiningListener(miningService, miningProgressService, miningRewardEligible);
 		MobHitListener mobHitListener = new MobHitListener(combatService);
 		PlayerRespawnListener playerRespawnListener = new PlayerRespawnListener(combatService);
 		PlayerAttackReadinessListener playerAttackReadinessListener =

@@ -36,6 +36,8 @@ One of my current goals is to become more independent in planning features and m
 - Flyway-managed database migrations with one-time legacy YAML profile import
 - Version-controlled public/private island presets with classifications, gameplay tags,
   access policies, travel limits, generated oceans, and lifecycle-driven unloading
+- Authoritative managed-island block policies with persistent player-placement
+  origins and reward-safe mining/foraging integration
 - Registered renewable foraging trees with sequential breaking and regeneration
 - Region-aware minimap HUD and exported-world map items
 - JUnit and Mockito tests for selected systems

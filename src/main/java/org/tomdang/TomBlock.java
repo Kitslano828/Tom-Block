@@ -91,6 +91,12 @@ import org.tomdang.island.PrivateIslandWorldService;
 import org.tomdang.island.preset.IslandPresetConfigurationLoader;
 import org.tomdang.island.preset.IslandPresetRegistry;
 import org.tomdang.island.runtime.IslandContextService;
+import org.tomdang.island.block.BlockOriginStore;
+import org.tomdang.island.block.InMemoryBlockOriginStore;
+import org.tomdang.island.block.IslandBlockInteractionListener;
+import org.tomdang.island.block.IslandBlockPolicyService;
+import org.tomdang.island.block.PostgresBlockOriginStore;
+import org.tomdang.island.block.RegisteredResourceRegistry;
 
 import java.io.File;
 
@@ -106,6 +112,7 @@ public class TomBlock extends JavaPlugin {
 	private RegionBrushVisualizationTask regionBrushVisualizationTask;
 	private PlayerMovementSpeedBootStrap playerMovementSpeedBootStrap;
 	private MapTestService mapTestService;
+	private BlockOriginStore blockOriginStore;
 
 
 	@Override
@@ -184,7 +191,6 @@ public class TomBlock extends JavaPlugin {
 				this, foragingTrees, playerBootStrap.getPlayerCounterService(), playerProfileService,
 				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService), foragingTreeStore);
 		foragingTreeStore.load(TreeModel.modelOak()).forEach(foragingService::registerExisting);
-		getServer().getPluginManager().registerEvents(new ForagingListener(foragingService), this);
 		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(foragingService, foragingTrees));
 		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
 		IslandContextService islandContexts = new IslandContextService(islandPresets);
@@ -193,6 +199,12 @@ public class TomBlock extends JavaPlugin {
 				new PrivateIslandWorldListener(this, privateIslandWorlds, islandContexts), this);
 		getCommand("island").setExecutor(new PrivateIslandCommand(
 				this, playerBootStrap.getPrivateIslandService(), privateIslandWorlds));
+		RegisteredResourceRegistry islandResources = new RegisteredResourceRegistry();
+		islandResources.register(block -> foragingTrees.atLog(block.getLocation()).isPresent());
+		blockOriginStore = playerBootStrap.getDataSource() == null ? new InMemoryBlockOriginStore()
+				: new PostgresBlockOriginStore(playerBootStrap.getDataSource(), getLogger()::severe);
+		getServer().getPluginManager().registerEvents(new ForagingListener(foragingService,
+				block -> !blockOriginStore.isPlayerPlaced(org.tomdang.island.block.ManagedBlockPosition.from(block))), this);
 		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
 		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
@@ -284,6 +296,9 @@ public class TomBlock extends JavaPlugin {
 				activeAbilityService,
 				customAbilityRegistry
 		);
+		islandResources.register(block -> miningBootstrap.getMiningBlockRegistry().blockInRegistry(block.getType()));
+		getServer().getPluginManager().registerEvents(new IslandBlockInteractionListener(
+				islandContexts, blockOriginStore, islandResources, new IslandBlockPolicyService()), this);
 		new ArmorConfigurationBootStrap(
 				this,
 				customArmorRegistry,
@@ -433,6 +448,7 @@ public class TomBlock extends JavaPlugin {
 				mobRewardService,
 				miningBootstrap.getMiningService(),
 				miningBootstrap.getMiningProgressService(),
+				block -> !blockOriginStore.isPlayerPlaced(org.tomdang.island.block.ManagedBlockPosition.from(block)),
 				combatBootStrap.getCombatService(),
 				mobBootStrap.getCustomMobRespawnService(),
 				craftingService,
@@ -497,6 +513,7 @@ public class TomBlock extends JavaPlugin {
 			actorBootStrap.shutDown();
 		}
 
+		if (blockOriginStore != null) blockOriginStore.close();
 		if (playerBootStrap != null) {
 			playerBootStrap.shutDown();
 		}

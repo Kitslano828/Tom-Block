@@ -41,6 +41,7 @@ import org.tomdang.customitemframework.stats.HeldItemStatCapModifierProvider;
 import org.tomdang.customarmorframework.stats.ArmorStatCapModifierProvider;
 
 import java.io.File;
+import javax.sql.DataSource;
 
 public class PlayerBootStrap {
 
@@ -143,6 +144,10 @@ public class PlayerBootStrap {
 	public void start() {
 		playerActionBarService.scheduleActionBarUpdate();
 		playerResourceRegenerationService.start();
+	}
+
+	public DataSource getDataSource() {
+		return postgresDatabase == null ? null : postgresDatabase.dataSource();
 	}
 
 	public void shutDown() {

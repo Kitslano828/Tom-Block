@@ -34,6 +34,13 @@ Runtime state is not content to casually replace:
   island's classification, tags, lifecycle, generator, spawn, travel radius, and
   interaction policies. `PRIVATE_STARTER` is generated per owner;
   `SOUTHWEST_PUBLIC` describes the shared `world`.
+- Managed-island block placement is recorded in PostgreSQL table
+  `tomblock.managed_block_origins`. The runtime keeps an in-memory index for
+  event-time decisions and serializes writes off the Paper thread. When
+  PostgreSQL is disabled, the same policy uses a non-persistent in-memory store.
+- Island interaction precedence is: player-placed origin, registered resource,
+  then ordinary terrain. This prevents placed ores/logs from receiving mining
+  or foraging rewards.
 
 ## PostgreSQL player profiles
 
