@@ -1,9 +1,5 @@
 package org.tomdang.mining;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -28,7 +24,6 @@ import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 
 import java.util.*;
@@ -42,7 +37,6 @@ public class MiningService implements AbilityMiningHandler {
 	private final SkillProgressPresenter skillPresenter;
 	private final MiningToolResolver miningToolResolver;
 	private final MiningRegenerationService miningRegenerationService;
-	private final PlayerActionBarService playerActionBarService;
 	private final PlayerStatsService playerStatsService;
 	private final ActiveAbilityService activeAbilityService;
 	private final CustomItemStackFactory customItemStackFactory;
@@ -50,7 +44,7 @@ public class MiningService implements AbilityMiningHandler {
 
 	public MiningService(PlayerProfileService playerProfileService, MiningBlockRegistry miningBlockRegistry,
 						 SkillProgressionService skillProgression, SkillProgressPresenter skillPresenter, MiningToolResolver miningToolResolver, MiningFortune miningFortune,
-						MiningRegenerationService miningRegenerationService, PlayerActionBarService playerActionBarService,
+						MiningRegenerationService miningRegenerationService,
 						 PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService, CustomItemStackFactory customItemStackFactory) {
 		this.playerProfileService = playerProfileService;
 		this.miningBlockRegistry = miningBlockRegistry;
@@ -59,7 +53,6 @@ public class MiningService implements AbilityMiningHandler {
 		this.miningToolResolver = miningToolResolver;
 		this.miningFortune = miningFortune;
 		this.miningRegenerationService = miningRegenerationService;
-		this.playerActionBarService = playerActionBarService;
 		this.playerStatsService = playerStatsService;
 		this.activeAbilityService = activeAbilityService;
 		this.customItemStackFactory = customItemStackFactory;
@@ -72,9 +65,6 @@ public class MiningService implements AbilityMiningHandler {
 			if (miningBlockRegistry.blockInRegistry(block)) {
 				MiningBlock miningBlock = miningBlockRegistry.getMiningBlock(block);
 				miningBlock(event, miningBlock, player);
-			} else {
-				Component text = Component.text("THIS IS NOT A VALID MINING BLOCK!").decoration(TextDecoration.BOLD, true).color(TextColor.color(Color.RED.asARGB()));
-				playerActionBarService.showTemporaryMessage(event.getPlayer(), text, 40);
 			}
 		} else {
 			System.out.println("Player Does Not Exist");

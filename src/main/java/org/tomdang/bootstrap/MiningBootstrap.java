@@ -117,7 +117,6 @@ public class MiningBootstrap {
 				miningToolResolver,
 				miningFortune,
 				miningRegenerationService,
-				playerActionBarService,
 				playerStatsService,
 				activeAbilityService,
 				customItemStackFactory
