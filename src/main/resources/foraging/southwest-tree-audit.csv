@@ -23,10 +23,6 @@ id,classification,min_x,min_y,min_z,max_x,max_y,max_z
 101,ambiguous,-1043,157,195,-1005,186,227
 266,ambiguous,-1025,170,208,-992,198,255
 41,ambiguous,-908,64,371,-888,82,402
-78,ambiguous,-850,81,693,-838,95,709
-206,ambiguous,-1015,157,240,-976,176,260
-270,ambiguous,-1046,62,418,-1034,71,428
-152,ambiguous,-1095,64,446,-1085,71,458
 29,confident_tree,-1044,65,523,-989,105,557
 12,confident_tree,-853,55,722,-823,99,763
 40,confident_tree,-1077,126,162,-1043,163,223
@@ -187,3 +183,4 @@ id,classification,min_x,min_y,min_z,max_x,max_y,max_z
 108,confident_tree,-936,75,125,-932,91,133
 452,confident_tree,-1022,125,190,-1018,141,198
 87,confident_tree,-1172,73,140,-1168,89,148
+206,landmark_tree,-1015,157,240,-976,176,260

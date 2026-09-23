@@ -19,6 +19,8 @@ public final class TreeAuditVisualizationService {
 			new Particle.DustOptions(Color.fromRGB(70, 230, 90), 1.15f);
 	private static final Particle.DustOptions AMBIGUOUS_STYLE =
 			new Particle.DustOptions(Color.fromRGB(255, 155, 35), 1.15f);
+	private static final Particle.DustOptions LANDMARK_STYLE =
+			new Particle.DustOptions(Color.fromRGB(190, 95, 255), 1.35f);
 
 	private final Plugin plugin;
 	private final TreeAuditRegistry registry;
@@ -57,8 +59,11 @@ public final class TreeAuditVisualizationService {
 	}
 
 	private int renderBox(Player player, TreeAuditComponent component, int budget) {
-		Particle.DustOptions style = component.classification() == TreeAuditClassification.CONFIDENT_TREE
-				? CONFIDENT_STYLE : AMBIGUOUS_STYLE;
+		Particle.DustOptions style = switch (component.classification()) {
+			case CONFIDENT_TREE -> CONFIDENT_STYLE;
+			case AMBIGUOUS -> AMBIGUOUS_STYLE;
+			case LANDMARK_TREE -> LANDMARK_STYLE;
+		};
 		int used = 0;
 		int step = 2;
 		for (int x = component.minimumX(); x <= component.maximumX() && used < budget; x += step) {

@@ -30,7 +30,7 @@ public final class ForagingTreeCommand implements CommandExecutor {
 			switch (mode) {
 				case "on", "all" -> {
 					auditVisualization.showAll(player);
-					player.sendMessage("§aTree audit enabled: §2green §ais confident, §6orange §ais ambiguous.");
+					player.sendMessage("§aTree audit enabled: §2green §ais confident, §6orange §ais ambiguous, §dmagenta §ais landmark.");
 				}
 				case "confident" -> {
 					auditVisualization.show(player, TreeAuditClassification.CONFIDENT_TREE);
@@ -40,11 +40,15 @@ public final class ForagingTreeCommand implements CommandExecutor {
 					auditVisualization.show(player, TreeAuditClassification.AMBIGUOUS);
 					player.sendMessage("§6Showing ambiguous tree candidates in orange.");
 				}
+				case "landmark" -> {
+					auditVisualization.show(player, TreeAuditClassification.LANDMARK_TREE);
+					player.sendMessage("§dShowing reserved landmark trees in magenta.");
+				}
 				case "off" -> {
 					auditVisualization.hide(player);
 					player.sendMessage("§7Tree audit visualization disabled.");
 				}
-				default -> player.sendMessage("§cUse /foragingtree audit <all|confident|ambiguous|off>.");
+				default -> player.sendMessage("§cUse /foragingtree audit <all|confident|ambiguous|landmark|off>.");
 			}
 			return true;
 		}
