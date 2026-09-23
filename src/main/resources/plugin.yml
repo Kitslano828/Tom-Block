@@ -85,7 +85,7 @@ commands:
     permission: tomblock.admin.region.inspect
   foragingtree:
     description: Manages test trees and the Southwest Island tree-audit overlay
-    usage: /foragingtree <spawn|register|grove|audit|encounter>
+    usage: /foragingtree <spawn|register|grove|audit>
     permission: tomblock.admin.foraging
   island:
     description: Creates or travels to your private island

@@ -90,9 +90,6 @@ import org.tomdang.foraging.ForagingToolConfigurationLoader;
 import org.tomdang.foraging.ForagingToolRegistry;
 import org.tomdang.foraging.audit.TreeAuditRegistry;
 import org.tomdang.foraging.audit.TreeAuditVisualizationService;
-import org.tomdang.foraging.encounter.ForagingEncounterConfigurationLoader;
-import org.tomdang.foraging.encounter.ForagingEncounterListener;
-import org.tomdang.foraging.encounter.ForagingEncounterService;
 import org.tomdang.island.PrivateIslandCommand;
 import org.tomdang.island.PrivateIslandWorldListener;
 import org.tomdang.island.PrivateIslandWorldService;
@@ -219,12 +216,8 @@ public class TomBlock extends JavaPlugin {
 		} catch (IOException exception) {
 			throw new IllegalStateException("Could not load the Southwest Island tree audit", exception);
 		}
-		var foragingEncounters = new ForagingEncounterConfigurationLoader().load(getResource("foraging/encounters.yml"));
-		ForagingEncounterService foragingEncounterService = new ForagingEncounterService(this, foragingEncounters,
-				collectionService, playerProfileService, skillPresenter, customItemResolver, playerStatsService, foragingTools);
-		getServer().getPluginManager().registerEvents(new ForagingEncounterListener(foragingEncounterService), this);
 		getCommand("foragingtree").setExecutor(new ForagingTreeCommand(
-				foragingService, foragingTrees, treeModels, treeAuditVisualization, foragingEncounterService));
+				foragingService, foragingTrees, treeModels, treeAuditVisualization));
 		IslandPresetRegistry islandPresets = new IslandPresetConfigurationLoader().load(getResource("island-presets.yml"));
 		IslandContextService islandContexts = new IslandContextService(islandPresets);
 		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this, islandPresets, islandContexts);
@@ -234,7 +227,6 @@ public class TomBlock extends JavaPlugin {
 				this, playerBootStrap.getPrivateIslandService(), privateIslandWorlds));
 		RegisteredResourceRegistry islandResources = new RegisteredResourceRegistry();
 		islandResources.register(block -> foragingTrees.atLog(block.getLocation()).isPresent());
-		islandResources.register(block -> foragingEncounters.at(block).isPresent());
 		blockOriginStore = playerBootStrap.getDataSource() == null ? new InMemoryBlockOriginStore()
 				: new PostgresBlockOriginStore(playerBootStrap.getDataSource(), getLogger()::severe);
 		getServer().getPluginManager().registerEvents(new ForagingListener(foragingService,

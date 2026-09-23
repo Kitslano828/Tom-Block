@@ -14,7 +14,10 @@ class IslandPresetConfigurationLoaderTest {
 		assertEquals(IslandAccessPolicy.MEMBERS, privateStarter.interactions().placement());
 		IslandPreset southwest = registry.require("SOUTHWEST_PUBLIC");
 		assertEquals("world", southwest.worldName());
+		assertEquals(IslandClassification.COMBAT, southwest.primaryType());
 		assertTrue(southwest.tags().contains(IslandTag.COMBAT));
+		assertTrue(southwest.tags().contains(IslandTag.HUNTING));
+		assertFalse(southwest.tags().contains(IslandTag.FORAGING));
 	}
 
 	@Test void rejectsUnknownEnumValues() {

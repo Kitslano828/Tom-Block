@@ -21,8 +21,8 @@ island-presets:
 
   SOUTHWEST_PUBLIC:
     display-name: Southwest Island
-    primary-type: ADVENTURE
-    tags: [FORAGING, COMBAT, QUESTING, SOCIAL]
+    primary-type: COMBAT
+    tags: [COMBAT, HUNTING, QUESTING, SOCIAL]
     lifecycle:
       mode: PERSISTENT_PUBLIC
       unload-delay-seconds: 0
