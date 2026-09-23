@@ -92,6 +92,8 @@ class PlayerStatRuleConfigurationLoaderTest {
 				    cap: null
 				  FORAGING_FORTUNE:
 				    cap: null
+				  CHOPPING_POWER:
+				    cap: null
 				  FORAGING_POWER:
 				    cap: null
 				  FORAGING_SPEED:

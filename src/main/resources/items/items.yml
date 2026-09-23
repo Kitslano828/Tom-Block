@@ -5,8 +5,7 @@ items:
     rarity: COMMON
     category: FORAGING_TOOL
     stats:
-      foraging-power: 20.0
-      foraging-speed: 0.0
+      chopping-power: 20.0
 
   FORESTER_AXE:
     material: IRON_AXE
@@ -14,8 +13,7 @@ items:
     rarity: UNCOMMON
     category: FORAGING_TOOL
     stats:
-      foraging-power: 35.0
-      foraging-speed: 20.0
+      chopping-power: 55.0
       foraging-fortune: 25.0
 
   JELLYFISH_NET:

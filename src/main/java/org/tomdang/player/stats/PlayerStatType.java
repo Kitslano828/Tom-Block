@@ -20,6 +20,8 @@ public enum PlayerStatType {
 
 	// Foraging Stats
 	FORAGING_FORTUNE("foraging-fortune", "Foraging Fortune", PlayerStatCategory.FORAGING, 0.0, 0.0),
+	CHOPPING_POWER("chopping-power", "Chopping Power", PlayerStatCategory.FORAGING, 0.0, 0.0),
+	// Retained for compatibility with existing stored profiles; new content uses Chopping Power.
 	FORAGING_POWER("foraging-power", "Foraging Power", PlayerStatCategory.FORAGING, 0.0, 0.0),
 	FORAGING_SPEED("foraging-speed", "Foraging Speed", PlayerStatCategory.FORAGING, 0.0, 0.0),
 

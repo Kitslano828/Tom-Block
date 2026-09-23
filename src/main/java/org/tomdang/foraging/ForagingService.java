@@ -75,14 +75,13 @@ public final class ForagingService {
 			player.sendActionBar(Component.text("Requires Foraging level " + toolDefinition.requiredForagingLevel() + ".", NamedTextColor.RED));
 			return true;
 		}
-		double power = stats.getTotalStat(player, PlayerStatType.FORAGING_POWER);
+		double power = stats.getTotalStat(player, PlayerStatType.CHOPPING_POWER);
 		if (power < tree.model().requiredPower()) {
-			player.sendActionBar(Component.text("Requires " + format(tree.model().requiredPower()) + " Foraging Power.", NamedTextColor.RED));
+			player.sendActionBar(Component.text("Requires " + format(tree.model().requiredPower()) + " Chopping Power.", NamedTextColor.RED));
 			return true;
 		}
 		if (harvesting.contains(tree.id())) return true;
-		double speed = stats.getTotalStat(player, PlayerStatType.FORAGING_SPEED);
-		double dealt = Math.max(1.0, power * (1.0 + speed / 100.0));
+		double dealt = Math.max(1.0, power);
 		double accumulated = Math.min(tree.model().durability(), damage.merge(tree.id(), dealt, Double::sum));
 		float progress = (float) (accumulated / tree.model().durability());
 		for (Player viewer : struckBlock.getWorld().getPlayers()) viewer.sendBlockDamage(struckBlock.getLocation(), progress);

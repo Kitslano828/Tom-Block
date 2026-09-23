@@ -47,6 +47,11 @@ class PlayerStatTypeTest {
 	}
 
 	@Test
+	void choppingPowerDefinitionMatchesForagingBehavior() {
+		assertDefinition(PlayerStatType.CHOPPING_POWER, "chopping-power", "Chopping Power", PlayerStatCategory.FORAGING, 0, 0);
+	}
+
+	@Test
 	void abilityHasteDefinitionMatchesCooldownBehavior() {
 		assertDefinition(PlayerStatType.ABILITY_HASTE, "ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0, 0);
 	}

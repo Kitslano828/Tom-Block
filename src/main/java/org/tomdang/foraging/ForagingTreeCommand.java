@@ -8,23 +8,41 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.tomdang.foraging.audit.TreeAuditClassification;
 import org.tomdang.foraging.audit.TreeAuditVisualizationService;
+import org.tomdang.foraging.encounter.ForagingEncounterService;
 
 public final class ForagingTreeCommand implements CommandExecutor {
 	private final ForagingService service;
 	private final ForagingTreeRegistry registry;
 	private final TreeModelRegistry models;
 	private final TreeAuditVisualizationService auditVisualization;
+	private final ForagingEncounterService encounters;
 	public ForagingTreeCommand(ForagingService service, ForagingTreeRegistry registry, TreeModelRegistry models,
-			TreeAuditVisualizationService auditVisualization) {
+			TreeAuditVisualizationService auditVisualization, ForagingEncounterService encounters) {
 		this.service = service;
 		this.registry = registry;
 		this.models = models;
 		this.auditVisualization = auditVisualization;
+		this.encounters = encounters;
 	}
 
 	@Override public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
 			@NotNull String label, @NotNull String[] args) {
 		if (!(sender instanceof Player player)) { sender.sendMessage("Players only."); return true; }
+		if (args.length >= 1 && args[0].equalsIgnoreCase("encounter")) {
+			if (args.length >= 2 && args[1].equalsIgnoreCase("review")) {
+				player.sendMessage(encounters.toggleReview(player)
+						? "§dEncounter node review enabled. Every proposed node is outlined in magenta."
+						: "§7Encounter node review disabled.");
+				return true;
+			}
+			if (args.length >= 2 && args[1].equalsIgnoreCase("start")) {
+				try { encounters.start(player, args.length >= 3 ? args[2] : "CENTRAL_GIANT"); }
+				catch (IllegalArgumentException exception) { player.sendMessage("§c" + exception.getMessage()); }
+				return true;
+			}
+			player.sendMessage("§cUse /foragingtree encounter <start [id]|review>.");
+			return true;
+		}
 		if (args.length >= 1 && args[0].equalsIgnoreCase("audit")) {
 			String mode = args.length == 1 ? "all" : args[1].toLowerCase();
 			switch (mode) {

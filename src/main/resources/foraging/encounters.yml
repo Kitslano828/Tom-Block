@@ -1,0 +1,19 @@
+encounters:
+  CENTRAL_GIANT:
+    display-name: "Central Giant Tree"
+    world: world
+    toughness: 20
+    cooldown-seconds: 120
+    xp: 500
+    collection: OAK_LOG
+    nodes:
+      - {x: -991, y: 117, z: 294}
+      - {x: -991, y: 124, z: 207}
+      - {x: -966, y: 130, z: 274}
+      - {x: -999, y: 131, z: 253}
+      - {x: -1039, y: 148, z: 254}
+      - {x: -962, y: 156, z: 252}
+      - {x: -1012, y: 158, z: 222}
+      - {x: -1002, y: 189, z: 276}
+      - {x: -1038, y: 189, z: 249}
+      - {x: -997, y: 198, z: 221}

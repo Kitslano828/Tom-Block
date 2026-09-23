@@ -48,19 +48,26 @@ stat-presentations:
     material: GOLDEN_AXE
     visible: true
 
+  CHOPPING_POWER:
+    symbol: "🪓"
+    color: "#FFAA00"
+    description: "Determines tree access and how many consecutive harvest nodes each swing completes after toughness."
+    material: NETHERITE_AXE
+    visible: true
+
   FORAGING_POWER:
     symbol: "🪓"
     color: "#55AA55"
     description: "Determines which trees you can chop and damage dealt per swing."
     material: IRON_AXE
-    visible: true
+    visible: false
 
   FORAGING_SPEED:
     symbol: "⚡"
     color: "#AAFF55"
     description: "Increases damage dealt to tree durability."
     material: DIAMOND_AXE
-    visible: true
+    visible: false
 
   JELLYFISH_POWER:
     symbol: "ଳ"
