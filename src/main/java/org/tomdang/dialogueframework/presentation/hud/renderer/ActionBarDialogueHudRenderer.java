@@ -10,6 +10,7 @@ import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutCo
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.util.List;
 
@@ -17,13 +18,19 @@ public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
 
 	private final DialogueVisibleLineService dialogueVisibleLineService;
 	private final DialogueHudLayoutComposer dialogueHudLayoutComposer;
+	private final PlayerActionBarService actionBarService;
+	private static final String DIALOGUE_LAYER = "dialogue";
 
-	public ActionBarDialogueHudRenderer(DialogueVisibleLineService dialogueVisibleLineService, DialogueHudLayoutComposer dialogueHudLayoutComposer) {
+	public ActionBarDialogueHudRenderer(DialogueVisibleLineService dialogueVisibleLineService,
+	                                  DialogueHudLayoutComposer dialogueHudLayoutComposer,
+	                                  PlayerActionBarService actionBarService) {
 		if (dialogueVisibleLineService == null) throw new IllegalArgumentException("dialogueVisibleLineService cannot be null");
 		if (dialogueHudLayoutComposer == null) throw new IllegalArgumentException("dialogueHudLayoutComposer cannot be null");
+		if (actionBarService == null) throw new IllegalArgumentException("actionBarService cannot be null");
 
 		this.dialogueVisibleLineService = dialogueVisibleLineService;
 		this.dialogueHudLayoutComposer = dialogueHudLayoutComposer;
+		this.actionBarService = actionBarService;
 	}
 
 	@Override
@@ -41,15 +48,16 @@ public class ActionBarDialogueHudRenderer implements DialogueHudRenderer {
 
 
 
-		player.sendActionBar(dialogueHudLayoutComposer.compose(hudSkin, visibleLines, definition.speakerName(), dialogueHudIndicatorState));
+		actionBarService.setOverlay(player, DIALOGUE_LAYER,
+				dialogueHudLayoutComposer.compose(hudSkin, visibleLines, definition.speakerName(), dialogueHudIndicatorState),
+				hudSkin.getBackgroundGlyph().getPixelWidth());
 
 	}
 
 	@Override
 	public void clear(Player player) {
 		if (player == null) throw new IllegalArgumentException("player cannot be null");
-		Component text = Component.empty();
-		player.sendActionBar(text);
+		actionBarService.clearOverlay(player, DIALOGUE_LAYER);
 
 	}
 }

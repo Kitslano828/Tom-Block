@@ -11,6 +11,8 @@ import org.tomdang.dialogueframework.presentation.hud.indicator.DialogueHudIndic
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePage;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkin;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
+import org.tomdang.hud.glyph.HudGlyph;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ class ActionBarDialogueHudRendererTest {
 
 	private DialogueVisibleLineService visibleLineService;
 	private DialogueHudLayoutComposer layoutComposer;
+	private PlayerActionBarService actionBarService;
 	private ActionBarDialogueHudRenderer renderer;
 	private Player player;
 	private DialogueHudSkin skin;
@@ -34,9 +37,13 @@ class ActionBarDialogueHudRendererTest {
 	void setUp() {
 		visibleLineService = mock(DialogueVisibleLineService.class);
 		layoutComposer = mock(DialogueHudLayoutComposer.class);
-		renderer = new ActionBarDialogueHudRenderer(visibleLineService, layoutComposer);
+		actionBarService = mock(PlayerActionBarService.class);
+		renderer = new ActionBarDialogueHudRenderer(visibleLineService, layoutComposer, actionBarService);
 		player = mock(Player.class);
 		skin = mock(DialogueHudSkin.class);
+		HudGlyph background = mock(HudGlyph.class);
+		when(background.getPixelWidth()).thenReturn(256);
+		when(skin.getBackgroundGlyph()).thenReturn(background);
 		node = mock(DialogueNode.class);
 		page = mock(DialoguePage.class);
 		theme = new DialogueThemeDefinition("BLACKSMITH_THEME", "Blacksmith", "BLACKSMITH_BOX");
@@ -44,12 +51,13 @@ class ActionBarDialogueHudRendererTest {
 
 	@Test
 	void nullVisibleLineServiceIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(null, layoutComposer));
+		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(null, layoutComposer, actionBarService));
 	}
 
 	@Test
 	void nullLayoutComposerIsRejected() {
-		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(visibleLineService, null));
+		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(visibleLineService, null, actionBarService));
+		assertThrows(IllegalArgumentException.class, () -> new ActionBarDialogueHudRenderer(visibleLineService, layoutComposer, null));
 	}
 
 	@Test
@@ -82,13 +90,13 @@ class ActionBarDialogueHudRendererTest {
 
 		verify(visibleLineService).prepare(page, completeText, revealedCharacterCount);
 		verify(layoutComposer).compose(skin, visibleLines, "Blacksmith", DialogueHudIndicatorState.CONTINUE);
-		verify(player).sendActionBar(composedHud);
+		verify(actionBarService).setOverlay(player, "dialogue", composedHud, 256);
 	}
 
 	@Test
-	void clearSendsAnEmptyActionBar() {
+	void clearRemovesOnlyTheDialogueLayer() {
 		renderer.clear(player);
-		verify(player).sendActionBar(Component.empty());
+		verify(actionBarService).clearOverlay(player, "dialogue");
 	}
 
 	@Test

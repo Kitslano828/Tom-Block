@@ -45,9 +45,9 @@ import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
+import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.mining.miningtool.MiningToolCreator;
 import org.tomdang.player.PlayerProfileService;
-import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.playerresource.PlayerResourceService;
@@ -106,6 +106,10 @@ import org.tomdang.collection.CollectionConfigurationLoader;
 import org.tomdang.collection.CollectionMenuListener;
 import org.tomdang.collection.CollectionService;
 import org.tomdang.collection.CollectionsCommand;
+import org.tomdang.quest.bukkit.QuestCommand;
+import org.tomdang.quest.bukkit.QuestGateListener;
+import org.tomdang.quest.bukkit.QuestPlayerConnectionListener;
+import org.tomdang.quest.integration.QuestActorInteraction;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,6 +127,7 @@ public class TomBlock extends JavaPlugin {
 	private PlayerMovementSpeedBootStrap playerMovementSpeedBootStrap;
 	private MapTestService mapTestService;
 	private BlockOriginStore blockOriginStore;
+	private QuestBootStrap questBootStrap;
 
 
 	@Override
@@ -189,6 +194,8 @@ public class TomBlock extends JavaPlugin {
 				customItemResolver,
 				playerStatRuleBootStrap.getRegistry()
 		);
+		questBootStrap = new QuestBootStrap(this, playerBootStrap.getDataSource());
+		getCommand("quest").setExecutor(new QuestCommand(questBootStrap.progressService()));
 
 		PlayerProfileService playerProfileService = playerBootStrap.getPlayerProfileService();
 		PlayerProfileRepository playerProfileStorage = playerBootStrap.getPlayerProfileStorage();
@@ -207,7 +214,7 @@ public class TomBlock extends JavaPlugin {
 		ForagingToolRegistry foragingTools = new ForagingToolConfigurationLoader().load(getResource("foraging/tools.yml"));
 		ForagingService foragingService = new ForagingService(
 				this, foragingTrees, collectionService, playerProfileService, skillPresenter, foragingTreeStore,
-				customItemResolver, playerStatsService, foragingTools);
+				customItemResolver, playerStatsService, foragingTools, playerActionBarService);
 		foragingTreeStore.load(treeModels).forEach(foragingService::registerExisting);
 		TreeAuditVisualizationService treeAuditVisualization;
 		try {
@@ -222,7 +229,7 @@ public class TomBlock extends JavaPlugin {
 		IslandContextService islandContexts = new IslandContextService(islandPresets);
 		PrivateIslandWorldService privateIslandWorlds = new PrivateIslandWorldService(this, islandPresets, islandContexts);
 		getServer().getPluginManager().registerEvents(
-				new PrivateIslandWorldListener(this, privateIslandWorlds, islandContexts), this);
+				new PrivateIslandWorldListener(this, privateIslandWorlds, islandContexts, playerActionBarService), this);
 		getCommand("island").setExecutor(new PrivateIslandCommand(
 				this, playerBootStrap.getPrivateIslandService(), privateIslandWorlds));
 		RegisteredResourceRegistry islandResources = new RegisteredResourceRegistry();
@@ -233,7 +240,6 @@ public class TomBlock extends JavaPlugin {
 				block -> !blockOriginStore.isPlayerPlaced(org.tomdang.island.block.ManagedBlockPosition.from(block))), this);
 		playerMovementSpeedBootStrap = new PlayerMovementSpeedBootStrap(this, playerStatsService);
 		CustomArmorService customArmorService = playerBootStrap.getCustomArmorService();
-		ActionBarSuppressionService actionBarSuppressionService = playerBootStrap.getActionBarSuppressionService();
 		ItemRefreshBootStrap itemRefreshBootStrap = new ItemRefreshBootStrap(
 				customItemResolver,
 				customItemStackFactory,
@@ -278,8 +284,7 @@ public class TomBlock extends JavaPlugin {
 		ActorSpawnPointRegistry actorSpawnPointRegistry = actorBootStrap.getActorSpawnPointRegistry();
 		ActorRegistry actorRegistry = actorBootStrap.getActorRegistry();
 		ActorInteractionRegistry actorInteractionRegistry = actorBootStrap.getActorInteractionRegistry();
-
-		DialogueBootStrap dialogueBootStrap = new DialogueBootStrap(this, actionBarSuppressionService);
+		DialogueBootStrap dialogueBootStrap = new DialogueBootStrap(this, playerActionBarService);
 		DialogueSessionService dialogueSessionService = dialogueBootStrap.getDialogueSessionService();
 		DialogueAdvanceService dialogueAdvanceService = dialogueBootStrap.getDialogueAdvanceService();
 		DialogueController dialogueController = dialogueBootStrap.getDialogueController();
@@ -297,6 +302,24 @@ public class TomBlock extends JavaPlugin {
 				dialogueBootStrap.getDialogueChoiceActionRegistry()
 		);
 		blacksmithContent.register();
+		DialogueThemeDefinition willTheme = new DialogueThemeDefinition(
+				"CRITTER_HUNTER_WILL_THEME", "Will", "BLACKSMITH_BOX");
+		dialogueThemeRegistry.registerTheme(willTheme);
+		dialogueThemeRegistry.bindSource("CRITTER_HUNTER_WILL", willTheme.themeID());
+		actorInteractionRegistry.registerInteraction(
+				"CRITTER_HUNTER_WILL_QUEST",
+				new org.tomdang.actorframework.interaction.LookAtPlayerInteraction(
+						actorBootStrap.getActorLookService(),
+						new QuestActorInteraction(
+								questBootStrap.progressService(),
+								"CRITTER_HUNTER_WILL",
+								"CRITTER_HUNTER_WILL_INTRO",
+								dialogueController,
+								dialogueSessionService,
+								dialogueAdvanceService
+						)
+				)
+		);
 
 		combatBootStrap = new CombatBootStrap(
 				this,
@@ -324,7 +347,7 @@ public class TomBlock extends JavaPlugin {
 		);
 		islandResources.register(block -> miningBootstrap.getMiningBlockRegistry().blockInRegistry(block.getType()));
 		getServer().getPluginManager().registerEvents(new IslandBlockInteractionListener(
-				islandContexts, blockOriginStore, islandResources, new IslandBlockPolicyService()), this);
+				islandContexts, blockOriginStore, islandResources, new IslandBlockPolicyService(), playerActionBarService), this);
 		new ArmorConfigurationBootStrap(
 				this,
 				customArmorRegistry,
@@ -501,6 +524,10 @@ public class TomBlock extends JavaPlugin {
 				regionBrushListener,
 				playerMovementSpeedBootStrap.getListener()
 				);
+		getServer().getPluginManager().registerEvents(
+				new QuestPlayerConnectionListener(questBootStrap.progressService(), getLogger()), this);
+		getServer().getPluginManager().registerEvents(
+				new QuestGateListener(questBootStrap.progressService(), dialogueController, dialogueSessionService), this);
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			regionTracking.update(player.getUniqueId(), regionPositions.fromLocation(player.getLocation()));
 		}

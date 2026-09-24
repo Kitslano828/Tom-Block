@@ -119,12 +119,85 @@ val generateVillageMapHudAssets by tasks.registering(Exec::class) {
     )
 }
 
+val generateMonocraftHudAssets by tasks.registering(Exec::class) {
+    group = "build"
+    description = "Generates vanilla-font dialogue positioning and HUD assets."
+    val java25 = javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+    commandLine(
+        java25.get().executablePath.asFile.absolutePath,
+        "scripts/GenerateMonocraftHudAssets.java",
+        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
+        "resource-pack/assets/tomblock/textures/font"
+    )
+    inputs.files(
+        "scripts/GenerateMonocraftHudAssets.java",
+        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
+        "resource-pack/assets/tomblock/textures/font/status_health_cell.png",
+        "resource-pack/assets/tomblock/textures/font/status_energy_cell.png"
+    )
+    outputs.files(
+        "resource-pack/assets/tomblock/textures/font/dialogue_ascii.png",
+        "resource-pack/assets/tomblock/textures/font/dialogue_lines_ascii.png",
+        "resource-pack/assets/tomblock/textures/font/dialogue_speaker_ascii.png",
+        "resource-pack/assets/tomblock/textures/font/status_health_cell_empty.png",
+        "resource-pack/assets/tomblock/textures/font/status_energy_cell_empty.png"
+    )
+    outputs.dirs(
+        "resource-pack/assets/minecraft/textures/gui/sprites/hud/heart"
+    )
+}
+
+val validateResourcePackFonts by tasks.registering {
+    group = "verification"
+    description = "Rejects malformed HUD font atlases before a resource pack can be packaged."
+    dependsOn(generateMonocraftHudAssets)
+
+    doLast {
+        val specifications = mapOf(
+            "dialogue_line_1.json" to "dialogue_lines_ascii.png",
+            "dialogue_line_2.json" to "dialogue_lines_ascii.png",
+            "dialogue_line_3.json" to "dialogue_lines_ascii.png",
+            "dialogue_speaker.json" to "dialogue_speaker_ascii.png",
+            "dialogue_indicator.json" to "dialogue_speaker_ascii.png",
+            "status_text.json" to "vanilla_ascii.png"
+        )
+        val fontDirectory = file("resource-pack/assets/tomblock/font")
+        val textureDirectory = file("resource-pack/assets/tomblock/textures/font")
+        val stringPattern = Regex("\\\"(?:\\\\.|[^\\\"\\\\])*\\\"")
+
+        specifications.forEach { (fontName, textureName) ->
+            val definition = fontDirectory.resolve(fontName).readText()
+            val charsStart = definition.indexOf("\"chars\":[")
+            val charsEnd = definition.indexOf("]},{\"type\"", startIndex = charsStart + 9)
+            if (charsStart < 0 || charsEnd < 0) throw GradleException("$fontName has no readable chars array")
+            val chars = definition.substring(charsStart + 9, charsEnd)
+            val rows = stringPattern.findAll(chars).count()
+            if (rows != 16) {
+                throw GradleException("$fontName defines $rows rows; its atlas requires exactly 16")
+            }
+            if (!definition.contains("\"id\":\"minecraft:default\"")) {
+                throw GradleException("$fontName must use the complete minecraft:default fallback")
+            }
+            val image = javax.imageio.ImageIO.read(textureDirectory.resolve(textureName))
+                ?: throw GradleException("Cannot read $textureName")
+            if (image.height % rows != 0 || image.width % 16 != 0) {
+                throw GradleException("$textureName dimensions ${image.width}x${image.height} do not match a 16x$rows atlas")
+            }
+        }
+        if (file("resource-pack/assets/minecraft/font/default.json").exists()) {
+            throw GradleException("TomBlock must not globally replace Minecraft's default font")
+        }
+    }
+}
+
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    dependsOn(generateVillageMapHudAssets)
+    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, validateResourcePackFonts)
     from(layout.projectDirectory.dir("resource-pack")) {
-        include("pack.mcmeta", "assets/**")
+        include("pack.mcmeta", "assets/**", "licenses/**")
     }
     archiveFileName.set(resourcePackArchiveName)
     destinationDirectory.set(layout.buildDirectory.dir("resource-pack"))
@@ -133,9 +206,9 @@ val packageResourcePack by tasks.registering(Zip::class) {
 val packageMapHudExperiment by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages an opt-in 26.2 map HUD pack that filters dark GUI rectangles."
-    dependsOn(generateVillageMapHudAssets)
+    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets)
     from(layout.projectDirectory.dir("resource-pack")) {
-        include("pack.mcmeta", "assets/**")
+        include("pack.mcmeta", "assets/**", "licenses/**")
     }
     from(layout.projectDirectory.dir("resource-pack-experiments/transparent-map-sidebar")) {
         include("assets/**")
@@ -147,7 +220,7 @@ val packageMapHudExperiment by tasks.registering(Zip::class) {
 val prepareLocalServer by tasks.registering {
     group = "development"
     description = "Builds TomBlock and prepares the Windows Paper server plugin and required resource pack."
-    dependsOn(tasks.named("build"), packageResourcePack, packageMapHudExperiment)
+    dependsOn(tasks.named("build"), islandEdgeJar, packageResourcePack, packageMapHudExperiment)
 
     doLast {
         val serverProperties = localServerDirectory.resolve("server.properties")
@@ -170,6 +243,7 @@ val prepareLocalServer by tasks.registering {
         }
 
         val jar = tasks.jar.get().archiveFile.get().asFile
+        val islandEdge = islandEdgeJar.get().archiveFile.get().asFile
         val worldMap = file("src/main/resources/maps/world.png")
         val useMapHudExperiment = providers.gradleProperty("tomblockMapHudExperiment")
             .orNull?.toBoolean() == true
@@ -180,6 +254,7 @@ val prepareLocalServer by tasks.registering {
         serverPackDirectory.mkdirs()
         serverMapDirectory.mkdirs()
         jar.copyTo(pluginsDirectory.resolve("TomBlock.jar"), overwrite = true)
+        islandEdge.copyTo(pluginsDirectory.resolve("TomBlock-Island-Edge.jar"), overwrite = true)
         worldMap.copyTo(serverMapDirectory.resolve("world.png"), overwrite = true)
         pack.copyTo(serverPackDirectory.resolve(resourcePackArchiveName), overwrite = true)
 
@@ -220,7 +295,7 @@ val prepareLocalServer by tasks.registering {
         } finally {
             Files.deleteIfExists(temporaryProperties)
         }
-        logger.lifecycle("Prepared local TomBlock.jar and ${if (useMapHudExperiment) "experimental map HUD" else "normal"} resource pack (SHA-1 $hash)")
+        logger.lifecycle("Prepared local TomBlock.jar, TomBlock-Island-Edge.jar, and ${if (useMapHudExperiment) "experimental map HUD" else "normal"} resource pack (SHA-1 $hash)")
     }
 }
 

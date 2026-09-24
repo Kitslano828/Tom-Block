@@ -9,5 +9,10 @@ public interface ActionBarProvider {
 
 	Component render(PlayerActionBarContext context);
 
+	/** Horizontal advance of the rendered component. Zero means it already restores its cursor. */
+	default int getPixelWidth(PlayerActionBarContext context) {
+		return 0;
+	}
+
 	int getPriority();
 }

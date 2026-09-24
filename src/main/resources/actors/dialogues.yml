@@ -1,4 +1,10 @@
 dialogues:
+  CRITTER_HUNTER_WILL_INTRO:
+    starting-node: WARNING
+    nodes:
+      WARNING:
+        text: "Easy there. I'm tracking a Glimmerfly just ahead. Stay close, and watch how it moves before you approach it."
+
   BLACKSMITH_TEST_DIALOGUE:
     starting-node: GREETING
     nodes:

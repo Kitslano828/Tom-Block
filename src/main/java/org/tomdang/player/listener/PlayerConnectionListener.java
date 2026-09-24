@@ -66,6 +66,9 @@ public class PlayerConnectionListener implements Listener {
 		}
 		PlayerProfile player = prepared.profile();
 		playerProfileService.addPlayerToMap(player);
+		event.getPlayer().setHealth(event.getPlayer().getMaxHealth());
+		event.getPlayer().setFoodLevel(20);
+		event.getPlayer().setSaturation(20.0f);
 		event.setJoinMessage("§a" + event.getPlayer().getName()
 				+ (prepared.firstJoin() ? " joined for the first time" : " returned!"));
 		playerResourceService.restoreHealthToMaximum(event.getPlayer());

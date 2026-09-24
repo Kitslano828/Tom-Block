@@ -11,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.tomdang.island.runtime.IslandContextService;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +21,14 @@ public final class PrivateIslandWorldListener implements Listener {
 	private final Plugin plugin;
 	private final PrivateIslandWorldService worlds;
 	private final IslandContextService contexts;
+	private final PlayerActionBarService actionBar;
 	private final Map<UUID, Long> lastWarning = new HashMap<>();
-	public PrivateIslandWorldListener(Plugin plugin, PrivateIslandWorldService worlds, IslandContextService contexts) {
+	public PrivateIslandWorldListener(Plugin plugin, PrivateIslandWorldService worlds, IslandContextService contexts,
+	                                  PlayerActionBarService actionBar) {
 		this.plugin = plugin;
 		this.worlds = worlds;
 		this.contexts = contexts;
+		this.actionBar = actionBar;
 	}
 	@EventHandler public void onWorldChange(PlayerChangedWorldEvent event) { scheduleCheck(event.getFrom()); }
 	@EventHandler public void onQuit(PlayerQuitEvent event) { scheduleCheck(event.getPlayer().getWorld()); }
@@ -36,7 +40,8 @@ public final class PrivateIslandWorldListener implements Listener {
 		long now = System.currentTimeMillis();
 		if (now - lastWarning.getOrDefault(event.getPlayer().getUniqueId(), 0L) >= 2000) {
 			lastWarning.put(event.getPlayer().getUniqueId(), now);
-			event.getPlayer().sendActionBar(Component.text("The open sea is too dangerous to travel farther.", NamedTextColor.RED));
+			actionBar.showTemporaryMessage(event.getPlayer(),
+					Component.text("The open sea is too dangerous to travel farther.", NamedTextColor.RED), 40);
 		}
 	}
 	private void scheduleCheck(World world) {

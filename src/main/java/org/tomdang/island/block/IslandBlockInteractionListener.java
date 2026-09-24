@@ -15,19 +15,23 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.tomdang.island.runtime.IslandContext;
 import org.tomdang.island.runtime.IslandContextService;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 public final class IslandBlockInteractionListener implements Listener {
 	private final IslandContextService contexts;
 	private final BlockOriginStore origins;
 	private final RegisteredResourceRegistry resources;
 	private final IslandBlockPolicyService policies;
+	private final PlayerActionBarService actionBar;
 
 	public IslandBlockInteractionListener(IslandContextService contexts, BlockOriginStore origins,
-			RegisteredResourceRegistry resources, IslandBlockPolicyService policies) {
+			RegisteredResourceRegistry resources, IslandBlockPolicyService policies,
+			PlayerActionBarService actionBar) {
 		this.contexts = contexts;
 		this.origins = origins;
 		this.resources = resources;
 		this.policies = policies;
+		this.actionBar = actionBar;
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -95,12 +99,12 @@ public final class IslandBlockInteractionListener implements Listener {
 	}
 	private void deny(BlockPlaceEvent event, String message) {
 		event.setCancelled(true);
-		event.getPlayer().sendActionBar(Component.text(message, NamedTextColor.RED));
+		actionBar.showTemporaryMessage(event.getPlayer(), Component.text(message, NamedTextColor.RED), 40);
 	}
 	private void deny(BlockBreakEvent event, String message) {
 		event.setCancelled(true);
 		event.setDropItems(false);
 		event.setExpToDrop(0);
-		event.getPlayer().sendActionBar(Component.text(message, NamedTextColor.RED));
+		actionBar.showTemporaryMessage(event.getPlayer(), Component.text(message, NamedTextColor.RED), 40);
 	}
 }

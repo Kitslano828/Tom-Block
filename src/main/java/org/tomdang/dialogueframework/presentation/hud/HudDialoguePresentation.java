@@ -11,7 +11,6 @@ import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegist
 import org.tomdang.dialogueframework.session.DialogueSession;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
-import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,13 +22,12 @@ public class HudDialoguePresentation implements DialoguePresentation {
 	private final DialogueHudRenderer dialogueHudRenderer;
 	private final DialogueHudSkinRegistry dialogueHudSkinRegistry;
 	private final DialogueTextAnimator dialogueTextAnimator;
-	private final ActionBarSuppressionService actionBarSuppressionService;
 	private final DialoguePaginationService dialoguePaginationService;
 
 	public HudDialoguePresentation(DialogueThemeRegistry dialogueThemeRegistry,
 	                               DialogueDisplayStateRegistry dialogueDisplayStateRegistry,
 	                               DialogueHudRenderer dialogueHudRenderer, DialogueHudSkinRegistry dialogueHudSkinRegistry,
-	                               DialogueTextAnimator dialogueTextAnimator, ActionBarSuppressionService actionBarSuppressionService,
+	                               DialogueTextAnimator dialogueTextAnimator,
 								   DialoguePaginationService dialoguePaginationService)
 	{
 		if (dialogueThemeRegistry == null) throw new IllegalArgumentException("DialogueThemeRegistry cannot be null");
@@ -37,7 +35,6 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		if (dialogueHudRenderer == null) throw new IllegalArgumentException("dialogueHudRenderer cannot be null");
 		if (dialogueHudSkinRegistry == null) throw new IllegalArgumentException("dialogueHudSkinRegistry cannot be null");
 		if (dialogueTextAnimator == null) throw new IllegalArgumentException("dialogueTextAnimator cannot be null");
-		if (actionBarSuppressionService == null) throw new IllegalArgumentException("actionBarSuppressionService cannot be null");
 		if (dialoguePaginationService == null) throw new IllegalArgumentException("dialoguePaginationService cannot be null");
 
 		this.dialogueThemeRegistry = dialogueThemeRegistry;
@@ -45,7 +42,6 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		this.dialogueHudRenderer = dialogueHudRenderer;
 		this.dialogueHudSkinRegistry = dialogueHudSkinRegistry;
 		this.dialogueTextAnimator = dialogueTextAnimator;
-		this.actionBarSuppressionService = actionBarSuppressionService;
 		this.dialoguePaginationService = dialoguePaginationService;
 	}
 
@@ -73,8 +69,6 @@ public class HudDialoguePresentation implements DialoguePresentation {
 
 		List<DialoguePage> pages = dialoguePaginationService.paginate(hudSkin, completeText);
 
-		actionBarSuppressionService.suppress(playerUUID);
-
 		dialogueTextAnimator.cancel(playerUUID);
 		dialogueDisplayStateRegistry.removeState(playerUUID);
 
@@ -95,6 +89,5 @@ public class HudDialoguePresentation implements DialoguePresentation {
 		dialogueTextAnimator.cancel(playerUUID);
 		dialogueDisplayStateRegistry.removeState(playerUUID);
 		dialogueHudRenderer.clear(player);
-		actionBarSuppressionService.release(playerUUID);
 	}
 }

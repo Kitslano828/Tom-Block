@@ -1,0 +1,39 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "tomblock:font/status_heart.png",
+      "height": 16,
+      "ascent": -22,
+      "chars": ["\uE100"]
+    },
+    {
+      "type": "bitmap",
+      "file": "tomblock:font/status_energy.png",
+      "height": 15,
+      "ascent": -22,
+      "chars": ["\uE103"]
+    },
+    {
+      "type": "space",
+      "advances": {
+        "\uE120": 1,
+        "\uE121": 2,
+        "\uE122": 4,
+        "\uE123": 8,
+        "\uE124": 16,
+        "\uE125": 32,
+        "\uE126": 64,
+        "\uE127": 128,
+        "\uE128": -1,
+        "\uE129": -2,
+        "\uE12A": -4,
+        "\uE12B": -8,
+        "\uE12C": -16,
+        "\uE12D": -32,
+        "\uE12E": -64,
+        "\uE12F": -128
+      }
+    }
+  ]
+}

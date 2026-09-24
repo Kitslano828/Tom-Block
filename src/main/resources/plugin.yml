@@ -95,11 +95,21 @@ commands:
     description: Opens your resource collection progress
     usage: /collections
     permission: tomblock.collections
+  quest:
+    description: Shows quest progress and provides administrative quest controls
+    usage: /quest [inspect|start|signal|branch|complete|reset]
+    permission: tomblock.quest
 
 permissions:
   tomblock.collections:
     description: Allows viewing personal collections
     default: true
+  tomblock.quest:
+    description: Allows viewing personal quest progress
+    default: true
+  tomblock.admin.quest:
+    description: Allows testing and modifying quest progress
+    default: op
   tomblock.island:
     description: Allows access to private islands
     default: true

@@ -25,7 +25,7 @@ import org.tomdang.hud.spacing.HudSpacingService;
 import org.tomdang.hud.text.HudTextWidthService;
 import org.tomdang.hud.text.HudTextWrapper;
 import org.tomdang.hud.text.MinecraftDefaultTextWidthService;
-import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,9 +58,9 @@ public class DialogueBootStrap {
 	@Getter
 	private final DialogueChoiceActionService dialogueChoiceActionService;
 
-	public DialogueBootStrap(TomBlock instance, ActionBarSuppressionService actionBarSuppressionService) {
+	public DialogueBootStrap(TomBlock instance, PlayerActionBarService playerActionBarService) {
 		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
-		if (actionBarSuppressionService == null) throw new IllegalArgumentException("actionBarSuppressionService cannot be null");
+		if (playerActionBarService == null) throw new IllegalArgumentException("playerActionBarService cannot be null");
 
 		dialogueRegistry = new DialogueRegistry();
 		dialogueSessionRegistry = new DialogueSessionRegistry();
@@ -98,7 +98,8 @@ public class DialogueBootStrap {
 		);
 		DialogueHudRenderer dialogueHudRenderer = new ActionBarDialogueHudRenderer(
 				dialogueVisibleLineService,
-				dialogueHudLayoutComposer
+				dialogueHudLayoutComposer,
+				playerActionBarService
 		);
 
 		DialogueTextAnimationService dialogueTextAnimationService = new DialogueTextAnimationService(
@@ -124,7 +125,6 @@ public class DialogueBootStrap {
 				dialogueHudRenderer,
 				dialogueHudSkinRegistry,
 				bukkitDialogueTextAnimator,
-				actionBarSuppressionService,
 				dialoguePaginationService
 		);
 

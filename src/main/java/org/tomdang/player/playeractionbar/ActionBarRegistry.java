@@ -2,7 +2,6 @@ package org.tomdang.player.playeractionbar;
 
 import lombok.Getter;
 import org.tomdang.player.playeractionbar.statsactionbarprovider.ActionBarProvider;
-import org.tomdang.player.playeractionbar.statsactionbarprovider.EnergyActionBarProvider;
 import org.tomdang.player.playeractionbar.statsactionbarprovider.HealthActionBarProvider;
 import org.tomdang.player.playeractionbar.statsactionbarprovider.helditemactionbarprovider.MiningToolActionBarProvider;
 import org.tomdang.player.playerresource.PlayerStatsService;
@@ -18,7 +17,6 @@ public class ActionBarRegistry {
 
 	public ActionBarRegistry(PlayerStatsService playerStatsService) {
 		addActionBarToRegistry(new HealthActionBarProvider(playerStatsService));
-		addActionBarToRegistry(new EnergyActionBarProvider(playerStatsService));
 
 		addActionBarToRegistry(new MiningToolActionBarProvider(playerStatsService));
 	}

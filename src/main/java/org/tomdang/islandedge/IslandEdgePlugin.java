@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,9 +21,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 /** Safeguards for the imported southwest-island world, not the hub or raid worlds. */
 public final class IslandEdgePlugin extends JavaPlugin implements Listener {
     private static final String WORLD_NAME = "world";
-    private static final int SPAWN_X = -920;
-    private static final int SPAWN_Y = 66;
-    private static final int SPAWN_Z = 376;
+    private static final int SPAWN_X = -1168;
+    private static final int SPAWN_Y = 65;
+    private static final int SPAWN_Z = 270;
+    private static final float SPAWN_YAW = 152.8F;
+    private static final float SPAWN_PITCH = -4.0F;
+    private static final int LEGACY_SPAWN_X = -920;
+    private static final int LEGACY_SPAWN_Y = 66;
+    private static final int LEGACY_SPAWN_Z = 376;
+    private static final double LEGACY_SPAWN_REDIRECT_RADIUS_SQUARED = 16.0;
     private final Set<Long> playableChunks = new HashSet<>();
     private OceanTransitionProfile oceanTransitionProfile;
 
@@ -63,6 +70,14 @@ public final class IslandEdgePlugin extends JavaPlugin implements Listener {
             return;
         }
         getServer().getPluginManager().registerEvents(this, this);
+        World island = getServer().getWorld(WORLD_NAME);
+        if (island == null) {
+            getLogger().warning("Southwest-island world is not loaded; its spawn could not be configured");
+        } else {
+            island.setSpawnLocation(spawn(island));
+            island.setGameRule(GameRule.SPAWN_RADIUS, 0);
+            getLogger().info("Set southwest-island spawn to " + SPAWN_X + ", " + SPAWN_Y + ", " + SPAWN_Z);
+        }
         getLogger().info("Loaded " + playableChunks.size() + " southwest-island playable chunks");
     }
 
@@ -85,9 +100,16 @@ public final class IslandEdgePlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Location location = event.getPlayer().getLocation();
-        if (isIsland(location.getWorld()) && !contains(location)) {
+        if (isIsland(location.getWorld()) && (!contains(location) || isAtLegacySpawn(location))) {
             event.getPlayer().teleport(spawn(location.getWorld()));
         }
+    }
+
+    private static boolean isAtLegacySpawn(Location location) {
+        double x = location.getX() - (LEGACY_SPAWN_X + 0.5);
+        double y = location.getY() - LEGACY_SPAWN_Y;
+        double z = location.getZ() - (LEGACY_SPAWN_Z + 0.5);
+        return x * x + y * y + z * z <= LEGACY_SPAWN_REDIRECT_RADIUS_SQUARED;
     }
 
     private static boolean isIsland(World world) {
@@ -100,7 +122,7 @@ public final class IslandEdgePlugin extends JavaPlugin implements Listener {
     }
 
     private static Location spawn(World world) {
-        return new Location(world, SPAWN_X + 0.5, SPAWN_Y, SPAWN_Z + 0.5);
+        return new Location(world, SPAWN_X + 0.5, SPAWN_Y, SPAWN_Z + 0.5, SPAWN_YAW, SPAWN_PITCH);
     }
 
     private static long key(int chunkX, int chunkZ) {

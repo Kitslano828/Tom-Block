@@ -1,13 +1,14 @@
 package org.tomdang.player.playeractionbar.statsactionbarprovider;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.tomdang.player.playeractionbar.PlayerActionBarContext;
+import org.tomdang.player.playeractionbar.StatusHudRenderer;
 import org.tomdang.player.playerresource.PlayerStatsService;
 
 public class EnergyActionBarProvider implements ActionBarProvider{
 
 	private final PlayerStatsService playerStatsService;
+	private final StatusHudRenderer statusHudRenderer = new StatusHudRenderer();
 
 	public EnergyActionBarProvider(PlayerStatsService playerStatsService) {
 		this.playerStatsService = playerStatsService;
@@ -20,9 +21,9 @@ public class EnergyActionBarProvider implements ActionBarProvider{
 
 	@Override
 	public Component render(PlayerActionBarContext context) {
+		int currentHealth = (int)context.getPlayerProfile().getHealth().getCurrent();
 		int currentEnergy = (int)context.getPlayerProfile().getEnergy().getCurrent();
-		int effectiveMaxEnergy = (int)playerStatsService.getTotalEnergy(context.getPlayer());
-		return Component.text("⚡ " + currentEnergy + " / " + effectiveMaxEnergy, NamedTextColor.DARK_GREEN);
+		return statusHudRenderer.render(currentHealth, currentEnergy);
 	}
 
 	@Override

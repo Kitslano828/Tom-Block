@@ -39,6 +39,7 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.command.PlayerMenuListener;
 import org.tomdang.player.listener.PlayerConnectionListener;
 import org.tomdang.player.listener.PlayerRegainHealthListener;
+import org.tomdang.player.listener.PlayerVanillaDamageListener;
 import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.playerresource.PlayerResourceService;
 import org.tomdang.player.playerresource.PlayerStatsService;
@@ -135,6 +136,7 @@ public class ListenerRegistrar {
 		instance.getServer().getPluginManager().registerEvents(playerEquipArmorListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerHeldItemRefreshListener, instance);
 		instance.getServer().getPluginManager().registerEvents(playerRegainHealthListener, instance);
+		instance.getServer().getPluginManager().registerEvents(new PlayerVanillaDamageListener(), instance);
 		instance.getServer().getPluginManager().registerEvents(forgeCloseListener, instance);
 		instance.getServer().getPluginManager().registerEvents(forgeDragListener, instance);
 		instance.getServer().getPluginManager().registerEvents(forgeListener, instance);

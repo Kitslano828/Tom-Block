@@ -1,4 +1,16 @@
 spawn-points:
+  CRITTER_HUNTER_WILL_INTRO:
+    actor-id: CRITTER_HUNTER_WILL
+    audience:
+      scope: GLOBAL
+    location:
+      world: world
+      x: -1173.614
+      y: 67.0
+      z: 255.624
+      yaw: 44.5
+      pitch: 22.1
+
   PACKET_SMITH_TEST:
     actor-id: PACKET_SMITH
     audience:
@@ -27,4 +39,4 @@ spawn-points:
       world: world
       x: 1247.5
       y: 74
-      z: -130.5   
+      z: -130.5

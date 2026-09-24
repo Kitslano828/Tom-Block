@@ -35,6 +35,8 @@ public class NmsPlayerNpcViewer {
 				serverPlayer.getId(), serverPlayer.getUUID(), serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
 				serverPlayer.getXRot(), serverPlayer.getYRot(), serverPlayer.getType(), 0, serverPlayer.getDeltaMovement(), serverPlayer.getYHeadRot());
 		gamePacketListener.send(spawnPacket);
+		gamePacketListener.send(new ClientboundSetEntityDataPacket(
+				serverPlayer.getId(), serverPlayer.getEntityData().packAll()));
 		sendHeadRotationPacket(gamePacketListener, serverPlayer);
 	}
 

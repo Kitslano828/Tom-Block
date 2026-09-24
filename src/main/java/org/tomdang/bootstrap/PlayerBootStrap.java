@@ -12,7 +12,6 @@ import org.tomdang.customitemframework.stats.HeldItemStatModifierProvider;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playeractionbar.ActionBarRegistry;
-import org.tomdang.player.playeractionbar.ActionBarSuppressionService;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerdata.PlayerProfileStorage;
 import org.tomdang.player.playerdata.PlayerProfileRepository;
@@ -66,8 +65,6 @@ public class PlayerBootStrap {
 	private final PlayerResourceRegenerationService playerResourceRegenerationService;
 
 	@Getter
-	private final ActionBarSuppressionService actionBarSuppressionService;
-	@Getter
 	private final PlayerStatModifierProviderRegistry statModifierProviderRegistry;
 	@Getter
 	private final PlayerStatCapModifierProviderRegistry statCapModifierProviderRegistry;
@@ -119,18 +116,18 @@ public class PlayerBootStrap {
 				playerStatModifierCalculator,
 				statCapModifierProviderRegistry
 		);
-		PlayerHealthDisplayService 	playerHealthDisplayService = new PlayerHealthDisplayService(playerProfileService, playerStatsService);
-		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService, playerHealthDisplayService);
+		PlayerHealthDisplayService playerHealthDisplayService = new PlayerHealthDisplayService(playerProfileService, playerStatsService);
+		var playerEnergyDisplayService = new org.tomdang.player.playerresource.PlayerEnergyDisplayService(playerProfileService, playerStatsService);
+		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService,
+				playerHealthDisplayService, playerEnergyDisplayService);
+		instance.getServer().getPluginManager().registerEvents(new org.tomdang.player.listener.PlayerFoodHudListener(), instance);
 		ActionBarRegistry actionBarRegistry = new ActionBarRegistry(playerStatsService);
-
-		actionBarSuppressionService = new ActionBarSuppressionService();
 
 		playerActionBarService = new PlayerActionBarService(
 				instance,
 				playerProfileService,
 				customArmorResolver,
-				actionBarRegistry,
-				actionBarSuppressionService
+				actionBarRegistry
 		);
 
 

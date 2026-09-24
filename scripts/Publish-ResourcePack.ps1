@@ -1,11 +1,12 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^pack-v[0-9]+$')]
+    [ValidatePattern('^pack-v(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*)){0,2}$')]
     [string]$Tag,
 
     [string]$PackRepository,
     [string]$SshHost = 'tom@tom-ROG-Strix-SCAR-18-G834JYR-G834JYR.local',
-    [string]$SshKey = (Join-Path $env:USERPROFILE '.ssh\codex_tomblock_ubuntu')
+    [string]$SshKey = (Join-Path $env:USERPROFILE '.ssh\codex_tomblock_ubuntu'),
+    [switch]$Resume
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,8 +28,18 @@ if (-not (Test-Path -LiteralPath (Join-Path $packRepository '.git'))) {
     throw "Not a Git repository: $packRepository"
 }
 if (-not (Test-Path -LiteralPath $SshKey)) { throw "SSH key not found: $SshKey" }
-if ((& git -C $packRepository status --porcelain).Count -gt 0) {
-    throw 'The public pack repository has uncommitted changes. Review or commit them before publishing.'
+$existingChanges = @(& git -C $packRepository status --porcelain)
+if ($existingChanges.Count -gt 0 -and -not $Resume) {
+    throw 'The public pack repository has uncommitted changes. Review or commit them before publishing. Use -Resume only after a previous publishing attempt copied the current source pack and stopped at a safety check.'
+}
+if ($Resume) {
+    $unsafeChanges = @($existingChanges | Where-Object {
+        $path = $_.Substring(3).Replace('\\', '/')
+        $path -ne 'pack.mcmeta' -and -not $path.StartsWith('assets/') -and -not $path.StartsWith('licenses/')
+    })
+    if ($unsafeChanges.Count -gt 0) {
+        throw "Cannot resume because the public pack contains changes outside managed pack files: $($unsafeChanges -join ', ')"
+    }
 }
 Invoke-Git @('fetch', 'origin', 'main', '--tags')
 if ((& git -C $packRepository rev-list --count 'HEAD..origin/main') -ne '0') {
@@ -36,7 +47,7 @@ if ((& git -C $packRepository rev-list --count 'HEAD..origin/main') -ne '0') {
 }
 if ((& git -C $packRepository tag --list $Tag) -eq $Tag) { throw "Tag already exists: $Tag" }
 
-# Copy only the actual pack; do not copy the experimental duckv2.zip archive.
+# Copy only the actual resource-pack contents.
 Copy-Item -LiteralPath (Join-Path $sourcePack 'pack.mcmeta') -Destination $packRepository -Force
 $assetRoot = Join-Path $sourcePack 'assets'
 $sourceAssetPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -52,9 +63,25 @@ $staleFiles = @(Get-ChildItem -LiteralPath $publishedAssetRoot -File -Recurse | 
     -not $sourceAssetPaths.Contains($_.FullName.Substring($publishedAssetRoot.Length + 1))
 })
 if ($staleFiles.Count -gt 0) {
-    throw "The public pack contains files removed from the source pack. Review and remove them manually before publishing: $($staleFiles.FullName -join ', ')"
+    Write-Host "Removing source-deleted pack files: $($staleFiles.FullName -join ', ')"
+    $staleFiles | ForEach-Object { Remove-Item -LiteralPath $_.FullName }
 }
-Invoke-Git @('add', '--', 'pack.mcmeta', 'assets')
+$sourceLicenseRoot = Join-Path $sourcePack 'licenses'
+$publishedLicenseRoot = Join-Path $packRepository 'licenses'
+New-Item -ItemType Directory -Path $publishedLicenseRoot -Force | Out-Null
+$sourceLicenseNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+Get-ChildItem -LiteralPath $sourceLicenseRoot -File | ForEach-Object {
+    [void]$sourceLicenseNames.Add($_.Name)
+    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $publishedLicenseRoot $_.Name) -Force
+}
+$staleLicenses = @(Get-ChildItem -LiteralPath $publishedLicenseRoot -File | Where-Object {
+    -not $sourceLicenseNames.Contains($_.Name)
+})
+if ($staleLicenses.Count -gt 0) {
+    Write-Host "Removing source-deleted licence files: $($staleLicenses.FullName -join ', ')"
+    $staleLicenses | ForEach-Object { Remove-Item -LiteralPath $_.FullName }
+}
+Invoke-Git @('add', '--', 'pack.mcmeta', 'assets', 'licenses')
 & git -C $packRepository diff --cached --quiet
 if ($LASTEXITCODE -eq 0) {
     throw 'The public pack repository already matches the source pack; there is no new pack to publish.'

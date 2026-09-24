@@ -20,6 +20,7 @@ import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.customitemframework.ItemCategory;
 import org.tomdang.player.playerresource.PlayerStatsService;
 import org.tomdang.player.stats.PlayerStatType;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -41,13 +42,15 @@ public final class ForagingService {
 	private final CustomItemResolver items;
 	private final PlayerStatsService stats;
 	private final ForagingToolRegistry tools;
+	private final PlayerActionBarService actionBar;
 	private final TreeBreakPlanner planner = new TreeBreakPlanner();
 	private final Set<String> harvesting = new HashSet<>();
 	private final Map<String, Double> damage = new HashMap<>();
 
 	public ForagingService(Plugin plugin, ForagingTreeRegistry registry, CollectionService collections,
 			PlayerProfileService profiles, SkillProgressPresenter presenter, ForagingTreeStore store,
-			CustomItemResolver items, PlayerStatsService stats, ForagingToolRegistry tools) {
+			CustomItemResolver items, PlayerStatsService stats, ForagingToolRegistry tools,
+			PlayerActionBarService actionBar) {
 		this.plugin = plugin;
 		this.registry = registry;
 		this.collections = collections;
@@ -58,6 +61,7 @@ public final class ForagingService {
 		this.items = items;
 		this.stats = stats;
 		this.tools = tools;
+		this.actionBar = actionBar;
 	}
 
 	public boolean harvest(Player player, Block struckBlock) {
@@ -65,19 +69,19 @@ public final class ForagingService {
 		if (tree == null) return false;
 		CustomItem tool = items.getCustomItem(player.getInventory().getItemInMainHand());
 		if (tool == null || tool.getItemCategory() != ItemCategory.FORAGING_TOOL) {
-			player.sendActionBar(Component.text("You need a foraging axe to harvest this tree.", NamedTextColor.RED));
+			actionBar.showTemporaryMessage(player, Component.text("You need a foraging axe to harvest this tree.", NamedTextColor.RED), 40);
 			return true;
 		}
 		ForagingToolDefinition toolDefinition = tools.find(tool.getId());
 		PlayerProfile profile = profiles.getPlayerProfileFromMap(player.getUniqueId());
 		if (toolDefinition == null || profile == null) return true;
 		if (profile.getForagingProgress().level() < toolDefinition.requiredForagingLevel()) {
-			player.sendActionBar(Component.text("Requires Foraging level " + toolDefinition.requiredForagingLevel() + ".", NamedTextColor.RED));
+			actionBar.showTemporaryMessage(player, Component.text("Requires Foraging level " + toolDefinition.requiredForagingLevel() + ".", NamedTextColor.RED), 40);
 			return true;
 		}
 		double power = stats.getTotalStat(player, PlayerStatType.CHOPPING_POWER);
 		if (power < tree.model().requiredPower()) {
-			player.sendActionBar(Component.text("Requires " + format(tree.model().requiredPower()) + " Chopping Power.", NamedTextColor.RED));
+			actionBar.showTemporaryMessage(player, Component.text("Requires " + format(tree.model().requiredPower()) + " Chopping Power.", NamedTextColor.RED), 40);
 			return true;
 		}
 		if (harvesting.contains(tree.id())) return true;
@@ -86,7 +90,8 @@ public final class ForagingService {
 		float progress = (float) (accumulated / tree.model().durability());
 		for (Player viewer : struckBlock.getWorld().getPlayers()) viewer.sendBlockDamage(struckBlock.getLocation(), progress);
 		struckBlock.getWorld().playSound(struckBlock.getLocation(), Sound.BLOCK_WOOD_HIT, 0.8f, 0.8f + progress * 0.6f);
-		player.sendActionBar(Component.text("Tree: " + format(accumulated) + " / " + format(tree.model().durability()), NamedTextColor.GREEN));
+		actionBar.showTemporaryMessage(player,
+				Component.text("Tree: " + format(accumulated) + " / " + format(tree.model().durability()), NamedTextColor.GREEN), 30);
 		if (accumulated < tree.model().durability()) return true;
 		damage.remove(tree.id());
 		harvesting.add(tree.id());

@@ -1,4 +1,24 @@
 actors:
+  CRITTER_HUNTER_WILL:
+    display-name: "Critter Hunter Will"
+    skin: CRITTER_HUNTER_WILL
+    audience-scope: GLOBAL
+    presentation-type: PLAYER_NPC
+    interaction-id: CRITTER_HUNTER_WILL_QUEST
+    damage-policy: PROTECTED
+    collision-policy: PASS_THROUGH
+    nameplate:
+      lines:
+        status:
+          role: STATUS
+          text: "CRITTER HUNTER"
+          color: "#D9A441"
+          bold: true
+        name:
+          role: NAME
+          text: "Will"
+          visible-while-moving: true
+
   PACKET_SMITH:
     display-name: "Blacksmith"
     # skin: BLACKSMITH  # Define BLACKSMITH in actors/skins.yml first.

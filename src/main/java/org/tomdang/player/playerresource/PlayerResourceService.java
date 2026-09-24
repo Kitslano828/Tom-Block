@@ -10,14 +10,17 @@ public class PlayerResourceService {
 	private final PlayerProfileService playerProfileService;
 	private final PlayerStatsService playerStatsService;
 	private final PlayerHealthDisplayService playerHealthDisplayService;
+	private final PlayerEnergyDisplayService playerEnergyDisplayService;
 
 	public PlayerResourceService(PlayerProfileService playerProfileService,
 								 PlayerStatsService playerStatsService,
-								 PlayerHealthDisplayService playerHealthDisplayService
+								 PlayerHealthDisplayService playerHealthDisplayService,
+								 PlayerEnergyDisplayService playerEnergyDisplayService
 	) {
 		this.playerProfileService = playerProfileService;
 		this.playerStatsService = playerStatsService;
 		this.playerHealthDisplayService = playerHealthDisplayService;
+		this.playerEnergyDisplayService = playerEnergyDisplayService;
 	}
 
 	public void reconcilePlayerHealth(Player player) {
@@ -25,6 +28,7 @@ public class PlayerResourceService {
 		double effectMaxHealth = playerStatsService.getTotalHealthStat(player);
 		reconcileResource(playerProfile.getHealth(), effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public void restoreHealthToMaximum(Player player) {
@@ -32,6 +36,7 @@ public class PlayerResourceService {
 		double effectMaxHealth = playerStatsService.getTotalHealthStat(player);
 		restoreResourceToMax(playerProfile.getHealth(), effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public void heal(Player player, double amount) {
@@ -39,24 +44,28 @@ public class PlayerResourceService {
 		double effectMaxHealth = playerStatsService.getTotalHealthStat(player);
 		regenerateResource(playerProfile.getHealth(), amount, effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public void damagePlayer(Player player, double amount) {
 		PlayerProfile playerProfile = playerProfileService.getPlayerProfileFromMap(player.getUniqueId());
 		reduceResource(playerProfile.getHealth(), amount);
 		playerHealthDisplayService.displayHealth(player);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public void restoreEnergy(Player player, double amount) {
 		PlayerProfile playerProfile = playerProfileService.getPlayerProfileFromMap(player.getUniqueId());
 		double effectiveMaxEnergy = playerStatsService.getTotalEnergy(player);
 		regenerateResource(playerProfile.getEnergy(), amount, effectiveMaxEnergy);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public void restoreMaxEnergy(Player player) {
 		PlayerProfile playerProfile = playerProfileService.getPlayerProfileFromMap(player.getUniqueId());
 		double effectiveMaxEnergy = playerStatsService.getTotalEnergy(player);
 		restoreResourceToMax(playerProfile.getEnergy(), effectiveMaxEnergy);
+		playerEnergyDisplayService.displayEnergy(player);
 	}
 
 	public boolean spendEnergy(Player player, double amount) {
@@ -66,6 +75,7 @@ public class PlayerResourceService {
 			return false;
 		} else {
 			reduceResource(playerProfile.getEnergy(), amount);
+			playerEnergyDisplayService.displayEnergy(player);
 			return true;
 		}
 	}

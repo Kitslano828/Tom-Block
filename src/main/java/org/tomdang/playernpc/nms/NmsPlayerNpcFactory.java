@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,6 +20,7 @@ import org.tomdang.actorframework.skin.ActorSkin;
 import java.util.UUID;
 
 public class NmsPlayerNpcFactory {
+	private static final byte ALL_SKIN_LAYERS = 0x7F;
 
 	public PlayerNPC create(Location location, String profileName) {
 		return create(location, profileName, UUID.randomUUID(), null);
@@ -53,6 +55,7 @@ public class NmsPlayerNpcFactory {
 		GameProfile profile = profileWithSkin(profileID, profileName, skin);
 
 		ServerPlayer serverPlayer = new ServerPlayer(minecraftServer, serverLevel, profile, clientInformation);
+		serverPlayer.getEntityData().set(Player.DATA_PLAYER_MODE_CUSTOMISATION, ALL_SKIN_LAYERS);
 		serverPlayer.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
 		return new PlayerNPC(serverPlayer);
 	}

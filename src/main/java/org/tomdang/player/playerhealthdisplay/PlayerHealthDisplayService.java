@@ -20,13 +20,16 @@ public class PlayerHealthDisplayService {
 
 		double currentHealth = playerProfile.getHealth().getCurrent();
 		double effectiveMaxHealth = playerStatsService.getTotalHealthStat(player);
+		double currentEnergy = playerProfile.getEnergy().getCurrent();
+		double effectiveMaxEnergy = playerStatsService.getTotalEnergy(player);
 
-		if (effectiveMaxHealth <= 0) return;
+		float visibleHealth = (float)(20.0 * percentage(currentHealth, effectiveMaxHealth));
+		int visibleFood = (int)Math.round(20.0 * percentage(currentEnergy, effectiveMaxEnergy));
+		player.sendHealthUpdate(visibleHealth, visibleFood, 0.0f);
+	}
 
-		double percent = Math.clamp(currentHealth / effectiveMaxHealth, 0.0, 1.0);
-
-		double vanillaHearts = percent * 20;
-		player.setHealth(vanillaHearts);
+	private double percentage(double current, double maximum) {
+		return maximum <= 0 ? 0.0 : Math.clamp(current / maximum, 0.0, 1.0);
 	}
 
 }
