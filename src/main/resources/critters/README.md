@@ -18,6 +18,19 @@ The definition separates independent dimensions:
   final art model.
 - `relations` links variants, life stages, or related species without imposing
   a Pokemon-style evolution system.
+- `ai.navigator` selects `DIRECT_FLIGHT` for display/flying bodies or
+  `NATIVE_GROUND` for Paper mobs.
+- `ai.goals` is a priority-ordered behavior profile. Goal IDs are author-facing
+  stable labels; each entry declares a reusable `type`, numeric `priority`, and
+  scalar tuning parameters. Higher priorities interrupt lower ones. Equal
+  priorities resolve by goal ID, so behavior remains deterministic.
+
+Available goal types are `IDLE`, `REST`, `WANDER`, `PATROL`,
+`INVESTIGATE_PLAYER`, `FLEE_FROM_PLAYER`, `FOLLOW_OWNER`, `RETURN_HOME`,
+`CHASE`, `ATTACK`, and `SETTLE`. Unsupported navigator and goal names fail
+configuration loading instead of degrading silently. Combat adapters implement
+the optional combat-agent contract; non-combat agents simply cannot select an
+`ATTACK` goal.
 
 The runtime publishes `CritterObserved` and `CritterCaptured`. The journal,
 Hunting skill, quest system, rewards, and counters consume those facts

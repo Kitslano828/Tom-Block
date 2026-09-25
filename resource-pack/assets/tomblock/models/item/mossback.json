@@ -1,0 +1,73 @@
+{
+  "credit": "Temporary TomBlock prototype",
+  "textures": {
+    "hide": "minecraft:block/mud_bricks",
+    "dark": "minecraft:block/mud",
+    "moss": "minecraft:block/moss_block",
+    "face": "minecraft:block/rooted_dirt",
+    "eye": "minecraft:block/ochre_froglight"
+  },
+  "display": {
+    "fixed": { "rotation": [0, 180, 0], "translation": [0, -1.5, 0], "scale": [1.05, 1.05, 1.05] },
+    "gui": { "rotation": [25, 145, 0], "translation": [0, -1, 0], "scale": [1.05, 1.05, 1.05] }
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [3, 4, 4], "to": [13, 10, 13],
+      "faces": {
+        "north": {"texture": "#hide"}, "east": {"texture": "#hide"},
+        "south": {"texture": "#hide"}, "west": {"texture": "#hide"},
+        "up": {"texture": "#moss"}, "down": {"texture": "#dark"}
+      }
+    },
+    {
+      "name": "moss_shell",
+      "from": [3.5, 10, 5], "to": [12.5, 12, 12.5],
+      "faces": {
+        "north": {"texture": "#moss"}, "east": {"texture": "#moss"},
+        "south": {"texture": "#moss"}, "west": {"texture": "#moss"},
+        "up": {"texture": "#moss"}, "down": {"texture": "#hide"}
+      }
+    },
+    {
+      "name": "head",
+      "from": [4.5, 4.5, 1], "to": [11.5, 9.5, 5],
+      "faces": {
+        "north": {"texture": "#face"}, "east": {"texture": "#hide"},
+        "south": {"texture": "#hide"}, "west": {"texture": "#hide"},
+        "up": {"texture": "#moss"}, "down": {"texture": "#dark"}
+      }
+    },
+    {
+      "name": "left_eye",
+      "from": [5, 7, 0.75], "to": [6.5, 8.5, 1.1],
+      "faces": {"north": {"texture": "#eye"}}
+    },
+    {
+      "name": "right_eye",
+      "from": [9.5, 7, 0.75], "to": [11, 8.5, 1.1],
+      "faces": {"north": {"texture": "#eye"}}
+    },
+    {
+      "name": "front_left_leg",
+      "from": [3.5, 0, 4], "to": [5.5, 5, 6],
+      "faces": {"north": {"texture": "#dark"}, "east": {"texture": "#hide"}, "south": {"texture": "#hide"}, "west": {"texture": "#hide"}, "up": {"texture": "#hide"}, "down": {"texture": "#dark"}}
+    },
+    {
+      "name": "front_right_leg",
+      "from": [10.5, 0, 4], "to": [12.5, 5, 6],
+      "faces": {"north": {"texture": "#dark"}, "east": {"texture": "#hide"}, "south": {"texture": "#hide"}, "west": {"texture": "#hide"}, "up": {"texture": "#hide"}, "down": {"texture": "#dark"}}
+    },
+    {
+      "name": "rear_left_leg",
+      "from": [3.5, 0, 10.5], "to": [5.5, 5, 12.5],
+      "faces": {"north": {"texture": "#hide"}, "east": {"texture": "#hide"}, "south": {"texture": "#dark"}, "west": {"texture": "#hide"}, "up": {"texture": "#hide"}, "down": {"texture": "#dark"}}
+    },
+    {
+      "name": "rear_right_leg",
+      "from": [10.5, 0, 10.5], "to": [12.5, 5, 12.5],
+      "faces": {"north": {"texture": "#hide"}, "east": {"texture": "#hide"}, "south": {"texture": "#dark"}, "west": {"texture": "#hide"}, "up": {"texture": "#hide"}, "down": {"texture": "#dark"}}
+    }
+  ]
+}

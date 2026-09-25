@@ -21,6 +21,41 @@ critter:
     capture-window-seconds: 3
     maximum-relocations: 3
     outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: DIRECT_FLIGHT
+    goals:
+      FLEE:
+        type: FLEE_FROM_PLAYER
+        priority: 100
+        trigger-distance: 4.0
+        minimum-player-speed: 0.09
+        distance: 6.0
+        speed: 1.4
+        territory-radius: 10.0
+        rest-seconds: 2
+      SETTLE:
+        type: SETTLE
+        priority: 90
+      INVESTIGATE:
+        type: INVESTIGATE_PLAYER
+        priority: 70
+        trigger-distance: 8.0
+        stop-distance: 2.2
+        speed: 0.65
+        territory-radius: 8.0
+      WANDER:
+        type: WANDER
+        priority: 30
+        radius: 6.0
+        preferred-height: 1.5
+        speed: 0.8
+        rest-seconds: 3
+      REST:
+        type: REST
+        priority: 20
+      IDLE:
+        type: IDLE
+        priority: 0
   rewards:
     hunting-xp: 15
     materials:

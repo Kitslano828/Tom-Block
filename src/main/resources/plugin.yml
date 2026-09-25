@@ -95,6 +95,10 @@ commands:
     description: Toggles the isolated TomBlock HUD protocol laboratory
     usage: /hudlab
     permission: tomblock.admin.hudlab
+  aidiag:
+    description: Inspects and visualizes registered TomBlock entity AI agents
+    usage: /aidiag <summary|list|nearest|inspect|show|hide>
+    permission: tomblock.admin.aidiag
 
 permissions:
   tomblock.collections:
@@ -129,4 +133,7 @@ permissions:
     default: op
   tomblock.admin.hudlab:
     description: Allows use of the isolated HUD protocol laboratory
+    default: op
+  tomblock.admin.aidiag:
+    description: Allows inspection and visualization of entity AI diagnostics
     default: op

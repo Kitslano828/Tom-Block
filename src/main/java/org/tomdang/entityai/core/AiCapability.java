@@ -1,0 +1,2 @@
+package org.tomdang.entityai.core;
+public enum AiCapability { GROUND, FLYING, HOVERING, SWIMMING, HOPPING, LOOKING, ATTACKING, INTERACTING, FOLLOWING, RETURNING_HOME }

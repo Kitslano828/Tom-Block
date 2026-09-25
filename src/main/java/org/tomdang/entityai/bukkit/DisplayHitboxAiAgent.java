@@ -1,0 +1,12 @@
+package org.tomdang.entityai.bukkit;
+import org.bukkit.Location;import org.bukkit.entity.*;import org.bukkit.util.Vector;import org.tomdang.entityai.core.*;import org.tomdang.entityai.navigation.MovableAiAgent;import java.util.*;
+/** Treats a display and its interaction hitbox as one movable AI body. */
+public final class DisplayHitboxAiAgent implements MovableAiAgent,BukkitEntityAgent{
+	private final UUID id;private final String type;private final ItemDisplay display;private final Interaction hitbox;private final AiVector home;private final Set<AiCapability> capabilities;
+	public DisplayHitboxAiAgent(UUID id,ItemDisplay display,Interaction hitbox,Set<AiCapability> capabilities){this(id,"DISPLAY",display,hitbox,capabilities);}
+	public DisplayHitboxAiAgent(UUID id,String type,ItemDisplay display,Interaction hitbox,Set<AiCapability> capabilities){if(id==null||type==null||type.isBlank()||display==null||hitbox==null||capabilities==null||capabilities.isEmpty())throw new IllegalArgumentException("Display AI agent is incomplete");this.id=id;this.type=type;this.display=display;this.hitbox=hitbox;this.home=vector(display.getLocation());this.capabilities=Set.copyOf(capabilities);display.setTeleportDuration(2);}
+	public UUID id(){return id;}public String type(){return type;}public String worldId(){return display.getWorld().getKey().asString();}public AiVector position(){return vector(display.getLocation());}public AiVector home(){return home;}public Set<AiCapability> capabilities(){return capabilities;}public boolean valid(){return display.isValid()&&hitbox.isValid();}public Entity visibilityEntity(){return hitbox;}
+	public boolean canOccupy(AiVector position){var world=display.getWorld();int x=(int)Math.floor(position.x()),y=(int)Math.floor(position.y()),z=(int)Math.floor(position.z());if(!world.isChunkLoaded(x>>4,z>>4)||y<world.getMinHeight()||y+1>=world.getMaxHeight())return false;return world.getBlockAt(x,y,z).isPassable()&&world.getBlockAt(x,y+1,z).isPassable();}
+	public void move(AiVector position,AiVector direction){Location location=new Location(display.getWorld(),position.x(),position.y(),position.z());if(direction.lengthSquared()>.001){Vector v=new Vector(direction.x(),direction.y(),direction.z());location.setDirection(v);}display.teleport(location);hitbox.teleport(location);}
+	private AiVector vector(Location location){return new AiVector(location.getX(),location.getY(),location.getZ());}
+}

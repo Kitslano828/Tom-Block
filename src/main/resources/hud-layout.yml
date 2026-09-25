@@ -25,7 +25,8 @@ regions:
     alignment: end
   notification:
     anchor: bottom-center
-    offset-y: -44
+    # Keep transient gameplay feedback clear of the resource-value labels.
+    offset-y: -56
     max-width: 240
     capacity: 3
     stack: vertical
@@ -94,5 +95,5 @@ elements:
     enabled: true
     anchor: bottom-center
     offset-x: 0
-    offset-y: -44
+    offset-y: -56
     max-width: 240
