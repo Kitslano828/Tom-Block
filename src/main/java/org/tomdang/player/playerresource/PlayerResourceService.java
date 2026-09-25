@@ -11,6 +11,7 @@ public class PlayerResourceService {
 	private final PlayerStatsService playerStatsService;
 	private final PlayerHealthDisplayService playerHealthDisplayService;
 	private final PlayerEnergyDisplayService playerEnergyDisplayService;
+	private final java.util.List<PlayerResourceListener> listeners = new java.util.concurrent.CopyOnWriteArrayList<>();
 
 	public PlayerResourceService(PlayerProfileService playerProfileService,
 								 PlayerStatsService playerStatsService,
@@ -29,6 +30,7 @@ public class PlayerResourceService {
 		reconcileResource(playerProfile.getHealth(), effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public void restoreHealthToMaximum(Player player) {
@@ -37,6 +39,7 @@ public class PlayerResourceService {
 		restoreResourceToMax(playerProfile.getHealth(), effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public void heal(Player player, double amount) {
@@ -45,6 +48,7 @@ public class PlayerResourceService {
 		regenerateResource(playerProfile.getHealth(), amount, effectMaxHealth);
 		playerHealthDisplayService.displayHealth(player);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public void damagePlayer(Player player, double amount) {
@@ -52,6 +56,7 @@ public class PlayerResourceService {
 		reduceResource(playerProfile.getHealth(), amount);
 		playerHealthDisplayService.displayHealth(player);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public void restoreEnergy(Player player, double amount) {
@@ -59,6 +64,7 @@ public class PlayerResourceService {
 		double effectiveMaxEnergy = playerStatsService.getTotalEnergy(player);
 		regenerateResource(playerProfile.getEnergy(), amount, effectiveMaxEnergy);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public void restoreMaxEnergy(Player player) {
@@ -66,6 +72,7 @@ public class PlayerResourceService {
 		double effectiveMaxEnergy = playerStatsService.getTotalEnergy(player);
 		restoreResourceToMax(playerProfile.getEnergy(), effectiveMaxEnergy);
 		playerEnergyDisplayService.displayEnergy(player);
+		notifyChanged(player, playerProfile);
 	}
 
 	public boolean spendEnergy(Player player, double amount) {
@@ -76,8 +83,31 @@ public class PlayerResourceService {
 		} else {
 			reduceResource(playerProfile.getEnergy(), amount);
 			playerEnergyDisplayService.displayEnergy(player);
+			notifyChanged(player, playerProfile);
 			return true;
 		}
+	}
+
+	public AutoCloseable addListener(PlayerResourceListener listener) {
+		if (listener == null) throw new IllegalArgumentException("Player resource listener cannot be null");
+		listeners.add(listener);
+		return () -> listeners.remove(listener);
+	}
+
+	public PlayerResourceSnapshot snapshot(Player player) {
+		if (player == null) throw new IllegalArgumentException("Player cannot be null");
+		PlayerProfile profile = playerProfileService.getPlayerProfileFromMap(player.getUniqueId());
+		if (profile == null) throw new IllegalStateException("Player profile is not loaded: " + player.getUniqueId());
+		return new PlayerResourceSnapshot(player.getUniqueId(), profile.getHealth().getCurrent(),
+				playerStatsService.getTotalHealthStat(player), profile.getEnergy().getCurrent(),
+				playerStatsService.getTotalEnergy(player));
+	}
+
+	private void notifyChanged(Player player, PlayerProfile profile) {
+		PlayerResourceSnapshot snapshot = new PlayerResourceSnapshot(player.getUniqueId(), profile.getHealth().getCurrent(),
+				playerStatsService.getTotalHealthStat(player), profile.getEnergy().getCurrent(),
+				playerStatsService.getTotalEnergy(player));
+		listeners.forEach(listener -> listener.changed(snapshot));
 	}
 
 	private void reduceResource(PlayerResource resource, double amount) {

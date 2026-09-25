@@ -55,7 +55,15 @@ public class DialogueConfigurationLoader {
 			String displayText = requireString(choiceSection, "display-text", path);
 			String nextNodeID = optionalString(choiceSection, "next-node", path);
 			String actionID = optionalString(choiceSection, "action", path);
-			choices.add(new DialogueChoiceConfigurationDefinition(choiceID, displayText, nextNodeID, actionID));
+			java.util.Map<String, String> parameters = new java.util.LinkedHashMap<>();
+			ConfigurationSection parameterSection = choiceSection.getConfigurationSection("parameters");
+			if (parameterSection != null) for (String key : parameterSection.getKeys(false)) {
+				Object value = parameterSection.get(key);
+				if (value == null || value instanceof ConfigurationSection)
+					throw new IllegalArgumentException(path + " parameter " + key + " must be scalar");
+				parameters.put(key, String.valueOf(value));
+			}
+			choices.add(new DialogueChoiceConfigurationDefinition(choiceID, displayText, nextNodeID, actionID, parameters));
 		}
 		return List.copyOf(choices);
 	}

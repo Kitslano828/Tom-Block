@@ -1,0 +1,8 @@
+package org.tomdang.quest.presentation;
+import org.tomdang.quest.definition.*;import org.tomdang.quest.progress.*;import java.util.*;
+public final class QuestActorMarkerResolver{
+	private final QuestOfferRegistry offers;private final QuestRegistry definitions;private final QuestProgressService progress;
+	public QuestActorMarkerResolver(QuestOfferRegistry offers,QuestRegistry definitions,QuestProgressService progress){this.offers=offers;this.definitions=definitions;this.progress=progress;}
+	public Optional<QuestActorMarker> resolve(UUID player,String actor){if(!progress.isLoaded(player))return Optional.empty();QuestActorMarker best=null;for(var offer:offers.forActor(actor)){QuestDefinition quest=definitions.require(offer.questId());var state=progress.progress(player,quest.id());if(state.isEmpty()){if(quest.prerequisites().stream().allMatch(id->progress.isCompleted(player,id)))best=stronger(best,QuestActorMarker.QUEST);continue;}QuestProgress current=state.get();if(current.status()!=QuestStatus.ACTIVE)continue;QuestStageDefinition stage=quest.stages().get(current.currentStageId());boolean actorObjective=stage.objectives().stream().anyMatch(objective->(objective.type()==QuestObjectiveType.INTERACT_WITH_ACTOR||objective.type()==QuestObjectiveType.RETURN_TO_ACTOR)&&objective.target().equalsIgnoreCase(actor)||objective.type()==QuestObjectiveType.COMPLETE_DIALOGUE&&objective.parameters().getOrDefault("actor","").equalsIgnoreCase(actor));if(actorObjective)best=stronger(best,stage.terminal()?QuestActorMarker.COMPLETE:QuestActorMarker.CONTINUE);}return Optional.ofNullable(best);}
+	private QuestActorMarker stronger(QuestActorMarker left,QuestActorMarker right){if(left==null)return right;return left.ordinal()>=right.ordinal()?left:right;}
+}

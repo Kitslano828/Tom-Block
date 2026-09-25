@@ -1,0 +1,98 @@
+regions:
+  status:
+    anchor: bottom-center
+    offset-y: -12
+    max-width: 280
+    capacity: 2
+    stack: horizontal
+    gap: 12
+    alignment: center
+  dialogue:
+    anchor: bottom-center
+    offset-y: -50
+    max-width: 260
+    capacity: 1
+    stack: vertical
+    alignment: center
+  quest-tracker:
+    anchor: top-right
+    offset-x: -8
+    offset-y: 8
+    max-width: 180
+    capacity: 2
+    stack: vertical
+    gap: 4
+    alignment: end
+  notification:
+    anchor: bottom-center
+    offset-y: -44
+    max-width: 240
+    capacity: 3
+    stack: vertical
+    gap: 2
+    alignment: center
+  boss:
+    anchor: top-center
+    offset-y: 28
+    max-width: 260
+    capacity: 2
+    stack: vertical
+    gap: 3
+    alignment: center
+  world-context:
+    anchor: center
+    offset-y: 36
+    max-width: 220
+    capacity: 1
+    stack: vertical
+    alignment: center
+  map:
+    anchor: top-left
+    offset-x: 8
+    offset-y: 8
+    max-width: 160
+    capacity: 1
+    stack: vertical
+    alignment: start
+  debug:
+    anchor: top-right
+    offset-x: -8
+    offset-y: 8
+    max-width: 200
+    capacity: 1
+    stack: vertical
+    alignment: end
+
+# Stable per-element overrides. Change these values without editing Java.
+# Native health and energy are deliberately absent: Minecraft owns their position and GUI scaling.
+elements:
+  # Matches the centers of Minecraft's native left/right resource tracks.
+  # The vertical offset positions only the labels above those native tracks.
+  tomblock:resource-values:
+    region: status
+    enabled: true
+    anchor: bottom-center
+    offset-x: 0
+    offset-y: -34
+    max-width: 202
+  tomblock:dialogue:
+    region: dialogue
+    enabled: true
+    anchor: bottom-center
+    offset-x: 0
+    offset-y: -50
+    max-width: 260
+  tomblock:tracked-quest:
+    region: quest-tracker
+    enabled: true
+    anchor: top-right
+    offset-x: -8
+    offset-y: 8
+    max-width: 180
+  tomblock:notification:
+    region: notification
+    enabled: true
+    anchor: bottom-center
+    offset-x: 0
+    offset-y: -44
+    max-width: 240

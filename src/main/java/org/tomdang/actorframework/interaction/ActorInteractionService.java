@@ -3,15 +3,23 @@ package org.tomdang.actorframework.interaction;
 import org.bukkit.entity.Player;
 import org.tomdang.actorframework.definition.ActorDefinition;
 import org.tomdang.actorframework.instance.ActorInstance;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.ActorInteracted;
 
 public class ActorInteractionService {
 
 	private final ActorInteractionRegistry actorInteractionRegistry;
+	private final GameplayEventBus gameplayEvents;
 
 	public ActorInteractionService(ActorInteractionRegistry actorInteractionRegistry) {
+		this(actorInteractionRegistry, null);
+	}
+
+	public ActorInteractionService(ActorInteractionRegistry actorInteractionRegistry, GameplayEventBus gameplayEvents) {
 		if (actorInteractionRegistry == null) throw new IllegalArgumentException("Actor interaction registry cannot be null");
 
 		this.actorInteractionRegistry = actorInteractionRegistry;
+		this.gameplayEvents = gameplayEvents;
 	}
 
 	public boolean interact(Player player, ActorInstance instance) {
@@ -33,6 +41,8 @@ public class ActorInteractionService {
 		if (interaction == null) throw new IllegalStateException("Interaction is null");
 
 		interaction.interact(context);
+		if (gameplayEvents != null) gameplayEvents.publish(new ActorInteracted(
+				player.getUniqueId(), definition.getActorID(), instance.getInstanceID()));
 
 		return true;
 	}

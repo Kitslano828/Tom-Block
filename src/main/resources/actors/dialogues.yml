@@ -4,6 +4,32 @@ dialogues:
     nodes:
       WARNING:
         text: "Easy there. I'm tracking a Glimmerfly just ahead. Stay close, and watch how it moves before you approach it."
+        choices:
+          BEGIN_HUNT:
+            display-text: "Begin Hunt"
+            action: START_QUEST
+            parameters:
+              quest: INTRO_TO_HUNTING
+          NOT_YET:
+            display-text: "Not yet"
+
+  CRITTER_HUNTER_WILL_REMINDER:
+    starting-node: REMINDER
+    nodes:
+      REMINDER:
+        text: "Keep your eyes on the Glimmerfly. Study its rhythm, then move when it settles."
+
+  CRITTER_HUNTER_WILL_RETURN:
+    starting-node: REPORT
+    nodes:
+      REPORT:
+        text: "Nicely done. You watched first and acted at the right moment. That's the beginning of a real hunter's instincts."
+
+  CRITTER_HUNTER_WILL_COMPLETE:
+    starting-node: AFTERWARD
+    nodes:
+      AFTERWARD:
+        text: "There are many more critters beyond this trail. Keep observing them, and your journal will grow with you."
 
   BLACKSMITH_TEST_DIALOGUE:
     starting-node: GREETING

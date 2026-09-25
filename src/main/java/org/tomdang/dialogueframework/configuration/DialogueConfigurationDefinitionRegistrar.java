@@ -51,7 +51,8 @@ public class DialogueConfigurationDefinitionRegistrar {
 						choiceDefinition.choiceID(),
 						choiceDefinition.displayText(),
 						choiceDefinition.nextNodeID(),
-						choiceDefinition.actionID()
+						choiceDefinition.actionID(),
+						choiceDefinition.actionParameters()
 				));
 			}
 			nodes.add(new DialogueNode(nodeDefinition.nodeID(), nodeDefinition.text(), choices));

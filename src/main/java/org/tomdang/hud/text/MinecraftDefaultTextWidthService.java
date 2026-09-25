@@ -27,7 +27,10 @@ public class MinecraftDefaultTextWidthService implements HudTextWidthService {
 	private int getCharacterWidth(char c) {
 		return switch (c) {
 			// 2 pixels: thin punctuation
-			case '!', '.', ',', ':', ';', '|', '\'', '`', 'i', 'l' -> 2;
+			case '!', '.', ',', ':', ';', '|', '\'', 'i' -> 2;
+
+			// These glyphs occupy two bitmap columns plus Minecraft's trailing gap.
+			case '`', 'l' -> 3;
 
 			// 4 pixels: medium-thin characters and spaces
 			case ' ', 'I', '[', ']', 't', '"', '*', '(', ')', '{', '}'-> 4;

@@ -60,6 +60,23 @@ class QuestConfigurationLoaderTest {
 	}
 
 	@Test
+	void loadsOneQuestPerFileFormat() {
+		String yaml = """
+				quest:
+				  id: INTRO
+				  display-name: Introduction
+				  category: STORY
+				  start-stage: END
+				  stages:
+				    END:
+				      display-name: End
+				      objectives:
+				        DONE: {type: CUSTOM, target: DONE}
+				""";
+		assertEquals("INTRO", loader.load(stream(yaml)).getFirst().id());
+	}
+
+	@Test
 	void rejectsUnknownAndUnreachableStages() {
 		String unknown = basicQuest("next-stage: MISSING");
 		assertTrue(assertThrows(IllegalArgumentException.class, () -> loader.load(stream(unknown)))

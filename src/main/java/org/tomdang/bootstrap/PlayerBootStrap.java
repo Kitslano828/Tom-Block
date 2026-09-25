@@ -121,7 +121,7 @@ public class PlayerBootStrap {
 		playerResourceService = new PlayerResourceService(playerProfileService, playerStatsService,
 				playerHealthDisplayService, playerEnergyDisplayService);
 		instance.getServer().getPluginManager().registerEvents(new org.tomdang.player.listener.PlayerFoodHudListener(), instance);
-		ActionBarRegistry actionBarRegistry = new ActionBarRegistry(playerStatsService);
+		ActionBarRegistry actionBarRegistry = new ActionBarRegistry();
 
 		playerActionBarService = new PlayerActionBarService(
 				instance,

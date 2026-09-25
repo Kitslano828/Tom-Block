@@ -10,6 +10,8 @@ import java.nio.file.StandardCopyOption
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.zip.ZipFile
+import java.util.Properties
+import java.util.UUID
 
 plugins {
     java
@@ -129,7 +131,8 @@ val generateMonocraftHudAssets by tasks.registering(Exec::class) {
         java25.get().executablePath.asFile.absolutePath,
         "scripts/GenerateMonocraftHudAssets.java",
         "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
-        "resource-pack/assets/tomblock/textures/font"
+        "resource-pack/assets/tomblock/textures/font",
+        "src/main/resources/hud-font-advances.properties"
     )
     inputs.files(
         "scripts/GenerateMonocraftHudAssets.java",
@@ -143,16 +146,111 @@ val generateMonocraftHudAssets by tasks.registering(Exec::class) {
         "resource-pack/assets/tomblock/textures/font/dialogue_speaker_ascii.png",
         "resource-pack/assets/tomblock/textures/font/status_health_cell_empty.png",
         "resource-pack/assets/tomblock/textures/font/status_energy_cell_empty.png"
+		,"src/main/resources/hud-font-advances.properties"
+		,"resource-pack/assets/tomblock/font/quest_title.json"
+		,"resource-pack/assets/tomblock/font/quest_subtitle.json"
+		,"resource-pack/assets/tomblock/font/quest_objective.json"
+		,"resource-pack/assets/tomblock/font/quest_body.json"
+		,"resource-pack/assets/tomblock/font/quest_guidance.json"
     )
     outputs.dirs(
         "resource-pack/assets/minecraft/textures/gui/sprites/hud/heart"
     )
+	outputs.files(
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_empty.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_empty_hunger.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_full.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_full_hunger.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_half.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_half_hunger.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_empty.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_half.png",
+		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_full.png"
+	)
+}
+
+val generateQraftyHudFont by tasks.registering(Exec::class) {
+    group = "build"
+    description = "Rasterizes Qrafty into a deterministic TomBlock bitmap font and metric table."
+    val java25 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) }
+    commandLine(
+        java25.get().executablePath.asFile.absolutePath,
+        "scripts/GenerateQraftyHudFont.java",
+        "resource-pack/source-assets/fonts/qrafty.otf",
+        "resource-pack/assets/tomblock/textures/font/qrafty.png",
+        "resource-pack/assets/tomblock/font/qrafty.json",
+        "src/main/resources/hud-font-qrafty-advances.properties"
+    )
+    inputs.files("scripts/GenerateQraftyHudFont.java", "resource-pack/source-assets/fonts/qrafty.otf")
+    outputs.files(
+        "resource-pack/assets/tomblock/textures/font/qrafty.png",
+        "resource-pack/assets/tomblock/font/qrafty.json",
+        "src/main/resources/hud-font-qrafty-advances.properties"
+    )
+}
+
+tasks.processResources { dependsOn(generateMonocraftHudAssets, generateQraftyHudFont) }
+
+val generateHudProtocolAssets by tasks.registering(Exec::class) {
+    group = "build"
+    description = "Generates the versioned TomBlock HUD 0.1 laboratory font, sprite atlas, manifest, and 26.2 shader."
+    dependsOn(generateMonocraftHudAssets)
+    val java25 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) }
+    commandLine(
+        java25.get().executablePath.asFile.absolutePath,
+        "scripts/GenerateHudProtocolAssets.java",
+        "src/main/resources/hud-protocol.properties",
+        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
+        "resource-pack"
+    )
+    inputs.files(
+        "scripts/GenerateHudProtocolAssets.java",
+        "src/main/resources/hud-protocol.properties",
+        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png"
+    )
+    outputs.files(
+        "resource-pack/assets/tomblock/hud/protocol.properties",
+        "resource-pack/assets/tomblock/font/hud_protocol.json",
+        "resource-pack/assets/tomblock/textures/font/hud_protocol.png",
+		"resource-pack/assets/tomblock/textures/font/hud_ascii.png",
+        "resource-pack/assets/minecraft/shaders/core/text.vsh"
+    )
+}
+
+val validateHudProtocol by tasks.registering {
+    group = "verification"
+    description = "Rejects mismatched or incomplete generated HUD protocol assets."
+    dependsOn(generateHudProtocolAssets)
+    doLast {
+        val source = Properties().apply {
+            file("src/main/resources/hud-protocol.properties").inputStream().use { load(it) }
+        }
+        val packed = Properties().apply {
+            file("resource-pack/assets/tomblock/hud/protocol.properties").inputStream().use { load(it) }
+        }
+        if (source != packed) throw GradleException("Server and resource-pack HUD protocol manifests differ")
+        if (source.getProperty("protocol.version") != "0.2") throw GradleException("Unexpected HUD protocol version")
+        if (source.getProperty("minecraft.version") != "26.2") throw GradleException("HUD shader is not pinned to Minecraft 26.2")
+		runCatching { UUID.fromString(source.getProperty("pack.id")) }
+			.getOrElse { throw GradleException("HUD resource-pack ID is not a UUID", it) }
+		val ascent = source.getProperty("encoded.ascent").toIntOrNull()
+			?: throw GradleException("HUD bitmap ascent is not an integer")
+		if (ascent !in 0..8) throw GradleException("HUD bitmap ascent must be between 0 and its height (8)")
+        val glyphKeys = source.stringPropertyNames().filter { it.startsWith("glyph.") }
+        val glyphs = glyphKeys.map { source.getProperty(it).uppercase() }
+        if (glyphs.toSet().size != glyphs.size) throw GradleException("HUD protocol has duplicate glyph allocations")
+        val font = file("resource-pack/assets/tomblock/font/hud_protocol.json").readText()
+        glyphs.forEach { if (!font.contains("\\u$it")) throw GradleException("HUD font is missing glyph U+$it") }
+        val shader = file("resource-pack/assets/minecraft/shaders/core/text.vsh").readText()
+        if (!shader.contains("tomblockHud") || !shader.contains("marker.r == ${source.getProperty("marker.red")}"))
+            throw GradleException("HUD shader does not match the protocol marker")
+    }
 }
 
 val validateResourcePackFonts by tasks.registering {
     group = "verification"
     description = "Rejects malformed HUD font atlases before a resource pack can be packaged."
-    dependsOn(generateMonocraftHudAssets)
+    dependsOn(generateMonocraftHudAssets, generateQraftyHudFont, validateHudProtocol)
 
     doLast {
         val specifications = mapOf(
@@ -189,13 +287,52 @@ val validateResourcePackFonts by tasks.registering {
         if (file("resource-pack/assets/minecraft/font/default.json").exists()) {
             throw GradleException("TomBlock must not globally replace Minecraft's default font")
         }
+		val qraftySource = file("resource-pack/source-assets/fonts/qrafty.otf")
+		val qraftyDefinition = file("resource-pack/assets/tomblock/font/qrafty.json")
+		val qraftyAtlas = javax.imageio.ImageIO.read(
+			file("resource-pack/assets/tomblock/textures/font/qrafty.png"))
+			?: throw GradleException("Cannot read generated Qrafty atlas")
+		if (!qraftySource.isFile || qraftyDefinition.readText().let {
+				!it.contains("tomblock:font/qrafty.png") || !it.contains("\"type\":\"space\"") }) {
+			throw GradleException("Qrafty source, bitmap definition, or space advance is missing")
+		}
+		if (qraftyAtlas.width != 128 || qraftyAtlas.height != 48)
+			throw GradleException("Qrafty atlas must be 128x48; found ${qraftyAtlas.width}x${qraftyAtlas.height}")
+		val qraftyMetrics = file("src/main/resources/hud-font-qrafty-advances.properties")
+		if (!qraftyMetrics.isFile || qraftyMetrics.readLines().count { it.matches(Regex("[0-9A-F]{4}=\\d+")) } != 95)
+			throw GradleException("Qrafty must provide exact advances for all 95 printable ASCII glyphs")
+		listOf("status_health_cell.png", "status_energy_cell.png").forEach { name ->
+			val image = javax.imageio.ImageIO.read(textureDirectory.resolve(name))
+				?: throw GradleException("Cannot read $name")
+			if (image.width != 16 || image.height != 16) {
+				throw GradleException("$name must preserve TomBlock's original 16x16 artwork; found ${image.width}x${image.height}")
+			}
+		}
+		val nativeResourceHud = listOf("food_empty.png", "food_full.png", "food_half.png")
+			.map { file("resource-pack/assets/minecraft/textures/gui/sprites/hud/$it") } +
+			file("resource-pack/assets/minecraft/textures/gui/sprites/hud/heart").walkTopDown()
+				.filter { it.isFile && it.extension == "png" }.toList()
+		nativeResourceHud.forEach { sprite ->
+			val image = javax.imageio.ImageIO.read(sprite) ?: throw GradleException("Cannot read $sprite")
+			val visible = (0 until image.height).any { y ->
+				(0 until image.width).any { x -> (image.getRGB(x, y) ushr 24) != 0 }
+			}
+			if (!visible) throw GradleException("Native health/energy HUD sprite must contain TomBlock artwork: $sprite")
+		}
+		listOf("armor_empty.png", "armor_full.png", "armor_half.png").forEach { name ->
+			val sprite = file("resource-pack/assets/minecraft/textures/gui/sprites/hud/$name")
+			val image = javax.imageio.ImageIO.read(sprite) ?: throw GradleException("Cannot read $sprite")
+			for (y in 0 until image.height) for (x in 0 until image.width) {
+				if ((image.getRGB(x, y) ushr 24) != 0) throw GradleException("Armor HUD sprite must remain transparent: $sprite")
+			}
+		}
     }
 }
 
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, validateResourcePackFonts)
+    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, generateHudProtocolAssets, validateResourcePackFonts)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**", "licenses/**")
     }
@@ -206,7 +343,7 @@ val packageResourcePack by tasks.registering(Zip::class) {
 val packageMapHudExperiment by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages an opt-in 26.2 map HUD pack that filters dark GUI rectangles."
-    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets)
+	dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, generateHudProtocolAssets)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**", "licenses/**")
     }
@@ -273,7 +410,10 @@ val prepareLocalServer by tasks.registering {
         val replacements = mapOf(
             "require-resource-pack" to "true",
             "resource-pack" to "http\\://127.0.0.1\\:8123/$resourcePackArchiveName",
-            "resource-pack-sha1" to hash
+			"resource-pack-sha1" to hash,
+			"resource-pack-id" to Properties().apply {
+				file("src/main/resources/hud-protocol.properties").inputStream().use { load(it) }
+			}.getProperty("pack.id")
         )
         val updatedKeys = mutableSetOf<String>()
         val updatedLines = serverProperties.readLines().map { line ->

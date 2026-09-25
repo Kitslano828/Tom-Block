@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {"type":"bitmap","file":"tomblock:font/hud_protocol.png","height":8,"ascent":7,"chars":["\uE000\uE001\uE002\uE003"]},
+    {"type":"bitmap","file":"tomblock:font/status_heart.png","height":16,"ascent":15,"chars":["\uE004"]},
+    {"type":"bitmap","file":"tomblock:font/status_energy.png","height":15,"ascent":14,"chars":["\uE005"]},
+    {"type":"bitmap","file":"tomblock:font/status_health_cell.png","height":8,"ascent":7,"chars":["\uE006"]},
+    {"type":"bitmap","file":"tomblock:font/status_health_cell_empty.png","height":8,"ascent":7,"chars":["\uE007"]},
+    {"type":"bitmap","file":"tomblock:font/status_energy_cell.png","height":8,"ascent":7,"chars":["\uE008"]},
+    {"type":"bitmap","file":"tomblock:font/status_energy_cell_empty.png","height":8,"ascent":7,"chars":["\uE009"]},
+    {"type":"space","advances":{"\uE00A":-1}},
+    {"type":"bitmap","file":"tomblock:font/hud_ascii.png","height":8,"ascent":7,"chars":["\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"," !\"#$%&'()*+,-./","0123456789:;<=>?","@ABCDEFGHIJKLMNO","PQRSTUVWXYZ[\\]^_","`abcdefghijklmno","pqrstuvwxyz{|}~\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"]}
+  ]
+}

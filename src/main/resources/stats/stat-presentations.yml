@@ -90,6 +90,13 @@ stat-presentations:
     material: EMERALD
     visible: true
 
+  WILD_FORTUNE:
+    symbol: "✧"
+    color: "#FFAA00"
+    description: "Improves the chance of finding rare creatures."
+    material: SPYGLASS
+    visible: true
+
   ABILITY_HASTE:
     symbol: "⏳"
     color: "#FFFFFF"

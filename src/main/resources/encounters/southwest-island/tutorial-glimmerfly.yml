@@ -1,0 +1,8 @@
+encounter:
+  id: TUTORIAL_GLIMMERFLY
+  behavior: GLIMMERFLY_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  parameters:
+    critter: GLIMMERFLY

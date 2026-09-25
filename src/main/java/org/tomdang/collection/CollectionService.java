@@ -11,6 +11,8 @@ import org.tomdang.player.skill.SkillProgressionService;
 import org.tomdang.player.skill.SkillType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.ItemCollected;
 
 public final class CollectionService {
 	private final CollectionRegistry registry;
@@ -18,9 +20,15 @@ public final class CollectionService {
 	private final PlayerProfileService profiles;
 	private final SkillProgressPresenter presenter;
 	private final SkillProgressionService progression = new SkillProgressionService();
+	private final GameplayEventBus gameplayEvents;
 	public CollectionService(CollectionRegistry registry, PlayerCounterService counters,
 			PlayerProfileService profiles, SkillProgressPresenter presenter) {
+		this(registry, counters, profiles, presenter, null);
+	}
+	public CollectionService(CollectionRegistry registry, PlayerCounterService counters,
+			PlayerProfileService profiles, SkillProgressPresenter presenter, GameplayEventBus gameplayEvents) {
 		this.registry = registry; this.counters = counters; this.profiles = profiles; this.presenter = presenter;
+		this.gameplayEvents = gameplayEvents;
 	}
 	public Collection<CollectionDefinition> definitions() { return registry.all(); }
 	public long amount(UUID playerId, CollectionDefinition definition) { return counters.get(playerId, definition.counterKey()); }
@@ -34,6 +42,8 @@ public final class CollectionService {
 			if (profile != null && milestone.skillXpReward() > 0) presenter.showAward(player,
 					progression.awardXp(profile, SkillType.FORAGING, milestone.skillXpReward()));
 		}
+		if (gameplayEvents != null && delta > 0) gameplayEvents.publish(
+				new ItemCollected(player.getUniqueId(), collectionId, delta));
 		return total;
 	}
 }

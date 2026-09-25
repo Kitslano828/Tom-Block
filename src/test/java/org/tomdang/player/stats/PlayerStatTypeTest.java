@@ -54,6 +54,7 @@ class PlayerStatTypeTest {
 	@Test
 	void abilityHasteDefinitionMatchesCooldownBehavior() {
 		assertDefinition(PlayerStatType.ABILITY_HASTE, "ability-haste", "Ability Haste", PlayerStatCategory.UTILITY, 0, 0);
+		assertDefinition(PlayerStatType.WILD_FORTUNE, "wild-fortune", "Wild Fortune", PlayerStatCategory.UTILITY, 0, 0);
 	}
 
 	@Test

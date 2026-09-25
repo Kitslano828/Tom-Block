@@ -18,6 +18,11 @@ $packRepository = (Resolve-Path -LiteralPath $PackRepository).Path
 $sourcePack = Join-Path $projectRoot 'resource-pack'
 $serverProperties = '/opt/tomblock/build-server/server.properties'
 $zipUrl = "https://github.com/Kitslano828/TomBlock-Resource-Pack/releases/download/$Tag/TomBlock-Resource-Pack.zip"
+$protocolManifest = ConvertFrom-StringData (Get-Content -LiteralPath (Join-Path $projectRoot 'src\main\resources\hud-protocol.properties') -Raw)
+$packId = $protocolManifest['pack.id']
+if ($packId -notmatch '^[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$') {
+    throw 'HUD protocol pack.id is missing or invalid.'
+}
 
 function Invoke-Git([string[]]$Arguments) {
     & git -C $packRepository @Arguments
@@ -134,6 +139,7 @@ updates = {
     'require-resource-pack': 'true',
     'resource-pack': url.replace(':', r'\:'),
     'resource-pack-sha1': sha1,
+    'resource-pack-id': sys.argv[4],
 }
 original = path.read_text()
 lines = original.splitlines()
@@ -161,7 +167,7 @@ finally:
     if os.path.exists(temporary):
         os.unlink(temporary)
 '@
-$remoteScript | & ssh -i $SshKey -o BatchMode=yes $SshHost "python3 - '$serverProperties' '$zipUrl' '$sha1'"
+$remoteScript | & ssh -i $SshKey -o BatchMode=yes $SshHost "python3 - '$serverProperties' '$zipUrl' '$sha1' '$packId'"
 if ($LASTEXITCODE -ne 0) { throw 'Release published, but Ubuntu server.properties update failed.' }
 
 Write-Host "Published $Tag and configured the Ubuntu build server to require it."

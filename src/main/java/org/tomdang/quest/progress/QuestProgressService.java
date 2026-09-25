@@ -14,23 +14,34 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.tomdang.quest.orchestration.QuestRuntimeHooks;
 
 /** Cached, server-authoritative quest state. Signals are persisted only when progress actually changes. */
 public final class QuestProgressService {
 	private final QuestRegistry registry;
 	private final QuestProgressRepository repository;
 	private final Clock clock;
+	private final QuestRuntimeHooks hooks;
 	private final Map<UUID, Map<String, QuestProgress>> players = new ConcurrentHashMap<>();
 
 	public QuestProgressService(QuestRegistry registry, QuestProgressRepository repository) {
-		this(registry, repository, Clock.systemUTC());
+		this(registry, repository, Clock.systemUTC(), QuestRuntimeHooks.NONE);
+	}
+
+	public QuestProgressService(QuestRegistry registry, QuestProgressRepository repository, QuestRuntimeHooks hooks) {
+		this(registry, repository, Clock.systemUTC(), hooks);
 	}
 
 	QuestProgressService(QuestRegistry registry, QuestProgressRepository repository, Clock clock) {
+		this(registry, repository, clock, QuestRuntimeHooks.NONE);
+	}
+
+	QuestProgressService(QuestRegistry registry, QuestProgressRepository repository, Clock clock, QuestRuntimeHooks hooks) {
 		if (registry == null || repository == null || clock == null) throw new IllegalArgumentException("Quest dependencies are required");
 		this.registry = registry;
 		this.repository = repository;
 		this.clock = clock;
+		this.hooks = hooks == null ? QuestRuntimeHooks.NONE : hooks;
 	}
 
 	public void load(UUID playerId) {
@@ -44,6 +55,10 @@ public final class QuestProgressService {
 
 	public void unload(UUID playerId) {
 		players.remove(playerId);
+	}
+
+	public boolean isLoaded(UUID playerId) {
+		return players.containsKey(playerId);
 	}
 
 	public Collection<QuestProgress> progress(UUID playerId) {
@@ -70,9 +85,11 @@ public final class QuestProgressService {
 			if (!isCompleted(playerId, prerequisite))
 				throw new IllegalStateException("Quest prerequisite is incomplete: " + prerequisite);
 		}
+		if (!hooks.canStart(playerId, definition)) throw new IllegalStateException("Quest start conditions are not met: " + questId);
 		Instant now = clock.instant();
 		QuestProgress started = QuestProgress.start(playerId, questId, definition.startStageId(), now);
 		store(started);
+		hooks.started(definition, started);
 		return started;
 	}
 
@@ -81,9 +98,11 @@ public final class QuestProgressService {
 		java.util.List<QuestProgress> changed = new java.util.ArrayList<>();
 		for (QuestProgress progress : java.util.List.copyOf(player.values())) {
 			if (progress.status() != QuestStatus.ACTIVE) continue;
-			QuestProgress updated = applySignal(progress, registry.require(progress.questId()), signal);
+			QuestDefinition definition = registry.require(progress.questId());
+			QuestProgress updated = applySignal(progress, definition, signal);
 			if (updated != progress) {
 				store(updated);
+				applyHooks(progress, updated, definition);
 				changed.add(updated);
 			}
 		}
@@ -95,24 +114,29 @@ public final class QuestProgressService {
 		QuestDefinition quest = registry.require(questId);
 		QuestStageDefinition stage = quest.stages().get(current.currentStageId());
 		if (!requiredObjectivesComplete(current, stage)) throw new IllegalStateException("Stage objectives are incomplete");
+		if (!hooks.canCompleteStage(playerId, quest, stage, current)) throw new IllegalStateException("Stage conditions are incomplete");
 		String target = stage.branches().get(branchId);
 		if (target == null) throw new IllegalArgumentException("Unknown branch " + branchId + " for stage " + stage.id());
 		QuestProgress advanced = withStage(current, target, clock.instant());
 		store(advanced);
+		applyHooks(current, advanced, quest);
 		return advanced;
 	}
 
 	public QuestProgress complete(UUID playerId, String questId) {
 		QuestProgress current = requireActive(playerId, questId);
+		QuestDefinition definition = registry.require(questId);
 		QuestProgress completed = completed(current, clock.instant());
 		store(completed);
+		applyHooks(current, completed, definition);
 		return completed;
 	}
 
 	public void reset(UUID playerId, String questId) {
-		registry.require(questId);
+		QuestDefinition definition = registry.require(questId);
 		requireLoaded(playerId).remove(questId);
 		repository.delete(playerId, questId);
+		hooks.reset(playerId, definition);
 	}
 
 	private QuestProgress applySignal(QuestProgress current, QuestDefinition quest, QuestSignal signal) {
@@ -131,6 +155,7 @@ public final class QuestProgressService {
 		QuestProgress updated = new QuestProgress(current.playerId(), current.questId(), current.status(),
 				current.currentStageId(), amounts, current.revision() + 1, current.startedAt(), now, current.completedAt());
 		if (!requiredObjectivesComplete(updated, stage)) return updated;
+		if (!hooks.canCompleteStage(current.playerId(), quest, stage, updated)) return updated;
 		if (stage.nextStageId() != null) return withStage(updated, stage.nextStageId(), now);
 		if (stage.terminal()) return completed(updated, now);
 		return updated; // A completed branching stage waits for an explicit choice.
@@ -149,6 +174,16 @@ public final class QuestProgressService {
 	private QuestProgress completed(QuestProgress current, Instant now) {
 		return new QuestProgress(current.playerId(), current.questId(), QuestStatus.COMPLETED, current.currentStageId(),
 				current.objectiveProgress(), current.revision() + 1, current.startedAt(), now, now);
+	}
+
+	private void applyHooks(QuestProgress previous, QuestProgress updated, QuestDefinition quest) {
+		boolean stageChanged = !previous.currentStageId().equals(updated.currentStageId());
+		boolean completed = previous.status() != QuestStatus.COMPLETED && updated.status() == QuestStatus.COMPLETED;
+		if (stageChanged || completed) hooks.stageExited(quest,
+				quest.stages().get(previous.currentStageId()), updated);
+		if (stageChanged && updated.status() == QuestStatus.ACTIVE) hooks.stageEntered(quest,
+				quest.stages().get(updated.currentStageId()), updated);
+		if (completed) hooks.completed(quest, updated);
 	}
 
 	private QuestProgress requireActive(UUID playerId, String questId) {

@@ -52,6 +52,12 @@ class QuestProgressServiceTest {
 		assertTrue(service.progress(playerId, "QUEST").isEmpty());
 	}
 
+	@Test void reportsWhetherPlayerProgressIsLoaded() {
+		assertTrue(service.isLoaded(playerId));
+		service.unload(playerId);
+		assertFalse(service.isLoaded(playerId));
+	}
+
 	private QuestDefinition quest() {
 		QuestStageDefinition start = new QuestStageDefinition("START", "Start", List.of(
 				new QuestObjectiveDefinition("TALK", QuestObjectiveType.INTERACT_WITH_ACTOR, "WILL", 1, false, Map.of())),

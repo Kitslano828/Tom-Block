@@ -25,9 +25,15 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 	private final NmsActorNameplateViewer nmsActorNameplateViewer;
 	private final ActorNameplateLayout actorNameplateLayout;
 	private final Server server;
+	private final ActorNameplateLineProvider additionalLines;
 
 	public NmsActorNameplatePresentation(ActorNameplatePresentationRegistry actorNameplatePresentationRegistry, NmsActorNameplateLineRegistry nmsActorNameplateLineRegistry, ActorNameplateLayoutCalculator actorNameplateLayoutCalculator,
 	                                     NmsActorNameplateLineFactory nmsActorNameplateLineFactory, NmsActorNameplateViewer nmsActorNameplateViewer, ActorNameplateLayout actorNameplateLayout, Server server) {
+		this(actorNameplatePresentationRegistry,nmsActorNameplateLineRegistry,actorNameplateLayoutCalculator,nmsActorNameplateLineFactory,nmsActorNameplateViewer,actorNameplateLayout,server,ActorNameplateLineProvider.NONE);
+	}
+
+	public NmsActorNameplatePresentation(ActorNameplatePresentationRegistry actorNameplatePresentationRegistry, NmsActorNameplateLineRegistry nmsActorNameplateLineRegistry, ActorNameplateLayoutCalculator actorNameplateLayoutCalculator,
+	                                     NmsActorNameplateLineFactory nmsActorNameplateLineFactory, NmsActorNameplateViewer nmsActorNameplateViewer, ActorNameplateLayout actorNameplateLayout, Server server, ActorNameplateLineProvider additionalLines) {
 		if (actorNameplatePresentationRegistry == null) throw new IllegalArgumentException("actorNameplatePresentationRegistry cannot be null");
 		if (nmsActorNameplateLineRegistry == null) throw new IllegalArgumentException("nmsActorNameplateLineRegistry cannot be null");
 		if (actorNameplateLayoutCalculator == null) throw new IllegalArgumentException("actorNameplateLayoutCalculator cannot be null");
@@ -35,6 +41,7 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 		if (nmsActorNameplateViewer == null) throw new IllegalArgumentException("nmsActorNameplateViewer cannot be null");
 		if (actorNameplateLayout == null) throw new IllegalArgumentException("actorNameplateLayout cannot be null");
 		if (server == null) throw new IllegalArgumentException("server cannot be null");
+		if (additionalLines == null) throw new IllegalArgumentException("additionalLines cannot be null");
 
 		this.actorNameplatePresentationRegistry = actorNameplatePresentationRegistry;
 		this.nmsActorNameplateLineRegistry = nmsActorNameplateLineRegistry;
@@ -43,6 +50,7 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 		this.nmsActorNameplateViewer = nmsActorNameplateViewer;
 		this.actorNameplateLayout = actorNameplateLayout;
 		this.server = server;
+		this.additionalLines = additionalLines;
 	}
 
 	@Override
@@ -82,7 +90,8 @@ public class NmsActorNameplatePresentation implements ActorNameplatePresentation
 			boolean isMoving,
 			ActorNameplateViewerKey viewerKey
 	) {
-		List<ActorNameplateLine> lines = instance.getActorDefinition().getActorNameplate().getVisibleLines(isMoving);
+		List<ActorNameplateLine> lines = new ArrayList<>(additionalLines.lines(viewer, instance, isMoving));
+		lines.addAll(instance.getActorDefinition().getActorNameplate().getVisibleLines(isMoving));
 
 		List<ActorNameplateLinePlacement> linePlacements = actorNameplateLayoutCalculator.calculateLinePlacements(lines, actorNameplateLayout);
 

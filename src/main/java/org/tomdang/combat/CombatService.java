@@ -182,8 +182,6 @@ public class CombatService {
 				1.0f  // Pitch
 		);
 		player.playSound(hurtSound);
-		player.playHurtAnimation(180);
-
 		Vector knockbackDirection = player.getLocation().toVector().subtract(event.getDamager().getLocation().toVector());
 
 		if (knockbackDirection.lengthSquared() > 0) {

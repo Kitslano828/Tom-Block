@@ -9,14 +9,22 @@ import org.tomdang.dialogueframework.presentation.DialoguePresentation;
 import org.tomdang.dialogueframework.session.DialogueChoiceSelectionResult;
 import org.tomdang.dialogueframework.session.DialogueSession;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.DialogueCompleted;
 
 public class DialogueController {
 
 	private final DialogueSessionService dialogueSessionService;
 	private final DialoguePresentation dialoguePresentation;
 	private final DialogueChoiceActionService dialogueChoiceActionService;
+	private final GameplayEventBus gameplayEvents;
 
 	public DialogueController(DialogueSessionService dialogueSessionService, DialoguePresentation dialoguePresentation, DialogueChoiceActionService dialogueChoiceActionService) {
+		this(dialogueSessionService, dialoguePresentation, dialogueChoiceActionService, null);
+	}
+
+	public DialogueController(DialogueSessionService dialogueSessionService, DialoguePresentation dialoguePresentation,
+	                         DialogueChoiceActionService dialogueChoiceActionService, GameplayEventBus gameplayEvents) {
 		if (dialogueSessionService == null) throw new IllegalArgumentException("Dialogue Session Service cannot be null");
 		if (dialoguePresentation == null) throw new IllegalArgumentException("Dialogue Presentation cannot be null");
 		if (dialogueChoiceActionService == null) throw new IllegalArgumentException("dialogueChoiceActionService cannot be null");
@@ -24,6 +32,7 @@ public class DialogueController {
 		this.dialogueSessionService = dialogueSessionService;
 		this.dialoguePresentation = dialoguePresentation;
 		this.dialogueChoiceActionService = dialogueChoiceActionService;
+		this.gameplayEvents = gameplayEvents;
 	}
 
 	public DialogueSession startDialogue(Player player, String dialogueID, DialogueContext context) {
@@ -57,6 +66,9 @@ public class DialogueController {
 		if (player == null) throw new IllegalArgumentException("Player cannot be null");
 		DialogueSession session = dialogueSessionService.endDialogue(player.getUniqueId());
 		dialoguePresentation.close(player);
+		if (session != null && gameplayEvents != null) gameplayEvents.publish(new DialogueCompleted(
+				player.getUniqueId(), session.getDialogueDefinition().getDialogueID(),
+				session.getDialogueContext().sourceID()));
 		return session;
 	}
 

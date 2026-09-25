@@ -24,6 +24,7 @@ public class PlayerProfileStorage implements PlayerProfileRepository {
 		data.set(path + ".mining-xp", 0L);
 		data.set(path + ".combat-xp", 0L);
 		data.set(path + ".foraging-xp", 0L);
+		data.set(path + ".hunting-xp", 0L);
 		data.set(path + ".skill-reward-version", 2);
 		saveStats(path, player);
 	}
@@ -34,6 +35,7 @@ public class PlayerProfileStorage implements PlayerProfileRepository {
 		data.set(path + ".mining-xp", player.getMiningXP());
 		data.set(path + ".combat-xp", player.getCombatXP());
 		data.set(path + ".foraging-xp", player.getForagingXP());
+		data.set(path + ".hunting-xp", player.getHuntingXP());
 		data.set(path + ".mining-level", null);
 		data.set(path + ".combat-level", null);
 		data.set(path + ".skill-xp-version", null);
@@ -47,7 +49,8 @@ public class PlayerProfileStorage implements PlayerProfileRepository {
 		loadStats(path, player);
 		if (data.getInt(path + ".skill-reward-version", 0) >= 2) {
 			player.restoreSkillXp(data.getLong(path + ".mining-xp", 0),
-					data.getLong(path + ".combat-xp", 0), data.getLong(path + ".foraging-xp", 0));
+					data.getLong(path + ".combat-xp", 0), data.getLong(path + ".foraging-xp", 0),
+					data.getLong(path + ".hunting-xp", 0));
 		} else {
 			// Old profiles mixed earned rewards into these base stats. There is no
 			// reliable way to separate them from manually edited values; reset only

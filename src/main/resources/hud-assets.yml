@@ -1,0 +1,18 @@
+# This registry intentionally contains no gameplay artwork yet. Assets are added when a HUD is migrated.
+assets:
+  tomblock:status-heart:
+    kind: image
+    width: 15
+    height: 16
+  tomblock:status-energy:
+    kind: image
+    width: 15
+    height: 16
+  tomblock:status-health-bar:
+    kind: bar
+    width: 90
+    height: 8
+  tomblock:status-energy-bar:
+    kind: bar
+    width: 90
+    height: 8

@@ -7,6 +7,10 @@ import org.tomdang.quest.definition.QuestObjectiveDefinition;
 import org.tomdang.quest.definition.QuestObjectiveType;
 import org.tomdang.quest.definition.QuestRepeatability;
 import org.tomdang.quest.definition.QuestStageDefinition;
+import org.tomdang.quest.definition.QuestStartPolicy;
+import org.tomdang.quest.definition.QuestActionDefinition;
+import org.tomdang.quest.definition.QuestConditionDefinition;
+import org.tomdang.quest.definition.QuestRewardDefinition;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,8 +26,13 @@ public final class QuestConfigurationLoader {
 		if (input == null) throw new IllegalArgumentException("Quest configuration input cannot be null");
 		YamlConfiguration yaml = YamlConfiguration.loadConfiguration(
 				new InputStreamReader(input, StandardCharsets.UTF_8));
+		ConfigurationSection quest = yaml.getConfigurationSection("quest");
+		if (quest != null) {
+			String id = requiredString(quest, "id");
+			return List.of(readQuest(id, quest));
+		}
 		ConfigurationSection quests = yaml.getConfigurationSection("quests");
-		if (quests == null) throw new IllegalArgumentException("quests.yml requires a quests section");
+		if (quests == null) throw new IllegalArgumentException("Quest file requires a quest section");
 		List<QuestDefinition> loaded = new ArrayList<>();
 		for (String id : quests.getKeys(false)) loaded.add(readQuest(id, requiredSection(quests, id)));
 		return List.copyOf(loaded);
@@ -41,9 +50,12 @@ public final class QuestConfigurationLoader {
 				section.getString("description", ""),
 				requiredString(section, "category"),
 				readEnum(QuestRepeatability.class, section.getString("repeatability", "ONCE"), id + ".repeatability"),
+				readEnum(QuestStartPolicy.class, section.getString("start-policy", "MANUAL"), id + ".start-policy"),
 				new LinkedHashSet<>(section.getStringList("prerequisites")),
 				requiredString(section, "start-stage"),
-				stages
+				stages,
+				readConditions(section, "start-conditions"),
+				readRewards(section, "rewards")
 		);
 	}
 
@@ -65,8 +77,57 @@ public final class QuestConfigurationLoader {
 				requiredString(section, "display-name"),
 				objectives,
 				section.getString("next-stage"),
-				branches
+				branches,
+				readActions(section, "on-enter"),
+				readActions(section, "on-exit"),
+				readConditions(section, "completion-conditions")
 		);
+	}
+
+	private List<QuestActionDefinition> readActions(ConfigurationSection parent, String path) {
+		ConfigurationSection section = parent.getConfigurationSection(path);
+		if (section == null) return List.of();
+		List<QuestActionDefinition> values = new ArrayList<>();
+		for (String id : section.getKeys(false)) {
+			ConfigurationSection value = requiredSection(section, id);
+			values.add(new QuestActionDefinition(id, requiredString(value, "type"), readParameters(value)));
+		}
+		return List.copyOf(values);
+	}
+
+	private List<QuestConditionDefinition> readConditions(ConfigurationSection parent, String path) {
+		ConfigurationSection section = parent.getConfigurationSection(path);
+		if (section == null) return List.of();
+		List<QuestConditionDefinition> values = new ArrayList<>();
+		for (String id : section.getKeys(false)) {
+			ConfigurationSection value = requiredSection(section, id);
+			values.add(new QuestConditionDefinition(id, requiredString(value, "type"), readParameters(value)));
+		}
+		return List.copyOf(values);
+	}
+
+	private List<QuestRewardDefinition> readRewards(ConfigurationSection parent, String path) {
+		ConfigurationSection section = parent.getConfigurationSection(path);
+		if (section == null) return List.of();
+		List<QuestRewardDefinition> values = new ArrayList<>();
+		for (String id : section.getKeys(false)) {
+			ConfigurationSection value = requiredSection(section, id);
+			values.add(new QuestRewardDefinition(id, requiredString(value, "type"), readParameters(value)));
+		}
+		return List.copyOf(values);
+	}
+
+	private Map<String, String> readParameters(ConfigurationSection section) {
+		Map<String, String> parameters = new LinkedHashMap<>();
+		ConfigurationSection values = section.getConfigurationSection("parameters");
+		if (values == null) return Map.of();
+		for (String key : values.getKeys(false)) {
+			Object value = values.get(key);
+			if (value == null || value instanceof ConfigurationSection)
+				throw new IllegalArgumentException("Parameter " + key + " must be scalar");
+			parameters.put(key, String.valueOf(value));
+		}
+		return Map.copyOf(parameters);
 	}
 
 	private QuestObjectiveDefinition readObjective(String id, ConfigurationSection section) {

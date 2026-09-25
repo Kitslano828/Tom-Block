@@ -6,6 +6,7 @@ import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playerresource.PlayerStatsService;
 
 public class PlayerHealthDisplayService {
+	private static final float STABLE_SATURATION = 20.0f;
 
 	private final PlayerProfileService playerProfileService;
 	private final PlayerStatsService playerStatsService;
@@ -25,7 +26,9 @@ public class PlayerHealthDisplayService {
 
 		float visibleHealth = (float)(20.0 * percentage(currentHealth, effectiveMaxHealth));
 		int visibleFood = (int)Math.round(20.0 * percentage(currentEnergy, effectiveMaxEnergy));
-		player.sendHealthUpdate(visibleHealth, visibleFood, 0.0f);
+		// Keep the native food renderer stable when a health refresh also carries
+		// TomBlock's energy-backed food value.
+		player.sendHealthUpdate(visibleHealth, visibleFood, STABLE_SATURATION);
 	}
 
 	private double percentage(double current, double maximum) {

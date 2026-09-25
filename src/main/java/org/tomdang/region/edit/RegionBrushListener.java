@@ -10,20 +10,24 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 import org.tomdang.region.override.RegionOverrideState;
 import org.tomdang.region.position.BlockPosition;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 public final class RegionBrushListener implements Listener {
 	private final RegionBrushItemService brushItemService;
 	private final RegionEditingService editingService;
 	private final BukkitBlockPositionAdapter positionAdapter;
+	private final PlayerActionBarService hudMessages;
 
 	public RegionBrushListener(RegionBrushItemService brushItemService, RegionEditingService editingService,
-			BukkitBlockPositionAdapter positionAdapter) {
+			BukkitBlockPositionAdapter positionAdapter, PlayerActionBarService hudMessages) {
 		if (brushItemService == null) throw new IllegalArgumentException("brushItemService cannot be null");
 		if (editingService == null) throw new IllegalArgumentException("editingService cannot be null");
 		if (positionAdapter == null) throw new IllegalArgumentException("positionAdapter cannot be null");
+		if (hudMessages == null) throw new IllegalArgumentException("hudMessages cannot be null");
 		this.brushItemService = brushItemService;
 		this.editingService = editingService;
 		this.positionAdapter = positionAdapter;
+		this.hudMessages = hudMessages;
 	}
 
 	@EventHandler
@@ -33,11 +37,11 @@ public final class RegionBrushListener implements Listener {
 		event.setCancelled(true);
 
 		if (!event.getPlayer().hasPermission("tomblock.admin.region.edit")) {
-			event.getPlayer().sendActionBar(Component.text("You cannot use the Region Brush.", NamedTextColor.RED));
+			hudMessages.showTemporaryMessage(event.getPlayer(), Component.text("You cannot use the Region Brush.", NamedTextColor.RED), 40);
 			return;
 		}
 		if (editingService.session(event.getPlayer().getUniqueId()).isEmpty()) {
-			event.getPlayer().sendActionBar(Component.text("Use /region edit <region> first.", NamedTextColor.RED));
+			hudMessages.showTemporaryMessage(event.getPlayer(), Component.text("Use /region edit <region> first.", NamedTextColor.RED), 40);
 			return;
 		}
 
@@ -49,10 +53,10 @@ public final class RegionBrushListener implements Listener {
 			case EXCLUSION -> NamedTextColor.RED;
 			case NONE -> NamedTextColor.YELLOW;
 		};
-		event.getPlayer().sendActionBar(Component.text(result.regionId(), NamedTextColor.AQUA)
+		hudMessages.showTemporaryMessage(event.getPlayer(), Component.text(result.regionId(), NamedTextColor.AQUA)
 				.append(Component.text(" " + state + " ", color))
 				.append(Component.text(position.x() + ", " + position.y() + ", " + position.z(), NamedTextColor.GRAY))
-				.append(Component.text(editingService.hasUnsavedChanges() ? " • unsaved" : "", NamedTextColor.GOLD)));
+				.append(Component.text(editingService.hasUnsavedChanges() ? " - unsaved" : "", NamedTextColor.GOLD)), 40);
 	}
 
 	private boolean isSupportedAction(Action action) {

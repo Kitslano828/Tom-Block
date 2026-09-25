@@ -24,6 +24,7 @@ import org.tomdang.actorframework.registry.ActorRegistry;
 import org.tomdang.actorframework.resolver.ActorResolver;
 import org.tomdang.actorframework.spawn.ActorSpawnPointRegistry;
 import org.tomdang.actorframework.spawn.ActorSpawnPointService;
+import org.tomdang.gameplay.event.GameplayEventBus;
 
 public class ActorBootStrap {
 
@@ -77,6 +78,14 @@ public class ActorBootStrap {
 	                      NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
 	                      NamespacedKey actorSpawnPointIDKey
 	) {
+		this(plugin, actorInstanceIDKey, actorDefinitionIDKey, actorAudienceScopeKey, actorAudienceIDKey,
+				actorSpawnPointIDKey, null);
+	}
+
+	public ActorBootStrap(Plugin plugin, NamespacedKey actorInstanceIDKey, NamespacedKey actorDefinitionIDKey,
+	                      NamespacedKey actorAudienceScopeKey, NamespacedKey actorAudienceIDKey,
+	                      NamespacedKey actorSpawnPointIDKey, GameplayEventBus gameplayEvents
+	) {
 		if (plugin == null) throw new IllegalArgumentException("plugin cannot be null");
 		if (actorInstanceIDKey == null) throw new IllegalArgumentException("Actor instance ID Key cannot be null");
 		if (actorDefinitionIDKey == null) throw new IllegalArgumentException("Actor definition ID Key cannot be null");
@@ -124,7 +133,7 @@ public class ActorBootStrap {
 
 		actorInteractionRegistry = new ActorInteractionRegistry();
 
-		actorInteractionService = new ActorInteractionService(actorInteractionRegistry);
+		actorInteractionService = new ActorInteractionService(actorInteractionRegistry, gameplayEvents);
 
 
 		actorInstanceRegistry = new ActorInstanceRegistry();

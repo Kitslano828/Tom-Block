@@ -1,0 +1,30 @@
+critter:
+  id: GLIMMERFLY
+  name: Glimmerfly
+  family: LUMINA
+  rarity: COMMON
+  journal-description: "A gentle luminous insect that rests around flower-rich forest edges."
+  habitats: [FLOWER_FIELD, FOREST_EDGE]
+  temperaments: [DOCILE, CURIOUS]
+  relations: []
+  presentation: PLACEHOLDER
+  movement:
+    modes: [HOVERING, FLYING]
+    wander-radius: 6.0
+    preferred-height: 1.5
+    speed: 0.8
+    rest-duration-seconds: 3
+    relocation-distance: 6.0
+  hunting:
+    archetypes: [OBSERVE, PURSUE]
+    awareness-radius: 5.0
+    capture-window-seconds: 3
+    maximum-relocations: 3
+    outcome: CAPTURED_AND_RELEASED
+  rewards:
+    hunting-xp: 15
+    materials:
+      GLIMMER_DUST:
+        minimum: 1
+        maximum: 2
+        chance: 1.0

@@ -12,6 +12,8 @@ import org.tomdang.custommobframework.CustomMob;
 import org.tomdang.custommobframework.CustomMobResolver;
 import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.MobDefeated;
 
 
 public class MobRewardService {
@@ -21,15 +23,23 @@ public class MobRewardService {
 	private final CustomMobResolver customMobResolver;
 	private final SkillProgressionService skillProgression;
 	private final SkillProgressPresenter skillPresenter;
+	private final GameplayEventBus gameplayEvents;
 
 	public MobRewardService(PlayerProfileService playerProfileService, CustomItemStackFactory customItemStackFactory,
 							CustomMobResolver customMobResolver, SkillProgressionService skillProgression, SkillProgressPresenter skillPresenter
 	) {
+		this(playerProfileService, customItemStackFactory, customMobResolver, skillProgression, skillPresenter, null);
+	}
+
+	public MobRewardService(PlayerProfileService playerProfileService, CustomItemStackFactory customItemStackFactory,
+							CustomMobResolver customMobResolver, SkillProgressionService skillProgression,
+							SkillProgressPresenter skillPresenter, GameplayEventBus gameplayEvents) {
 		this.playerProfileService = playerProfileService;
 		this.customItemStackFactory = customItemStackFactory;
 		this.customMobResolver = customMobResolver;
 		this.skillProgression = skillProgression;
 		this.skillPresenter = skillPresenter;
+		this.gameplayEvents = gameplayEvents;
 	}
 
 	public void givePlayerMobDrops(EntityDeathEvent event) {
@@ -54,6 +64,8 @@ public class MobRewardService {
 					}
 					}
 					givePlayerCombatXP(event, playerProfile, customMob);
+					if (gameplayEvents != null) gameplayEvents.publish(
+							new MobDefeated(player.getUniqueId(), customMob.getId()));
 				}
 			}
 		}

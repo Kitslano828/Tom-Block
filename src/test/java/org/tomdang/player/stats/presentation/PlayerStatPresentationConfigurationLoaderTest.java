@@ -110,6 +110,8 @@ class PlayerStatPresentationConfigurationLoaderTest {
 				""" + entry("🪓", "#55AA55", "Foraging power", "IRON_AXE") + """
 				  FORAGING_SPEED:
 				""" + entry("⚡", "#AAFF55", "Foraging speed", "DIAMOND_AXE") + """
+				  WILD_FORTUNE:
+				""" + entry("✧", "#FFAA00", "Wild fortune", "SPYGLASS") + """
 				  JELLYFISH_POWER:
 				""" + entry("✧", "#55FFFF", "Jellyfish power", "FISHING_ROD") + """
 				  JELLYFISH_DAMAGE_BONUS:

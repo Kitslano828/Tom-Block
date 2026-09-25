@@ -1,0 +1,14 @@
+gates:
+  SOUTHWEST_HUNTING_INTRO:
+    quest: INTRO_TO_HUNTING
+    world: world
+    center: {x: -1173.614, z: 255.624}
+    normal: {x: 0.380, z: 0.925}
+    half-width: 12.0
+    blocked-side-margin: -0.35
+    return-distance: 3.5
+    minimum-y: 60
+    maximum-y: 78
+    blink-ticks: 8
+    message-cooldown-ms: 2500
+    prompt-message: "Will: Easy there. Come speak with me first."

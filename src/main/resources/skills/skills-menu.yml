@@ -35,3 +35,11 @@ skills-menu:
       progress-material: GREEN_STAINED_GLASS_PANE
       color: '#55FF55'
       slot: 22
+    hunting:
+      name: Hunting
+      description: Earn Hunting XP by observing and successfully hunting critters.
+      material: SPYGLASS
+      accent-material: YELLOW_STAINED_GLASS_PANE
+      progress-material: ORANGE_STAINED_GLASS_PANE
+      color: '#FFAA00'
+      slot: 24

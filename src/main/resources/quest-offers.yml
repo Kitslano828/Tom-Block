@@ -1,0 +1,4 @@
+offers:
+  INTRO_TO_HUNTING:
+    actor: CRITTER_HUNTER_WILL
+    quest: INTRO_TO_HUNTING

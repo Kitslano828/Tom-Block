@@ -33,6 +33,12 @@ items:
     rarity: COMMON
     category: MOB_DROP
 
+  GLIMMER_DUST:
+    material: GLOWSTONE_DUST
+    display-name: "Glimmer Dust"
+    rarity: COMMON
+    category: MATERIAL
+
   COBBLESTONE:
     material: COBBLESTONE
     display-name: "Cobblestone"

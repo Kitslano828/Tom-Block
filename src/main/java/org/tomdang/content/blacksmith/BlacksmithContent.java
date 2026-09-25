@@ -19,11 +19,15 @@ import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeDefinition;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
 import org.tomdang.hud.glyph.HudGlyph;
+import org.tomdang.platform.identity.ContentKey;
+import org.tomdang.platform.lifecycle.ModuleContext;
+import org.tomdang.platform.lifecycle.TomBlockModule;
 
 import java.util.List;
 import java.util.Map;
 
-public class BlacksmithContent {
+public class BlacksmithContent implements TomBlockModule {
+	public static final ContentKey<TomBlockModule> MODULE_ID = ContentKey.of("tomblock", "blacksmith-content");
 	private final DialogueThemeRegistry dialogueThemeRegistry;
 	private final DialogueHudSkinRegistry dialogueHudSkinRegistry;
 	private final DialogueController dialogueController;
@@ -99,5 +103,8 @@ public class BlacksmithContent {
 		dialogueThemeRegistry.bindSource("TALKING_BLACKSMITH", "BLACKSMITH_THEME");
 
 	}
+
+	@Override public ContentKey<TomBlockModule> id() { return MODULE_ID; }
+	@Override public void register(ModuleContext context) { register(); }
 
 }

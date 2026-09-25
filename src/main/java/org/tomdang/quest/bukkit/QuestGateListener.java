@@ -8,94 +8,104 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.tomdang.quest.progress.QuestProgressService;
-import org.tomdang.quest.progress.QuestSignal;
-import org.tomdang.quest.definition.QuestObjectiveType;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.ActorInteracted;
 import org.tomdang.dialogueframework.DialogueController;
 import org.tomdang.dialogueframework.context.DialogueContext;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
+import org.tomdang.quest.gate.QuestGateDefinition;
+import org.tomdang.quest.gate.QuestGateRegistry;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /** Per-player soft boundary; incomplete players blink back while completed players pass through. */
 public final class QuestGateListener implements Listener {
-	private static final String WORLD = "world";
-	private static final double CENTER_X = -1173.614;
-	private static final double CENTER_Z = 255.624;
-	private static final double NORMAL_X = 0.380;
-	private static final double NORMAL_Z = 0.925;
-	private static final double TANGENT_X = -NORMAL_Z;
-	private static final double TANGENT_Z = NORMAL_X;
-	private static final double HALF_WIDTH = 12.0;
-	private static final double BLOCKED_SIDE_MARGIN = -0.35;
-	private static final double RETURN_DISTANCE = 3.5;
-	private static final int MIN_Y = 60;
-	private static final int MAX_Y = 78;
-	private static final int BLINK_TICKS = 8;
-	private static final long MESSAGE_COOLDOWN_MS = 2500;
-
 	private final QuestProgressService quests;
+	private final QuestGateRegistry gates;
 	private final DialogueController dialogueController;
 	private final DialogueSessionService dialogueSessions;
-	private final Map<UUID, Long> lastMessage = new HashMap<>();
+	private final Map<CooldownKey, Long> lastMessage = new HashMap<>();
+	private final GameplayEventBus gameplayEvents;
+	private final PlayerActionBarService hudMessages;
 
-	public QuestGateListener(QuestProgressService quests,
-	                         DialogueController dialogueController, DialogueSessionService dialogueSessions) {
-		if (quests == null || dialogueController == null || dialogueSessions == null)
+	public QuestGateListener(QuestProgressService quests, QuestGateRegistry gates,
+	                         DialogueController dialogueController, DialogueSessionService dialogueSessions,
+	                         GameplayEventBus gameplayEvents, PlayerActionBarService hudMessages) {
+		if (quests == null || gates == null || dialogueController == null || dialogueSessions == null || gameplayEvents == null)
 			throw new IllegalArgumentException("Quest gate dependencies are required");
 		this.quests = quests;
+		this.gates = gates;
 		this.dialogueController = dialogueController;
 		this.dialogueSessions = dialogueSessions;
+		this.gameplayEvents = gameplayEvents;
+		this.hudMessages = java.util.Objects.requireNonNull(hudMessages);
 	}
 
 	@EventHandler(ignoreCancelled = true) public void onMove(PlayerMoveEvent event) {
 		Location to = event.getTo();
-		if (to == null || sameBlock(event.getFrom(), to) || !WORLD.equals(to.getWorld().getName())) return;
+		if (to == null || sameBlock(event.getFrom(), to)) return;
 		if (event.getPlayer().getGameMode() == GameMode.SPECTATOR) return;
-		if (quests.isCompleted(event.getPlayer().getUniqueId(), QuestPlayerConnectionListener.INTRO_QUEST)) return;
-		if (!isBlockedSide(to)) return;
-		event.getPlayer().addPotionEffect(new PotionEffect(
-				PotionEffectType.BLINDNESS, BLINK_TICKS, 0, false, false, false));
-		event.setTo(returnLocation(to));
+		for (QuestGateDefinition gate : gates.all()) {
+			if (!gate.world().equals(to.getWorld().getName()) || quests.isCompleted(
+					event.getPlayer().getUniqueId(), gate.questId()) || !isBlockedSide(gate, to)) continue;
+			event.getPlayer().addPotionEffect(new PotionEffect(
+					PotionEffectType.BLINDNESS, gate.blinkTicks(), 0, false, false, false));
+			event.setTo(returnLocation(gate, to));
+			showPrompt(event, gate);
+			return;
+		}
+	}
+
+	private void showPrompt(PlayerMoveEvent event, QuestGateDefinition gate) {
+		if (gate.dialogueId() == null && gate.promptMessage() == null) return;
+		CooldownKey key = new CooldownKey(event.getPlayer().getUniqueId(), gate.id());
 		long now = System.currentTimeMillis();
-		if (now - lastMessage.getOrDefault(event.getPlayer().getUniqueId(), 0L) >= MESSAGE_COOLDOWN_MS) {
-			lastMessage.put(event.getPlayer().getUniqueId(), now);
-			if (dialogueSessions.getActiveSession(event.getPlayer().getUniqueId()) == null) {
-				quests.signal(event.getPlayer().getUniqueId(), QuestSignal.one(
-						QuestObjectiveType.INTERACT_WITH_ACTOR, "CRITTER_HUNTER_WILL"));
-				dialogueController.startDialogue(event.getPlayer(), "CRITTER_HUNTER_WILL_INTRO",
-						DialogueContext.system("CRITTER_HUNTER_WILL"));
-			}
+		if (now - lastMessage.getOrDefault(key, 0L) < gate.messageCooldownMillis()) return;
+		lastMessage.put(key, now);
+		if (gate.promptMessage() != null) {
+			hudMessages.showTemporaryMessage(event.getPlayer(), Component.text(gate.promptMessage(), NamedTextColor.GOLD), 40);
+			return;
+		}
+		if (dialogueSessions.getActiveSession(event.getPlayer().getUniqueId()) == null) {
+			gameplayEvents.publish(new ActorInteracted(event.getPlayer().getUniqueId(), gate.actorId(), null));
+			dialogueController.startDialogue(event.getPlayer(), gate.dialogueId(), DialogueContext.system(gate.actorId()));
 		}
 	}
 
 	/** Projects the player onto the arrival side of the gate without changing their view direction. */
-	private static Location returnLocation(Location crossedAt) {
-		double dx = crossedAt.getX() - CENTER_X;
-		double dz = crossedAt.getZ() - CENTER_Z;
-		double lateral = Math.max(-HALF_WIDTH, Math.min(HALF_WIDTH, dx * TANGENT_X + dz * TANGENT_Z));
+	private static Location returnLocation(QuestGateDefinition gate, Location crossedAt) {
+		double tangentX = -gate.normalZ(), tangentZ = gate.normalX();
+		double dx = crossedAt.getX() - gate.centerX();
+		double dz = crossedAt.getZ() - gate.centerZ();
+		double lateral = Math.max(-gate.halfWidth(), Math.min(gate.halfWidth(), dx * tangentX + dz * tangentZ));
 		return new Location(
 				crossedAt.getWorld(),
-				CENTER_X + TANGENT_X * lateral + NORMAL_X * RETURN_DISTANCE,
+				gate.centerX() + tangentX * lateral + gate.normalX() * gate.returnDistance(),
 				crossedAt.getY(),
-				CENTER_Z + TANGENT_Z * lateral + NORMAL_Z * RETURN_DISTANCE,
+				gate.centerZ() + tangentZ * lateral + gate.normalZ() * gate.returnDistance(),
 				crossedAt.getYaw(),
 				crossedAt.getPitch()
 		);
 	}
 
-	private static boolean isBlockedSide(Location location) {
-		if (location.getY() < MIN_Y || location.getY() > MAX_Y) return false;
-		double dx = location.getX() - CENTER_X;
-		double dz = location.getZ() - CENTER_Z;
-		double forward = dx * NORMAL_X + dz * NORMAL_Z;
-		double lateral = dx * TANGENT_X + dz * TANGENT_Z;
-		return forward < BLOCKED_SIDE_MARGIN && Math.abs(lateral) <= HALF_WIDTH;
+	private static boolean isBlockedSide(QuestGateDefinition gate, Location location) {
+		if (location.getY() < gate.minimumY() || location.getY() > gate.maximumY()) return false;
+		double dx = location.getX() - gate.centerX();
+		double dz = location.getZ() - gate.centerZ();
+		double forward = dx * gate.normalX() + dz * gate.normalZ();
+		double lateral = dx * -gate.normalZ() + dz * gate.normalX();
+		return forward < gate.blockedSideMargin() && Math.abs(lateral) <= gate.halfWidth();
 	}
 
 	private static boolean sameBlock(Location first, Location second) {
 		return first.getBlockX() == second.getBlockX() && first.getBlockY() == second.getBlockY()
 				&& first.getBlockZ() == second.getBlockZ();
 	}
+
+	private record CooldownKey(UUID playerId, String gateId) {}
 }

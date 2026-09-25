@@ -13,19 +13,17 @@ import org.tomdang.dialogueframework.presentation.choice.DialogueChoicePresentat
 import org.tomdang.dialogueframework.presentation.choice.chat.ChatDialogueChoicePresentation;
 import org.tomdang.dialogueframework.presentation.hud.*;
 import org.tomdang.dialogueframework.presentation.hud.animation.BukkitDialogueTextAnimator;
-import org.tomdang.dialogueframework.presentation.hud.layout.DialogueHudLayoutComposer;
 import org.tomdang.dialogueframework.presentation.hud.page.DialoguePaginationService;
-import org.tomdang.dialogueframework.presentation.hud.renderer.ActionBarDialogueHudRenderer;
+import org.tomdang.dialogueframework.presentation.hud.renderer.ChatDialogueHudRenderer;
 import org.tomdang.dialogueframework.presentation.hud.skin.DialogueHudSkinRegistry;
 import org.tomdang.dialogueframework.registry.DialogueRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionRegistry;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
 import org.tomdang.dialogueframework.theme.DialogueThemeRegistry;
-import org.tomdang.hud.spacing.HudSpacingService;
 import org.tomdang.hud.text.HudTextWidthService;
 import org.tomdang.hud.text.HudTextWrapper;
 import org.tomdang.hud.text.MinecraftDefaultTextWidthService;
-import org.tomdang.player.playeractionbar.PlayerActionBarService;
+import org.tomdang.gameplay.event.GameplayEventBus;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,9 +56,17 @@ public class DialogueBootStrap {
 	@Getter
 	private final DialogueChoiceActionService dialogueChoiceActionService;
 
-	public DialogueBootStrap(TomBlock instance, PlayerActionBarService playerActionBarService) {
+	public DialogueBootStrap(TomBlock instance) {
+		this(instance, null);
+	}
+
+	public DialogueBootStrap(TomBlock instance, GameplayEventBus gameplayEvents) {
+		this(instance, gameplayEvents, new ChatDialogueHudRenderer());
+	}
+
+	public DialogueBootStrap(TomBlock instance, GameplayEventBus gameplayEvents, DialogueHudRenderer dialogueHudRenderer) {
 		if (instance == null) throw new IllegalArgumentException("Instance cannot be null");
-		if (playerActionBarService == null) throw new IllegalArgumentException("playerActionBarService cannot be null");
+		if (dialogueHudRenderer == null) throw new IllegalArgumentException("Dialogue HUD renderer cannot be null");
 
 		dialogueRegistry = new DialogueRegistry();
 		dialogueSessionRegistry = new DialogueSessionRegistry();
@@ -90,18 +96,6 @@ public class DialogueBootStrap {
 		HudTextWidthService hudTextWidthService = new MinecraftDefaultTextWidthService();
 		HudTextWrapper hudTextWrapper = new HudTextWrapper(hudTextWidthService);
 		DialoguePaginationService dialoguePaginationService = new DialoguePaginationService(hudTextWrapper);
-		DialogueVisibleLineService dialogueVisibleLineService = new DialogueVisibleLineService();
-		HudSpacingService hudSpacingService = new HudSpacingService();
-		DialogueHudLayoutComposer dialogueHudLayoutComposer = new DialogueHudLayoutComposer(
-				hudSpacingService,
-				hudTextWidthService
-		);
-		DialogueHudRenderer dialogueHudRenderer = new ActionBarDialogueHudRenderer(
-				dialogueVisibleLineService,
-				dialogueHudLayoutComposer,
-				playerActionBarService
-		);
-
 		DialogueTextAnimationService dialogueTextAnimationService = new DialogueTextAnimationService(
 				dialogueDisplayStateRegistry,
 				dialogueThemeRegistry,
@@ -131,7 +125,8 @@ public class DialogueBootStrap {
 		dialogueChoiceActionRegistry = new DialogueChoiceActionRegistry();
 		dialogueChoiceActionService = new DialogueChoiceActionService(dialogueChoiceActionRegistry);
 
-		dialogueController = new DialogueController(dialogueSessionService, hudDialoguePresentation, dialogueChoiceActionService);
+		dialogueController = new DialogueController(dialogueSessionService, hudDialoguePresentation,
+				dialogueChoiceActionService, gameplayEvents);
 
 
 

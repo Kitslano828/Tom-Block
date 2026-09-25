@@ -5,6 +5,7 @@ import org.tomdang.player.PlayerProfile;
 import org.tomdang.player.PlayerProfileService;
 
 public final class PlayerEnergyDisplayService {
+	private static final float STABLE_SATURATION = 20.0f;
 
     private final PlayerProfileService playerProfileService;
     private final PlayerStatsService playerStatsService;
@@ -21,7 +22,9 @@ public final class PlayerEnergyDisplayService {
         float visibleHealth = (float)(20.0 * percentage(profile.getHealth().getCurrent(), maximumHealth));
         int visibleFoodLevel = (int)Math.round(20.0 * percentage(profile.getEnergy().getCurrent(), maximumEnergy));
 
-        player.sendHealthUpdate(visibleHealth, visibleFoodLevel, 0.0f);
+		// Saturation is presentation state in this packet. Zero makes Minecraft jitter
+		// the food icons as if the player were starving, even though this bar represents energy.
+        player.sendHealthUpdate(visibleHealth, visibleFoodLevel, STABLE_SATURATION);
     }
 
     private double percentage(double current, double maximum) {

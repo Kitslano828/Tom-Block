@@ -8,6 +8,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuestRegistryTest {
 	@Test
@@ -18,6 +19,18 @@ class QuestRegistryTest {
 		registry.register(quest("FIRST", Set.of()));
 		registry.validatePrerequisites();
 		assertEquals(2, registry.all().size());
+	}
+
+	@Test
+	void exposesTypedKeysAndSealsAfterSuccessfulCrossReferenceValidation() {
+		QuestRegistry registry = new QuestRegistry();
+		registry.register(quest("INTRO_TO_HUNTING", Set.of()));
+		registry.validateAndSeal();
+
+		assertTrue(registry.isSealed());
+		assertEquals("INTRO_TO_HUNTING", registry.require(
+				QuestKeys.fromStoredId("INTRO_TO_HUNTING")).id());
+		assertThrows(IllegalStateException.class, () -> registry.register(quest("LATE", Set.of())));
 	}
 
 	private QuestDefinition quest(String id, Set<String> prerequisites) {

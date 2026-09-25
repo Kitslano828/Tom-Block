@@ -68,12 +68,13 @@ public final class PostgresPlayerProfileRepository implements PlayerProfileRepos
     private void upsertProfile(Connection connection, PlayerProfile player) throws SQLException {
         String sql = """
                 INSERT INTO tomblock.player_profiles
-                    (player_id, mining_xp, combat_xp, foraging_xp, skill_reward_version, prosperity)
-                VALUES (?, ?, ?, ?, 2, ?)
+                    (player_id, mining_xp, combat_xp, foraging_xp, hunting_xp, skill_reward_version, prosperity)
+                VALUES (?, ?, ?, ?, ?, 2, ?)
                 ON CONFLICT (player_id) DO UPDATE SET
                     mining_xp = EXCLUDED.mining_xp,
                     combat_xp = EXCLUDED.combat_xp,
                     foraging_xp = EXCLUDED.foraging_xp,
+					hunting_xp = EXCLUDED.hunting_xp,
                     skill_reward_version = 2,
                     prosperity = EXCLUDED.prosperity,
                     updated_at = CURRENT_TIMESTAMP
@@ -83,7 +84,8 @@ public final class PostgresPlayerProfileRepository implements PlayerProfileRepos
             statement.setLong(2, player.getMiningXP());
             statement.setLong(3, player.getCombatXP());
             statement.setLong(4, player.getForagingXP());
-            statement.setDouble(5, player.getProsperity());
+			statement.setLong(5, player.getHuntingXP());
+            statement.setDouble(6, player.getProsperity());
             statement.executeUpdate();
         }
     }
@@ -109,11 +111,11 @@ public final class PostgresPlayerProfileRepository implements PlayerProfileRepos
     public void loadPlayerProfile(PlayerProfile player) {
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT mining_xp, combat_xp, foraging_xp, prosperity FROM tomblock.player_profiles WHERE player_id = ?")) {
+                    "SELECT mining_xp, combat_xp, foraging_xp, hunting_xp, prosperity FROM tomblock.player_profiles WHERE player_id = ?")) {
                 statement.setObject(1, player.getUuid());
                 try (ResultSet result = statement.executeQuery()) {
                     if (!result.next()) return;
-                    player.restoreSkillXp(result.getLong("mining_xp"), result.getLong("combat_xp"), result.getLong("foraging_xp"));
+                    player.restoreSkillXp(result.getLong("mining_xp"), result.getLong("combat_xp"), result.getLong("foraging_xp"), result.getLong("hunting_xp"));
                     player.setProsperity(result.getDouble("prosperity"));
                 }
             }

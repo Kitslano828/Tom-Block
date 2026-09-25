@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.tomdang.region.bukkit.BukkitBlockPositionAdapter;
 import org.tomdang.region.override.RegionOverrideState;
 import org.tomdang.region.position.BlockPosition;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +35,7 @@ class RegionBrushListenerTest {
 		RegionBrushItemService brushItems = mock(RegionBrushItemService.class);
 		RegionEditingService editing = mock(RegionEditingService.class);
 		RegionBrushListener listener = new RegionBrushListener(
-				brushItems, editing, new BukkitBlockPositionAdapter());
+				brushItems, editing, new BukkitBlockPositionAdapter(), mock(PlayerActionBarService.class));
 		PlayerInteractEvent event = mock(PlayerInteractEvent.class);
 		when(event.getHand()).thenReturn(EquipmentSlot.OFF_HAND);
 
@@ -49,7 +50,7 @@ class RegionBrushListenerTest {
 		RegionBrushItemService brushItems = mock(RegionBrushItemService.class);
 		RegionEditingService editing = mock(RegionEditingService.class);
 		RegionBrushListener listener = new RegionBrushListener(
-				brushItems, editing, new BukkitBlockPositionAdapter());
+				brushItems, editing, new BukkitBlockPositionAdapter(), mock(PlayerActionBarService.class));
 		PlayerInteractEvent event = event(Action.LEFT_CLICK_BLOCK, false, brushItems);
 		Player player = event.getPlayer();
 		when(player.hasPermission("tomblock.admin.region.edit")).thenReturn(false);
@@ -65,7 +66,7 @@ class RegionBrushListenerTest {
 		RegionBrushItemService brushItems = mock(RegionBrushItemService.class);
 		RegionEditingService editing = mock(RegionEditingService.class);
 		RegionBrushListener listener = new RegionBrushListener(
-				brushItems, editing, new BukkitBlockPositionAdapter());
+				brushItems, editing, new BukkitBlockPositionAdapter(), mock(PlayerActionBarService.class));
 		PlayerInteractEvent event = event(action, sneaking, brushItems);
 		Player player = event.getPlayer();
 		UUID playerId = player.getUniqueId();
@@ -85,7 +86,12 @@ class RegionBrushListenerTest {
 		World world = mock(World.class);
 		when(world.getName()).thenReturn("world");
 		Block block = mock(Block.class);
-		when(block.getLocation()).thenReturn(new Location(world, 4, 70, 6));
+		Location location = mock(Location.class);
+		when(location.getWorld()).thenReturn(world);
+		when(location.getBlockX()).thenReturn(4);
+		when(location.getBlockY()).thenReturn(70);
+		when(location.getBlockZ()).thenReturn(6);
+		when(block.getLocation()).thenReturn(location);
 		Player player = mock(Player.class);
 		when(player.getUniqueId()).thenReturn(UUID.randomUUID());
 		when(player.isSneaking()).thenReturn(sneaking);

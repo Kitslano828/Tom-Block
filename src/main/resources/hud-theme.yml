@@ -1,0 +1,46 @@
+id: tomblock-default
+
+# Phase 3 defines reusable visual language only. Gameplay widgets are migrated later.
+text-styles:
+  primary:
+    color: "#FFFFFF"
+    shadow: true
+  heading:
+    color: "#F2AE32"
+    bold: true
+    shadow: true
+  positive:
+    color: "#55FF55"
+    shadow: true
+  warning:
+    color: "#FF5555"
+    shadow: true
+  muted:
+    color: "#AAAAAA"
+    shadow: true
+  status-health:
+    color: "#FF4055"
+    shadow: true
+  status-energy:
+    color: "#00E6C3"
+    shadow: true
+  dialogue-speaker:
+    color: "#F2AE32"
+    bold: true
+    shadow: true
+  dialogue-body:
+    color: "#FFFFFF"
+    shadow: true
+  dialogue-indicator:
+    color: "#AAAAAA"
+    shadow: true
+
+metrics:
+  spacing-xs: 1
+  spacing-sm: 2
+  spacing-md: 4
+  spacing-lg: 8
+  text-line-height: 9
+  status-gap: 2
+  status-bar-width: 90
+  status-value-track-width: 100

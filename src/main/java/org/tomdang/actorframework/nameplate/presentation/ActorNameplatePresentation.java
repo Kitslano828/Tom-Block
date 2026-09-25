@@ -12,6 +12,11 @@ public interface ActorNameplatePresentation {
 
 	boolean hideFromViewer(Player viewer, UUID instanceUUID);
 
+	default void refreshForViewer(Player viewer, ActorInstance instance, Location currentLocation, boolean isMoving) {
+		hideFromViewer(viewer, instance.getInstanceID());
+		showToViewer(viewer, instance, currentLocation, isMoving);
+	}
+
 	void updateNameplate(ActorInstance instance, Location newLocation, boolean isMoving);
 
 	boolean removeNameplate(UUID instanceUUID);

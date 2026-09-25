@@ -18,18 +18,10 @@ commands:
     description: Gives a player-centered local map item
     usage: /minimap
     permission: tomblock.map
-  maphud:
-    description: Tests static, marker-overlay, or live image HUD rendering
-    usage: /maphud <static|marker|live|centered|off>
-    permission: tomblock.admin.maphud
   mapimage:
     description: Gives a test map item using the exported world image
     usage: /mapimage <full|local>
     permission: tomblock.admin.mapimage
-  maptest:
-    description: Toggles the experimental village sidebar map
-    usage: /maptest
-    permission: tomblock.admin.maptest
   setskill:
     description: sets one of your skills to a level or total XP amount
     usage: /setskill <skill> <lvl|xp> <amount>
@@ -99,6 +91,10 @@ commands:
     description: Shows quest progress and provides administrative quest controls
     usage: /quest [inspect|start|signal|branch|complete|reset]
     permission: tomblock.quest
+  hudlab:
+    description: Toggles the isolated TomBlock HUD protocol laboratory
+    usage: /hudlab
+    permission: tomblock.admin.hudlab
 
 permissions:
   tomblock.collections:
@@ -116,14 +112,8 @@ permissions:
   tomblock.map:
     description: Allows viewing the world and local map items
     default: true
-  tomblock.admin.maphud:
-    description: Allows testing the resource-pack village map HUD
-    default: op
   tomblock.admin.mapimage:
     description: Allows testing the exported world image as a map item
-    default: op
-  tomblock.admin.maptest:
-    description: Allows testing the experimental village map
     default: op
   tomblock.admin.refreshitems:
     description: allows manual refreshing of custom items for testing
@@ -136,4 +126,7 @@ permissions:
     default: op
   tomblock.admin.foraging:
     description: Allows placement of registered foraging test trees
+    default: op
+  tomblock.admin.hudlab:
+    description: Allows use of the isolated HUD protocol laboratory
     default: op
