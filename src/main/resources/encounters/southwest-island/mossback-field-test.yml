@@ -14,3 +14,8 @@ encounter:
     hitbox-width: 1.2
     hitbox-height: 0.9
     cover-offsets: "-7,5;7,5;-7,-5;7,-5;0,9"
+    clues-required: 3
+    maximum-alertness: 100
+    reckless-alertness: 25
+    calm-recovery: 10
+    capture-ready-ticks: 20

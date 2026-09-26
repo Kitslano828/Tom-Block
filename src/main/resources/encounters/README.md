@@ -39,3 +39,14 @@ questlines select encounter IDs without adding quest-specific listeners.
 The framework persists open sessions in PostgreSQL. A restart suspends them;
 the owner can resume within the configured grace period. Completion, failure,
 timeout, and plugin shutdown release encounter-owned runtime resources.
+
+`GROUND_CRITTER_HUNT` adds a reusable track, trap, and flush loop. Its
+parameters tune `clues-required`, `maximum-alertness`, `reckless-alertness`,
+and `calm-recovery`; the species supplies its awareness radius and relocation
+limit. Looking steadily at nearby tracks reads them without an interaction.
+Completing the trail reveals authored cover points, one of which the player
+selects for a snare. Movement pressure then makes the critter choose cover away
+from the player's position. Reaching the snared cover completes the hunt;
+reaching another cover consumes a relocation. Exhausting relocations fails the
+encounter without publishing a capture, while success continues through the
+standard critter event pipeline.

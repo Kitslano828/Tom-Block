@@ -33,6 +33,8 @@ import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.skill.SkillProgressPresenter;
 import org.tomdang.player.skill.SkillProgressionService;
 import org.tomdang.player.skill.SkillProgressNotificationSink;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
+import org.tomdang.hud.hunting.HuntingHudService;
 
 public final class CritterBootstrap implements AutoCloseable {
     private final CritterRegistry definitions = new CritterRegistry();
@@ -48,6 +50,7 @@ public final class CritterBootstrap implements AutoCloseable {
     public CritterBootstrap(TomBlock plugin, DataSource dataSource, GameplayEventBus events,
             EncounterBootstrap encounters, PlayerProfileService profiles,
             PlayerProfileRepository profileRepository, SkillProgressNotificationSink progressionNotifications,
+            PlayerActionBarService actionBar, HuntingHudService huntingHud,
             CustomItemRegistry items, CustomItemStackFactory stacks, CustomItemResolver itemResolver,
             GuiRegistry guiRegistry, GuiService guiService) {
         var loader = new CritterConfigurationLoader();
@@ -81,7 +84,8 @@ public final class CritterBootstrap implements AutoCloseable {
         aiCommand.setTabCompleter(aiDiagnostics);
         glimmerfly = new GlimmerflyEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime);
         encounters.behaviors().register("GLIMMERFLY_HUNT", glimmerfly);
-        groundCritter = new GroundCritterEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime);
+        groundCritter = new GroundCritterEncounterBehavior(plugin, definitions, runtime, ai,
+                encounters::runtime, actionBar, huntingHud);
         encounters.behaviors().register("GROUND_CRITTER_HUNT", groundCritter);
         var critterTest = new CritterTestCommand(encounters.runtime());
         var critterCommand = java.util.Objects.requireNonNull(plugin.getCommand("crittertest"),

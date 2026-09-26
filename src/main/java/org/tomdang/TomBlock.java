@@ -247,6 +247,7 @@ public class TomBlock extends JavaPlugin {
 		hudPresenters.register(new org.tomdang.hud.status.PlayerResourceValuesHudPresenter());
 		hudPresenters.register(new org.tomdang.hud.notification.HudNotificationPresenter());
 		hudPresenters.register(new org.tomdang.hud.progression.ProgressionNotificationPresenter());
+		hudPresenters.register(new org.tomdang.hud.hunting.HuntingHudPresenter());
 		hudPresenters.register(new org.tomdang.hud.dialogue.HudDialoguePresenter());
 		hudPresenters.seal();
 		productionHud = new org.tomdang.hud.presentation.ProductionHudService(hudRuntime, hudPresenters,
@@ -254,6 +255,7 @@ public class TomBlock extends JavaPlugin {
 				new org.tomdang.hud.presentation.asset.HudAssetConfigurationLoader().load(getResource("hud-assets.yml")));
 		var hudNotifications = new org.tomdang.hud.notification.HudNotificationService(this, productionHud);
 		progressionNotifications = new org.tomdang.hud.progression.ProgressionNotificationHudService(this, productionHud);
+		var huntingHud = new org.tomdang.hud.hunting.HuntingHudService(productionHud);
 		playerResourceValuesHud = new org.tomdang.hud.status.PlayerResourceValuesHudService(
 				playerResourceService, productionHud, Bukkit::getCurrentTick);
 		getServer().getPluginManager().registerEvents(
@@ -278,6 +280,7 @@ public class TomBlock extends JavaPlugin {
 		var skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(progressionNotifications);
 		critterBootstrap = new CritterBootstrap(this, playerBootStrap.getDataSource(), gameplayEvents,
 				encounterBootstrap, playerProfileService, playerProfileStorage, progressionNotifications,
+				playerActionBarService, huntingHud,
 				customItemRegistry, customItemStackFactory, customItemResolver,
 				guiBootstrap.registry(), guiBootstrap.service());
 		CollectionService collectionService = new CollectionService(

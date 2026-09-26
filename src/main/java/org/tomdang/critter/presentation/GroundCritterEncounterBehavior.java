@@ -29,8 +29,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.tomdang.critter.definition.CritterRegistry;
+import org.tomdang.critter.hunting.HuntEngine;
+import org.tomdang.critter.hunting.HuntGrade;
+import org.tomdang.critter.hunting.HuntPhase;
+import org.tomdang.critter.hunting.HuntRules;
+import org.tomdang.critter.hunting.HuntState;
+import org.tomdang.critter.hunting.HuntTransition;
 import org.tomdang.critter.runtime.CritterRuntimeService;
-import org.tomdang.critter.runtime.CritterState;
 import org.tomdang.encounter.runtime.EncounterBehavior;
 import org.tomdang.encounter.runtime.EncounterRuntimeContext;
 import org.tomdang.encounter.runtime.EncounterRuntimeService;
@@ -42,6 +47,9 @@ import org.tomdang.entityai.core.AiBrain;
 import org.tomdang.entityai.core.AiCapability;
 import org.tomdang.entityai.core.AiVector;
 import org.tomdang.entityai.runtime.EntityAiRuntime;
+import org.tomdang.player.playeractionbar.PlayerActionBarService;
+import org.tomdang.hud.hunting.HuntingHudModel;
+import org.tomdang.hud.hunting.HuntingHudService;
 
 /** Private encounter presentation for data-defined critters using native ground navigation. */
 public final class GroundCritterEncounterBehavior implements EncounterBehavior, Listener, AutoCloseable {
@@ -49,17 +57,22 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     private final CritterRegistry definitions;
     private final CritterRuntimeService critters;
     private final EntityAiRuntime ai;
+    private final PlayerActionBarService messages;
+    private final HuntingHudService huntingHud;
     private final Supplier<EncounterRuntimeService> encounters;
     private final ConfiguredGoalFactory goals = new ConfiguredGoalFactory();
     private final ConfiguredNavigatorFactory navigators = new ConfiguredNavigatorFactory();
-    private final Map<UUID, View> byHitbox = new HashMap<>();
+    private final Map<UUID, Clue> byClueHitbox = new HashMap<>();
+    private final Map<UUID, Cover> byCoverHitbox = new HashMap<>();
     private final Map<UUID, View> byEncounter = new HashMap<>();
     private final BukkitTask presentationTask;
 
     public GroundCritterEncounterBehavior(Plugin plugin, CritterRegistry definitions,
             CritterRuntimeService critters, EntityAiRuntime ai,
-            Supplier<EncounterRuntimeService> encounters) {
-        if (plugin == null || definitions == null || critters == null || ai == null || encounters == null) {
+            Supplier<EncounterRuntimeService> encounters, PlayerActionBarService messages,
+            HuntingHudService huntingHud) {
+        if (plugin == null || definitions == null || critters == null || ai == null || encounters == null
+                || messages == null || huntingHud == null) {
             throw new IllegalArgumentException("Ground critter behavior dependencies are required");
         }
         this.plugin = plugin;
@@ -67,6 +80,8 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         this.critters = critters;
         this.ai = ai;
         this.encounters = encounters;
+        this.messages = messages;
+        this.huntingHud = huntingHud;
         Bukkit.getPluginManager().registerEvents(this, plugin);
         presentationTask = Bukkit.getScheduler().runTaskTimer(plugin, this::updatePresentations, 1L, 1L);
     }
@@ -127,9 +142,6 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             value.setPersistent(false);
             value.setVisibleByDefault(false);
         });
-        player.showEntity(plugin, display);
-        player.showEntity(plugin, hitbox);
-
         var critter = critters.spawn(critterId, player.getUniqueId());
         var agent = new BukkitMobGroundAgent(carrier, critterId, Set.of(AiCapability.INTERACTING));
         var brain = new AiBrain(agent,
@@ -138,47 +150,34 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         List<AiVector> coverPoints = coverPoints(context, location);
         brain.memory().put("cover-points", coverPoints);
         brain.memory().put("cover-count", coverPoints.size());
-        ai.register(brain);
-
-        View view = new View(context.session().instanceId(), player.getUniqueId(), critter.instanceId(),
+        int cluesRequired = parseInt(context.definition().parameters().get("clues-required"), 3);
+        HuntRules huntRules = new HuntRules(cluesRequired,
+                parseInt(context.definition().parameters().get("maximum-alertness"), 100),
+                parseInt(context.definition().parameters().get("reckless-alertness"), 25),
+                parseInt(context.definition().parameters().get("calm-recovery"), 10),
+                definition.hunting().maximumRelocations(),
+                parseLong(context.definition().parameters().get("capture-ready-ticks"), 20),
+                definition.hunting().captureWindow().toSeconds() * 20);
+        View view = new View(context.session().instanceId(), player.getUniqueId(), critter.instanceId(), critterId,
                 carrier, display, hitbox, brain,
                 parseDouble(context.definition().parameters().get("model-y-offset"), .15),
-                parseDouble(context.definition().parameters().get("model-yaw-offset"), 0));
+                parseDouble(context.definition().parameters().get("model-yaw-offset"), 0),
+                huntRules, new HuntEngine(huntRules), coverPoints);
         byEncounter.put(view.encounterId, view);
-        byHitbox.put(hitbox.getUniqueId(), view);
+        syncDiagnostics(view);
+        spawnClues(view, player, location, cluesRequired);
+        updateHud(view, player, Bukkit.getCurrentTick());
         context.resources().own(() -> remove(view.encounterId));
-        player.sendMessage(Component.text(definition.name()
-                + " tracks through the undergrowth. Approach carefully and interact to observe it.",
-                NamedTextColor.GOLD));
+        notify(player, Component.text("Follow the disturbed moss and inspect " + cluesRequired
+                + " tracks.", NamedTextColor.GOLD), 60);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void interact(PlayerInteractEntityEvent event) {
-        View view = byHitbox.get(event.getRightClicked().getUniqueId());
-        if (view == null || !view.owner.equals(event.getPlayer().getUniqueId())) return;
+        Cover cover = byCoverHitbox.get(event.getRightClicked().getUniqueId());
+        if (cover == null || !cover.view.owner.equals(event.getPlayer().getUniqueId())) return;
         event.setCancelled(true);
-        var instance = critters.find(view.critterId).orElse(null);
-        if (instance == null) return;
-        String activeGoal = view.brain.activeGoal().orElse("");
-        if (!view.brain.memory().flag("settled")
-                && (activeGoal.equals("FLEE") || activeGoal.equals("SEEK_COVER"))) {
-            event.getPlayer().sendMessage(Component.text(
-                    "It is too alert to study. Let it reach cover and settle.", NamedTextColor.RED));
-            return;
-        }
-        if (instance.state() != CritterState.SETTLED) {
-            critters.approach(view.critterId, false);
-            critters.observe(view.critterId);
-            view.brain.memory().flag("settled", true);
-            event.getPlayer().sendMessage(Component.text(
-                    "You document its behavior. Interact once more to complete the field test.",
-                    NamedTextColor.YELLOW));
-            return;
-        }
-        critters.capture(view.critterId);
-        encounters.get().complete(view.encounterId);
-        event.getPlayer().sendMessage(Component.text("Ground critter documented and released.",
-                NamedTextColor.GREEN));
+        armTrap(event.getPlayer(), cover);
     }
 
     private void updatePresentations() {
@@ -192,7 +191,245 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             model.setYaw(model.getYaw() + (float) view.modelYawOffset);
             view.display.teleport(model);
             view.hitbox.teleport(base);
+            tickHunt(view);
         }
+    }
+
+    private void tickHunt(View view) {
+        Player player = Bukkit.getPlayer(view.owner);
+        if (player == null) return;
+        long tick = Bukkit.getCurrentTick();
+        if (view.huntState.phase() == HuntPhase.TRACKING) inspectVisibleClue(view, player);
+        if (view.flushActive) {
+            resolveFlush(view, player);
+            return;
+        }
+        if (tick - view.lastHudTick >= 2) {
+            view.lastHudTick = tick;
+            updateHud(view, player, tick);
+        }
+        if (view.huntState.phase() != HuntPhase.APPROACH || tick - view.lastAwarenessTick < 5) return;
+        view.lastAwarenessTick = tick;
+        double awareness = definitions.require(view.definitionId).hunting().awarenessRadius();
+        if (!player.getWorld().equals(view.carrier.getWorld())
+                || player.getLocation().distanceSquared(view.carrier.getLocation()) > awareness * awareness) return;
+        var velocity = player.getVelocity();
+        double horizontalSpeed = Math.hypot(velocity.getX(), velocity.getZ());
+        boolean reckless = player.isSprinting() || !player.isOnGround()
+                || (!player.isSneaking() && horizontalSpeed > .075);
+        int previous = view.huntState.alertness();
+        var update = view.hunt.sampleApproach(view.huntState, reckless);
+        view.huntState = update.state();
+        syncDiagnostics(view);
+        if (update.transition() == HuntTransition.FLUSH_READY) {
+            startFlush(view, player);
+        } else if (reckless && previous < 50 && view.huntState.alertness() >= 50) {
+            notify(player, Component.text("Pressure rising—keep the snare behind the Mossback.",
+                    NamedTextColor.YELLOW), 35);
+        }
+    }
+
+    private void inspectVisibleClue(View view, Player player) {
+        int index = view.huntState.cluesFound();
+        if (index >= view.clues.size()) return;
+        Clue clue = view.clues.get(index);
+        Location eye = player.getEyeLocation();
+        org.bukkit.util.Vector toward = clue.marker.getLocation().toVector().subtract(eye.toVector());
+        double distance = toward.length();
+        if (distance > 2.2 || distance < .01) { clue.focusTicks = 0; return; }
+        double alignment = eye.getDirection().normalize().dot(toward.normalize());
+        if (alignment < .78 || !player.hasLineOfSight(clue.marker)) { clue.focusTicks = 0; return; }
+        if (++clue.focusTicks >= 12) inspectClue(player, clue);
+    }
+
+    private void armTrap(Player player, Cover selected) {
+        View view = selected.view;
+        var update = view.hunt.armTrap(view.huntState);
+        if (update.transition() != HuntTransition.TRAP_ARMED) return;
+        view.huntState = update.state();
+        view.snare = selected;
+        for (Cover cover : new ArrayList<>(view.covers)) {
+            byCoverHitbox.remove(cover.hitbox.getUniqueId());
+            cover.hitbox.remove();
+            if (cover != selected) cover.marker.remove();
+        }
+        selected.marker.setItemStack(ItemStack.of(Material.COBWEB));
+        player.showEntity(plugin, view.display);
+        ai.register(view.brain);
+        syncDiagnostics(view);
+        notify(player, Component.text("Snare armed. Move opposite it and pressure the Mossback toward it.",
+                NamedTextColor.GREEN), 60);
+    }
+
+    private void startFlush(View view, Player player) {
+        view.flushActive = true;
+        view.brain.memory().flag("settled", false);
+        view.brain.memory().flag("seek-cover", true);
+        Location location = player.getLocation();
+        view.brain.memory().put("threat-position", new AiVector(location.getX(), location.getY(), location.getZ()));
+        notify(player, Component.text("The Mossback bolts for cover!", NamedTextColor.GOLD), 35);
+    }
+
+    private void resolveFlush(View view, Player player) {
+        if (view.snare != null && view.carrier.getLocation().distanceSquared(view.snare.location) <= 1.3 * 1.3) {
+            view.huntState = view.hunt.trapCaptured(view.huntState).state();
+            HuntGrade grade = HuntGrade.fromRelocations(view.huntState.relocations());
+            critters.approach(view.critterId, false);
+            critters.observe(view.critterId);
+            critters.capture(view.critterId, grade);
+            encounters.get().complete(view.encounterId);
+            notify(player, Component.text("Mossback safely snared and released — " + grade.name() + " hunt!",
+                    NamedTextColor.GREEN), 60);
+            return;
+        }
+        if (!view.brain.memory().flag("settled")) return;
+        var update = view.hunt.missTrap(view.huntState);
+        view.huntState = update.state();
+        view.flushActive = false;
+        removeCovers(view);
+        if (update.transition() == HuntTransition.ESCAPED) {
+            escape(view, player, "The Mossback evaded too many snares and escaped.");
+            return;
+        }
+        spawnCoverChoices(view, player);
+        syncDiagnostics(view);
+        notify(player, Component.text("It reached different cover. Choose a new snare position.",
+                NamedTextColor.RED), 55);
+    }
+
+    private void spawnClues(View view, Player player, Location destination, int count) {
+        Location origin = player.getLocation();
+        for (int index = 0; index < count; index++) {
+            double progress = (index + 1.0) / (count + 1.0);
+            double x = origin.getX() + (destination.getX() - origin.getX()) * progress;
+            double z = origin.getZ() + (destination.getZ() - origin.getZ()) * progress;
+            Location location = ground(player.getWorld(), x, z, origin.getBlockY())
+                    .orElse(origin.clone()).add(0, .04, 0);
+            ItemDisplay marker = player.getWorld().spawn(location, ItemDisplay.class, value -> {
+                value.setItemStack(ItemStack.of(Material.MOSS_CARPET));
+                value.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
+                value.setBillboard(Display.Billboard.FIXED);
+                value.setPersistent(false);
+                value.setVisibleByDefault(false);
+            });
+            Interaction hitbox = player.getWorld().spawn(location, Interaction.class, value -> {
+                value.setInteractionWidth(.9f);
+                value.setInteractionHeight(.45f);
+                value.setResponsive(true);
+                value.setPersistent(false);
+                value.setVisibleByDefault(false);
+            });
+            if (index == 0) {
+                player.showEntity(plugin, marker);
+                player.showEntity(plugin, hitbox);
+            }
+            Clue clue = new Clue(view, index, marker, hitbox);
+            view.clues.add(clue);
+            byClueHitbox.put(hitbox.getUniqueId(), clue);
+        }
+    }
+
+    private void inspectClue(Player player, Clue clue) {
+        View view = clue.view;
+        if (!view.owner.equals(player.getUniqueId()) || clue.found
+                || view.huntState.phase() != HuntPhase.TRACKING) return;
+        if (clue.index != view.huntState.cluesFound()) return;
+        clue.found = true;
+        byClueHitbox.remove(clue.hitbox.getUniqueId());
+        clue.marker.remove();
+        clue.hitbox.remove();
+        var update = view.hunt.inspectClue(view.huntState);
+        view.huntState = update.state();
+        syncDiagnostics(view);
+        int nextIndex = clue.index + 1;
+        if (nextIndex < view.clues.size()) {
+            Clue next = view.clues.get(nextIndex);
+            player.showEntity(plugin, next.marker);
+            player.showEntity(plugin, next.hitbox);
+        }
+        if (update.transition() == HuntTransition.TRAIL_COMPLETED) {
+            spawnCoverChoices(view, player);
+            notify(player, Component.text("Trail complete. Choose a cover point for your snare.",
+                    NamedTextColor.GREEN), 60);
+        } else {
+            notify(player, Component.text("Track found (" + view.huntState.cluesFound() + "/"
+                    + view.huntRules().cluesRequired() + ").", NamedTextColor.YELLOW), 35);
+        }
+    }
+
+    private void spawnCoverChoices(View view, Player player) {
+        removeCovers(view);
+        for (AiVector point : view.coverPoints) {
+            Location location = new Location(player.getWorld(), point.x(), point.y() + .05, point.z());
+            ItemDisplay marker = player.getWorld().spawn(location, ItemDisplay.class, value -> {
+                value.setItemStack(ItemStack.of(Material.TRIPWIRE_HOOK));
+                value.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GROUND);
+                value.setBillboard(Display.Billboard.FIXED);
+                value.setPersistent(false);
+                value.setVisibleByDefault(false);
+            });
+            Interaction hitbox = player.getWorld().spawn(location, Interaction.class, value -> {
+                value.setInteractionWidth(1.2f);
+                value.setInteractionHeight(.7f);
+                value.setResponsive(true);
+                value.setPersistent(false);
+                value.setVisibleByDefault(false);
+            });
+            Cover cover = new Cover(view, location, marker, hitbox);
+            view.covers.add(cover);
+            byCoverHitbox.put(hitbox.getUniqueId(), cover);
+            player.showEntity(plugin, marker);
+            player.showEntity(plugin, hitbox);
+        }
+    }
+
+    private void removeCovers(View view) {
+        for (Cover cover : view.covers) {
+            byCoverHitbox.remove(cover.hitbox.getUniqueId());
+            cover.marker.remove();
+            cover.hitbox.remove();
+        }
+        view.covers.clear();
+        view.snare = null;
+    }
+
+    private void escape(View view, Player player, String reason) {
+        if (!byEncounter.containsKey(view.encounterId)) return;
+        notify(player, Component.text(reason, NamedTextColor.RED), 60);
+        encounters.get().fail(view.encounterId, "CRITTER_ESCAPED");
+    }
+
+    private void notify(Player player, Component message, long duration) {
+        messages.showTemporaryMessage(player, message, duration);
+    }
+
+    private void syncDiagnostics(View view) {
+        view.brain.memory().put("hunt-phase", view.huntState.phase().name());
+        view.brain.memory().put("hunt-clues", view.huntState.cluesFound());
+        view.brain.memory().put("hunt-alertness", view.huntState.alertness());
+        view.brain.memory().put("hunt-relocations", view.huntState.relocations());
+        if (view.snare == null) view.brain.memory().remove("hunt-snare");
+        else view.brain.memory().put("hunt-snare", new AiVector(view.snare.location.getX(),
+                view.snare.location.getY(), view.snare.location.getZ()));
+    }
+
+    private void updateHud(View view, Player player, long tick) {
+        HuntState state = view.huntState;
+        String instruction = switch (state.phase()) {
+            case TRACKING -> "FOLLOW THE TRAIL";
+            case TRAP_PLACEMENT -> "CHOOSE SNARE COVER";
+            case APPROACH -> "PRESSURE TOWARD SNARE";
+            case CAPTURE_WINDOW -> tick < state.captureReadyAtTick() ? "HOLD STEADY" : "INTERACT NOW";
+            case COMPLETED -> "HUNT COMPLETE";
+            case ESCAPED -> "CRITTER ESCAPED";
+        };
+        long remaining = state.phase() == HuntPhase.CAPTURE_WINDOW
+                ? Math.max(0, state.captureExpiresAtTick() - tick) : 0;
+        huntingHud.show(player.getUniqueId(), new HuntingHudModel(
+                definitions.require(view.definitionId).name(), instruction,
+                state.cluesFound(), view.huntRules.cluesRequired(), state.alertness(),
+                view.huntRules.maximumAlertness(), remaining,
+                HuntGrade.fromRelocations(state.relocations()).name()));
     }
 
     private Location spawnLocation(Player player, double distance) {
@@ -243,6 +480,18 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         catch (NumberFormatException ignored) { return fallback; }
     }
 
+    private int parseInt(String value, int fallback) {
+        if (value == null) return fallback;
+        try { return Integer.parseInt(value); }
+        catch (NumberFormatException ignored) { return fallback; }
+    }
+
+    private long parseLong(String value, long fallback) {
+        if (value == null) return fallback;
+        try { return Long.parseLong(value); }
+        catch (NumberFormatException ignored) { return fallback; }
+    }
+
     private EntityType carrierType(String configured) {
         String name = configured == null ? "SILVERFISH" : configured.trim().toUpperCase(Locale.ROOT);
         try { return EntityType.valueOf(name); }
@@ -254,7 +503,13 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     private void remove(UUID encounterId) {
         View view = byEncounter.remove(encounterId);
         if (view == null) return;
-        byHitbox.remove(view.hitbox.getUniqueId());
+        huntingHud.hide(view.owner);
+        removeCovers(view);
+        for (Clue clue : view.clues) {
+            byClueHitbox.remove(clue.hitbox.getUniqueId());
+            clue.marker.remove();
+            clue.hitbox.remove();
+        }
         ai.remove(view.carrier.getUniqueId());
         critters.find(view.critterId).ifPresent(value -> critters.escape(view.critterId));
         view.display.remove();
@@ -268,7 +523,75 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         HandlerList.unregisterAll(this);
     }
 
-    private record View(UUID encounterId, UUID owner, UUID critterId, Mob carrier,
-                        ItemDisplay display, Interaction hitbox, AiBrain brain,
-                        double modelYOffset, double modelYawOffset) {}
+    private static final class View {
+        private final UUID encounterId;
+        private final UUID owner;
+        private final UUID critterId;
+        private final String definitionId;
+        private final Mob carrier;
+        private final ItemDisplay display;
+        private final Interaction hitbox;
+        private final AiBrain brain;
+        private final double modelYOffset;
+        private final double modelYawOffset;
+        private final HuntRules huntRules;
+        private final HuntEngine hunt;
+        private final List<AiVector> coverPoints;
+        private final List<Clue> clues = new ArrayList<>();
+        private final List<Cover> covers = new ArrayList<>();
+        private Cover snare;
+        private boolean flushActive;
+        private HuntState huntState = HuntState.start();
+        private long lastAwarenessTick;
+        private long lastHudTick;
+
+        private View(UUID encounterId, UUID owner, UUID critterId, String definitionId, Mob carrier,
+                ItemDisplay display, Interaction hitbox, AiBrain brain,
+                double modelYOffset, double modelYawOffset, HuntRules huntRules, HuntEngine hunt,
+                List<AiVector> coverPoints) {
+            this.encounterId = encounterId;
+            this.owner = owner;
+            this.critterId = critterId;
+            this.definitionId = definitionId;
+            this.carrier = carrier;
+            this.display = display;
+            this.hitbox = hitbox;
+            this.brain = brain;
+            this.modelYOffset = modelYOffset;
+            this.modelYawOffset = modelYawOffset;
+            this.huntRules = huntRules;
+            this.hunt = hunt;
+            this.coverPoints = List.copyOf(coverPoints);
+        }
+
+        private HuntRules huntRules() { return huntRules; }
+    }
+
+    private static final class Clue {
+        private final View view;
+        private final int index;
+        private final ItemDisplay marker;
+        private final Interaction hitbox;
+        private boolean found;
+        private int focusTicks;
+        private Clue(View view, int index, ItemDisplay marker, Interaction hitbox) {
+            this.view = view;
+            this.index = index;
+            this.marker = marker;
+            this.hitbox = hitbox;
+        }
+    }
+
+    private static final class Cover {
+        private final View view;
+        private final Location location;
+        private final ItemDisplay marker;
+        private final Interaction hitbox;
+        private Cover(View view, Location location, ItemDisplay marker, Interaction hitbox) {
+            this.view = view;
+            this.location = location;
+            this.marker = marker;
+            this.hitbox = hitbox;
+        }
+    }
 }

@@ -41,6 +41,15 @@ regions:
     stack: vertical
     gap: 2
     alignment: start
+  hunting:
+    anchor: top-left
+    offset-x: 8
+    offset-y: 8
+    max-width: 170
+    capacity: 1
+    stack: vertical
+    gap: 1
+    alignment: start
   boss:
     anchor: top-center
     offset-y: 28
@@ -113,3 +122,10 @@ elements:
     offset-x: 8
     offset-y: -52
     max-width: 176
+  tomblock:hunting-encounter:
+    region: hunting
+    enabled: true
+    anchor: top-left
+    offset-x: 8
+    offset-y: 8
+    max-width: 170
