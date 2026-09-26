@@ -7,6 +7,7 @@ critter:
   name: Test Fly
   family: LUMINA
   rarity: RARE
+  journal-icon: AMETHYST_SHARD
   habitats: [FOREST_EDGE]
   temperaments: [CURIOUS, SKITTISH]
   presentation: PLACEHOLDER
@@ -20,5 +21,5 @@ critter:
     hunting-xp: 15
     materials:
       DUST: {minimum: 1, maximum: 2, chance: 0.5}
-""";var value=new CritterConfigurationLoader().load(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));assertEquals("TEST_FLY",value.id());assertEquals(CritterRarity.RARE,value.rarity());assertEquals(15,value.rewards().huntingXp());assertEquals(2,value.rewards().materials().get("DUST").maximum());assertEquals("DIRECT_FLIGHT",value.ai().navigator());}
+""";var value=new CritterConfigurationLoader().load(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));assertEquals("TEST_FLY",value.id());assertEquals(CritterRarity.RARE,value.rarity());assertEquals("AMETHYST_SHARD",value.journalIcon());assertEquals(15,value.rewards().huntingXp());assertEquals(2,value.rewards().materials().get("DUST").maximum());assertEquals("DIRECT_FLIGHT",value.ai().navigator());}
 }

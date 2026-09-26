@@ -1,4 +1,10 @@
 items:
+  CRITTERDEX:
+    material: BOOK
+    display-name: "Critterdex"
+    rarity: COMMON
+    category: UTILITY
+
   ROOKIE_AXE:
     material: WOODEN_AXE
     display-name: "Rookie Axe"

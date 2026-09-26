@@ -29,6 +29,7 @@ public final class ConfiguredGoalFactory {
             case "FOLLOW_OWNER" -> new ApproachTarget(definition, PerceivedEntity::owner, false);
             case "CHASE" -> new ApproachTarget(definition, PerceivedEntity::hostile, true);
             case "FLEE_FROM_PLAYER" -> new Flee(definition);
+            case "SEEK_COVER" -> new SeekCover(definition);
             case "RETURN_HOME" -> new ReturnHome(definition);
             case "ATTACK" -> new Attack(definition);
             case "SETTLE" -> new Settle(definition);
@@ -127,6 +128,9 @@ public final class ConfiguredGoalFactory {
         }
         @Override public AiBehavior start(AiContext context) {
             PerceivedEntity threat = context.perception().nearest(context.agent().position()).orElseThrow();
+            context.memory().flag("settled", false);
+            context.memory().flag("seek-cover", true);
+            context.memory().put("threat-position", threat.position());
             AiVector away = context.agent().position().subtract(threat.position()).normalized();
             if (away.lengthSquared() < .1) away = new AiVector(1, 0, 0);
             AiVector destination = context.agent().position().add(away.multiply(number("distance", 6)))
@@ -134,6 +138,38 @@ public final class ConfiguredGoalFactory {
             return navigate(destination, number("speed", 1.4), .35, number("territory-radius", 10),
                     number("preferred-height", 1.5), current -> current.memory().put("next-wander",
                             current.tick() + ticks("rest-seconds", 2)));
+        }
+    }
+
+    /** Selects an authored cover point away from the last perceived threat. */
+    private static final class SeekCover extends Goal {
+        SeekCover(AiGoalDefinition definition) { super(definition); }
+        @Override public boolean canStart(AiContext context) {
+            return context.memory().flag("seek-cover") && !coverPoints(context).isEmpty();
+        }
+        @Override public AiBehavior start(AiContext context) {
+            List<AiVector> points = coverPoints(context);
+            AiVector threat = context.memory().get("threat-position", AiVector.class)
+                    .orElse(context.agent().position());
+            List<AiVector> ranked = points.stream().sorted(java.util.Comparator
+                    .comparingDouble((AiVector point) -> point.distanceSquared(threat)).reversed()
+                    .thenComparingDouble(point -> point.distanceSquared(context.agent().position())))
+                    .toList();
+            int attempt = context.memory().get("cover-attempt", Integer.class).orElse(0);
+            AiVector destination = ranked.get(Math.floorMod(attempt, ranked.size()));
+            context.memory().put("cover-attempt", attempt + 1);
+            context.memory().put("cover-target", destination);
+            return navigate(destination, number("speed", 1), number("arrival-radius", .75),
+                    number("territory-radius", 16), 0, current -> {
+                        current.memory().flag("seek-cover", false);
+                        current.memory().flag("settled", true);
+                        current.memory().remove("cover-attempt");
+                    });
+        }
+        private List<AiVector> coverPoints(AiContext context) {
+            Object raw = context.memory().get("cover-points", Object.class).orElse(List.of());
+            if (!(raw instanceof List<?> values)) return List.of();
+            return values.stream().filter(AiVector.class::isInstance).map(AiVector.class::cast).toList();
         }
     }
 

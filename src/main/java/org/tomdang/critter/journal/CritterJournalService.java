@@ -1,7 +1,8 @@
 package org.tomdang.critter.journal;
-import java.time.*;import java.util.*;
+import java.time.*;import java.util.*;import java.util.stream.Collectors;
 public final class CritterJournalService{
 	private final CritterJournalRepository repository;private final Clock clock;public CritterJournalService(CritterJournalRepository repository){this(repository,Clock.systemUTC());}CritterJournalService(CritterJournalRepository repository,Clock clock){this.repository=repository;this.clock=clock;}
 	public CritterJournalEntry discover(UUID player,String critter){return update(player,critter,CritterKnowledge.DISCOVERED,false,false);}public CritterJournalEntry observe(UUID player,String critter){return update(player,critter,CritterKnowledge.OBSERVED,true,false);}public CritterJournalEntry hunt(UUID player,String critter){return update(player,critter,CritterKnowledge.HUNTED,false,true);}public Optional<CritterJournalEntry> find(UUID player,String critter){return repository.find(player,critter);}
+	public Map<String,CritterJournalEntry> collection(UUID player){return repository.findAll(player).stream().collect(Collectors.toUnmodifiableMap(CritterJournalEntry::critterId,entry->entry));}
 	private CritterJournalEntry update(UUID player,String critter,CritterKnowledge knowledge,boolean observed,boolean hunted){Instant now=clock.instant();var current=repository.find(player,critter);var next=current.map(value->new CritterJournalEntry(player,critter.toUpperCase(Locale.ROOT),value.knowledge().max(knowledge),value.observations()+(observed?1:0),value.successfulHunts()+(hunted?1:0),value.firstSeenAt(),now)).orElseGet(()->new CritterJournalEntry(player,critter.toUpperCase(Locale.ROOT),knowledge,observed?1:0,hunted?1:0,now,now));repository.save(next);return next;}
 }

@@ -3,6 +3,7 @@ critter:
   name: Glimmerfly
   family: LUMINA
   rarity: COMMON
+  journal-icon: AMETHYST_SHARD
   journal-description: "A gentle luminous insect that rests around flower-rich forest edges."
   habitats: [FLOWER_FIELD, FOREST_EDGE]
   temperaments: [DOCILE, CURIOUS]

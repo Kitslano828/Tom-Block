@@ -1,0 +1,28 @@
+menu:
+  title: Critterdex
+  size: 54
+  slots:
+    entry-01: 10
+    entry-02: 11
+    entry-03: 12
+    entry-04: 13
+    entry-05: 14
+    entry-06: 15
+    entry-07: 16
+    entry-08: 19
+    entry-09: 20
+    entry-10: 21
+    entry-11: 22
+    entry-12: 23
+    entry-13: 24
+    entry-14: 25
+    entry-15: 28
+    entry-16: 29
+    entry-17: 30
+    entry-18: 31
+    entry-19: 32
+    entry-20: 33
+    entry-21: 34
+    previous: 45
+    close: 49
+    next: 53

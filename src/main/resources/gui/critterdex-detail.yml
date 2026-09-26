@@ -1,0 +1,10 @@
+menu:
+  title: "Critterdex: {critter}"
+  size: 45
+  slots:
+    portrait: 10
+    description: 13
+    habitat: 15
+    behavior: 16
+    back: 36
+    close: 40

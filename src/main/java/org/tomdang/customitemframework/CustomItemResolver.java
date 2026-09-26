@@ -17,10 +17,11 @@ public class CustomItemResolver {
 	}
 
 	public CustomItem getCustomItem(ItemStack item) {
+		if (item == null || item.isEmpty()) return null;
 		if (item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
 			String id = meta.getPersistentDataContainer().get(customItemIDKey, PersistentDataType.STRING);
-			return customItemRegistry.getCustomItem(id);
+			return id == null ? null : customItemRegistry.getCustomItem(id);
 		}
 		return null;
 	}

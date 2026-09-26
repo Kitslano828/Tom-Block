@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 import org.tomdang.TomBlock;
 import org.tomdang.critter.configuration.CritterConfigurationLoader;
 import org.tomdang.critter.configuration.CritterResourceDiscovery;
+import org.tomdang.critter.command.CritterTestCommand;
 import org.tomdang.critter.definition.CritterRegistry;
 import org.tomdang.critter.ecology.CritterEcologyService;
 import org.tomdang.critter.journal.CritterJournalService;
@@ -11,13 +12,22 @@ import org.tomdang.critter.journal.CritterJournalRepository;
 import org.tomdang.critter.journal.InMemoryCritterJournalRepository;
 import org.tomdang.critter.journal.PostgresCritterJournalRepository;
 import org.tomdang.critter.presentation.GlimmerflyEncounterBehavior;
+import org.tomdang.critter.presentation.GroundCritterEncounterBehavior;
 import org.tomdang.critter.progression.CritterProgressionService;
+import org.tomdang.critter.presentation.critterdex.CritterdexCommand;
+import org.tomdang.critter.presentation.critterdex.CritterdexDetailScreen;
+import org.tomdang.critter.presentation.critterdex.CritterdexIndexScreen;
+import org.tomdang.critter.presentation.critterdex.CritterdexItemListener;
 import org.tomdang.critter.runtime.CritterRuntimeService;
 import org.tomdang.customitemframework.CustomItemRegistry;
 import org.tomdang.customitemframework.CustomItemStackFactory;
+import org.tomdang.customitemframework.CustomItemResolver;
 import org.tomdang.entityai.runtime.EntityAiRuntime;
 import org.tomdang.entityai.diagnostics.AiDiagnosticsCommand;
 import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.guiframework.GuiLayoutLoader;
+import org.tomdang.guiframework.GuiRegistry;
+import org.tomdang.guiframework.GuiService;
 import org.tomdang.player.PlayerProfileService;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerdata.PlayerProfileRepository;
@@ -32,12 +42,14 @@ public final class CritterBootstrap implements AutoCloseable {
     private final EntityAiRuntime ai;
     private final AiDiagnosticsCommand aiDiagnostics;
     private final GlimmerflyEncounterBehavior glimmerfly;
+    private final GroundCritterEncounterBehavior groundCritter;
     private final CritterEcologyService ecology = new CritterEcologyService();
 
     public CritterBootstrap(TomBlock plugin, DataSource dataSource, GameplayEventBus events,
             EncounterBootstrap encounters, PlayerProfileService profiles,
             PlayerProfileRepository profileRepository, PlayerActionBarService actionBar,
-            CustomItemRegistry items, CustomItemStackFactory stacks) {
+            CustomItemRegistry items, CustomItemStackFactory stacks, CustomItemResolver itemResolver,
+            GuiRegistry guiRegistry, GuiService guiService) {
         var loader = new CritterConfigurationLoader();
         for (String resource : new CritterResourceDiscovery().discover(plugin.getClass())) {
             try (var input = plugin.getResource(resource)) {
@@ -50,6 +62,14 @@ public final class CritterBootstrap implements AutoCloseable {
         CritterJournalRepository journalRepository = dataSource == null
                 ? new InMemoryCritterJournalRepository() : new PostgresCritterJournalRepository(dataSource);
         journal = new CritterJournalService(journalRepository);
+        guiRegistry.register(new CritterdexIndexScreen(definitions, journal,
+                loadLayout(plugin, "gui/critterdex-index.yml")));
+        guiRegistry.register(new CritterdexDetailScreen(definitions, journal,
+                loadLayout(plugin, "gui/critterdex-detail.yml")));
+        var critterdexCommand = java.util.Objects.requireNonNull(plugin.getCommand("critterdex"),
+                "Missing critterdex command");
+        critterdexCommand.setExecutor(new CritterdexCommand(guiService));
+        plugin.getServer().getPluginManager().registerEvents(new CritterdexItemListener(itemResolver, guiService), plugin);
         runtime = new CritterRuntimeService(definitions, events);
         progression = new CritterProgressionService(events, definitions, journal, profiles, profileRepository,
                 new SkillProgressionService(), new SkillProgressPresenter(actionBar), items, stacks);
@@ -61,6 +81,13 @@ public final class CritterBootstrap implements AutoCloseable {
         aiCommand.setTabCompleter(aiDiagnostics);
         glimmerfly = new GlimmerflyEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime);
         encounters.behaviors().register("GLIMMERFLY_HUNT", glimmerfly);
+        groundCritter = new GroundCritterEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime);
+        encounters.behaviors().register("GROUND_CRITTER_HUNT", groundCritter);
+        var critterTest = new CritterTestCommand(encounters.runtime());
+        var critterCommand = java.util.Objects.requireNonNull(plugin.getCommand("crittertest"),
+                "Missing crittertest command");
+        critterCommand.setExecutor(critterTest);
+        critterCommand.setTabCompleter(critterTest);
         plugin.getLogger().info("Loaded " + definitions.all().size() + " critter definitions.");
     }
 
@@ -70,7 +97,17 @@ public final class CritterBootstrap implements AutoCloseable {
     public CritterEcologyService ecology() { return ecology; }
     public EntityAiRuntime ai() { return ai; }
 
+    private static org.tomdang.guiframework.GuiLayout loadLayout(TomBlock plugin, String path) {
+        try (java.io.InputStream resource = plugin.getResource(path)) {
+            if (resource == null) throw new IllegalStateException("TomBlock.jar does not contain " + path);
+            return new GuiLayoutLoader().load(resource);
+        } catch (java.io.IOException exception) {
+            throw new IllegalStateException("Could not close " + path, exception);
+        }
+    }
+
     @Override public void close() {
+        groundCritter.close();
         glimmerfly.close();
         aiDiagnostics.close();
         ai.close();

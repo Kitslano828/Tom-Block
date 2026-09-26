@@ -16,6 +16,9 @@ The definition separates independent dimensions:
 - `rewards` grants Hunting XP and custom-item materials.
 - `presentation` selects replaceable visual code. `PLACEHOLDER` requires no
   final art model.
+- Ground critters can pair a native carrier with a replaceable ItemDisplay
+  model. Encounter-authored cover offsets feed the reusable `SEEK_COVER` goal;
+  species code must not repeatedly scan the world to rediscover them.
 - `relations` links variants, life stages, or related species without imposing
   a Pokemon-style evolution system.
 - `ai.navigator` selects `DIRECT_FLIGHT` for display/flying bodies or
@@ -26,7 +29,7 @@ The definition separates independent dimensions:
   priorities resolve by goal ID, so behavior remains deterministic.
 
 Available goal types are `IDLE`, `REST`, `WANDER`, `PATROL`,
-`INVESTIGATE_PLAYER`, `FLEE_FROM_PLAYER`, `FOLLOW_OWNER`, `RETURN_HOME`,
+`INVESTIGATE_PLAYER`, `FLEE_FROM_PLAYER`, `SEEK_COVER`, `FOLLOW_OWNER`, `RETURN_HOME`,
 `CHASE`, `ATTACK`, and `SETTLE`. Unsupported navigator and goal names fail
 configuration loading instead of degrading silently. Combat adapters implement
 the optional combat-agent contract; non-combat agents simply cannot select an

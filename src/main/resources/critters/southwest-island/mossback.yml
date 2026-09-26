@@ -1,0 +1,68 @@
+critter:
+  id: MOSSBACK
+  name: Mossback
+  family: VERDANT
+  rarity: COMMON
+  journal-icon: MOSS_BLOCK
+  journal-description: "A cautious forest grazer whose mossy shell blends into roots and shaded earth."
+  habitats: [FOREST_EDGE, ROOT_GROVE]
+  temperaments: [DOCILE, SKITTISH]
+  relations: []
+  presentation: ITEM_DISPLAY_GROUND
+  movement:
+    modes: [GROUND]
+    wander-radius: 7.0
+    preferred-height: 0.0
+    speed: 0.8
+    rest-duration-seconds: 3
+    relocation-distance: 5.0
+  hunting:
+    archetypes: [OBSERVE, TRACK, FLUSH]
+    awareness-radius: 6.0
+    capture-window-seconds: 4
+    maximum-relocations: 4
+    outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: NATIVE_GROUND
+    goals:
+      FLEE:
+        type: FLEE_FROM_PLAYER
+        priority: 100
+        trigger-distance: 4.5
+        minimum-player-speed: 0.09
+        distance: 5.0
+        rise: 0.0
+        speed: 1.25
+        territory-radius: 14.0
+        rest-seconds: 1
+      SEEK_COVER:
+        type: SEEK_COVER
+        priority: 90
+        speed: 1.0
+        arrival-radius: 0.8
+        territory-radius: 16.0
+      RETURN_HOME:
+        type: RETURN_HOME
+        priority: 80
+        trigger-distance: 11.0
+        arrival-radius: 1.0
+        speed: 0.9
+      SETTLE:
+        type: SETTLE
+        priority: 70
+      WANDER:
+        type: WANDER
+        priority: 30
+        radius: 7.0
+        preferred-height: 0.0
+        speed: 0.75
+        rest-seconds: 3
+      REST:
+        type: REST
+        priority: 20
+      IDLE:
+        type: IDLE
+        priority: 0
+  rewards:
+    hunting-xp: 20
+    materials: {}

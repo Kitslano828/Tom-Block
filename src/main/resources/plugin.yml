@@ -99,10 +99,21 @@ commands:
     description: Inspects and visualizes registered TomBlock entity AI agents
     usage: /aidiag <summary|list|nearest|inspect|show|hide>
     permission: tomblock.admin.aidiag
+  crittertest:
+    description: Starts an isolated TomBlock critter field test
+    usage: /crittertest <mossback|stop>
+    permission: tomblock.admin.crittertest
+  critterdex:
+    description: Opens your Critterdex species collection
+    usage: /critterdex
+    permission: tomblock.critterdex
 
 permissions:
   tomblock.collections:
     description: Allows viewing personal collections
+    default: true
+  tomblock.critterdex:
+    description: Allows viewing personal Critterdex progress
     default: true
   tomblock.quest:
     description: Allows viewing personal quest progress
@@ -136,4 +147,7 @@ permissions:
     default: op
   tomblock.admin.aidiag:
     description: Allows inspection and visualization of entity AI diagnostics
+    default: op
+  tomblock.admin.crittertest:
+    description: Allows isolated critter encounter testing
     default: op

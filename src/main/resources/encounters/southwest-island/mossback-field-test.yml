@@ -1,0 +1,16 @@
+encounter:
+  id: MOSSBACK_FIELD_TEST
+  behavior: GROUND_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  parameters:
+    critter: MOSSBACK
+    model: mossback
+    carrier: SILVERFISH
+    spawn-distance: 6.0
+    model-y-offset: 0.65
+    model-yaw-offset: 180.0
+    hitbox-width: 1.2
+    hitbox-height: 0.9
+    cover-offsets: "-7,5;7,5;-7,-5;7,-5;0,9"

@@ -139,6 +139,7 @@ public class TomBlock extends JavaPlugin {
 	private CritterBootstrap critterBootstrap;
 	private org.tomdang.quest.presentation.QuestActorMarkerRefreshService questMarkerRefresh;
 	private org.tomdang.quest.presentation.QuestTrackerHudService questTracker;
+	private GuiBootstrap guiBootstrap;
 
 
 	@Override
@@ -147,6 +148,7 @@ public class TomBlock extends JavaPlugin {
 		playerSessions = new PlayerSessionCoordinator();
 		MainThreadGuard mainThread = new MainThreadGuard(Bukkit::isPrimaryThread);
 		gameplayEvents = new GameplayEventBus(mainThread);
+		guiBootstrap = new GuiBootstrap(this);
 		getServer().getPluginManager().registerEvents(new PlayerSessionListener(playerSessions), this);
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			playerSessions.open(player.getUniqueId()).activate();
@@ -273,7 +275,8 @@ public class TomBlock extends JavaPlugin {
 		var skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService);
 		critterBootstrap = new CritterBootstrap(this, playerBootStrap.getDataSource(), gameplayEvents,
 				encounterBootstrap, playerProfileService, playerProfileStorage, playerActionBarService,
-				customItemRegistry, customItemStackFactory);
+				customItemRegistry, customItemStackFactory, customItemResolver,
+				guiBootstrap.registry(), guiBootstrap.service());
 		CollectionService collectionService = new CollectionService(
 				new CollectionConfigurationLoader().load(getResource("collections.yml")),
 				playerBootStrap.getPlayerCounterService(), playerProfileService, skillPresenter, gameplayEvents);
@@ -633,6 +636,7 @@ public class TomBlock extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+		if (guiBootstrap != null) guiBootstrap.close();
 		if (contentModules != null) contentModules.close();
 		if (playerResourceValuesHud != null) playerResourceValuesHud.close();
 		if (hudRuntime != null) hudRuntime.close();
