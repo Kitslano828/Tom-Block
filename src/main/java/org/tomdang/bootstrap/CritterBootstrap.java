@@ -29,10 +29,10 @@ import org.tomdang.guiframework.GuiLayoutLoader;
 import org.tomdang.guiframework.GuiRegistry;
 import org.tomdang.guiframework.GuiService;
 import org.tomdang.player.PlayerProfileService;
-import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.player.playerdata.PlayerProfileRepository;
 import org.tomdang.player.skill.SkillProgressPresenter;
 import org.tomdang.player.skill.SkillProgressionService;
+import org.tomdang.player.skill.SkillProgressNotificationSink;
 
 public final class CritterBootstrap implements AutoCloseable {
     private final CritterRegistry definitions = new CritterRegistry();
@@ -47,7 +47,7 @@ public final class CritterBootstrap implements AutoCloseable {
 
     public CritterBootstrap(TomBlock plugin, DataSource dataSource, GameplayEventBus events,
             EncounterBootstrap encounters, PlayerProfileService profiles,
-            PlayerProfileRepository profileRepository, PlayerActionBarService actionBar,
+            PlayerProfileRepository profileRepository, SkillProgressNotificationSink progressionNotifications,
             CustomItemRegistry items, CustomItemStackFactory stacks, CustomItemResolver itemResolver,
             GuiRegistry guiRegistry, GuiService guiService) {
         var loader = new CritterConfigurationLoader();
@@ -72,7 +72,7 @@ public final class CritterBootstrap implements AutoCloseable {
         plugin.getServer().getPluginManager().registerEvents(new CritterdexItemListener(itemResolver, guiService), plugin);
         runtime = new CritterRuntimeService(definitions, events);
         progression = new CritterProgressionService(events, definitions, journal, profiles, profileRepository,
-                new SkillProgressionService(), new SkillProgressPresenter(actionBar), items, stacks);
+                new SkillProgressionService(), new SkillProgressPresenter(progressionNotifications), items, stacks);
         ai = new EntityAiRuntime(plugin);
         ai.start();
         aiDiagnostics = new AiDiagnosticsCommand(plugin, ai);

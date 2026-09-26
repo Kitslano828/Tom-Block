@@ -26,7 +26,7 @@ import org.tomdang.mining.miningtool.MiningToolCreator;
 import org.tomdang.mining.miningtool.MiningToolRegistry;
 import org.tomdang.mining.miningtool.MiningToolResolver;
 import org.tomdang.player.PlayerProfileService;
-import org.tomdang.player.playeractionbar.PlayerActionBarService;
+import org.tomdang.player.skill.SkillProgressNotificationSink;
 import org.tomdang.player.playerresource.PlayerStatsService;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class MiningBootstrap {
 
 	public MiningBootstrap(TomBlock instance, NamespacedKey customIDKey, MiningToolCreator miningToolCreator,
 						   CustomItemRegistry customItemRegistry, CustomItemStackFactory customItemStackFactory,
-	                       PlayerActionBarService playerActionBarService, PlayerProfileService playerProfileService,
+	                       SkillProgressNotificationSink progressionNotifications, PlayerProfileService playerProfileService,
 	                       PlayerStatsService playerStatsService, ActiveAbilityService activeAbilityService,
 	                       CustomAbilityRegistry customAbilityRegistry
 	) {
@@ -106,7 +106,7 @@ public class MiningBootstrap {
 				customItemRegistry
 		);
 		org.tomdang.player.skill.SkillProgressionService skillProgression = new org.tomdang.player.skill.SkillProgressionService();
-		org.tomdang.player.skill.SkillProgressPresenter skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService);
+		org.tomdang.player.skill.SkillProgressPresenter skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(progressionNotifications);
 		MiningFortune miningFortune = new MiningFortune();
 		MiningRegenerationService miningRegenerationService = new MiningRegenerationService(instance);
 		this.miningService = new MiningService(

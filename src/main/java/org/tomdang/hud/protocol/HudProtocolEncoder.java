@@ -74,6 +74,7 @@ public final class HudProtocolEncoder {
 	private int encodedAdvance(HudDrawCommand command, int layoutWidth) {
 		if (command instanceof HudTextCommand text) return TomBlockHudFonts.profile(text.style().font())
 				.map(profile -> profile.widths().measure(text.text())).orElseGet(() -> textWidths.measure(text.text()));
+		if (command instanceof HudPanelCommand panel) return Math.max(1, (panel.width() + 15) / 16) * 16;
 		return Math.max(0, layoutWidth);
 	}
 
@@ -81,7 +82,7 @@ public final class HudProtocolEncoder {
 		return switch (command) {
 			case HudTextCommand text -> ascii(text.text());
 			case HudImageCommand image -> String.valueOf(protocol.requireGlyph(image.assetId()));
-			case HudPanelCommand ignored -> String.valueOf(protocol.requireGlyph("panel"));
+			case HudPanelCommand panel -> panelCells(panel.width());
 			case HudComponentCommand ignored -> throw new IllegalStateException("Precomposed commands are encoded separately");
 			case HudProgressBarCommand bar -> {
 				int cells = Math.max(1, width / protocol.barCellAdvance(bar.styleId()));
@@ -94,6 +95,10 @@ public final class HudProtocolEncoder {
 	}
 	private String barCells(char glyph, int count) {
 		return (String.valueOf(glyph) + protocol.requireGlyph("bar-joiner")).repeat(count);
+	}
+	private String panelCells(int width) {
+		int cells = Math.max(1, (width + 15) / 16);
+		return (String.valueOf(protocol.requireGlyph("panel")) + protocol.requireGlyph("bar-joiner")).repeat(cells);
 	}
 	private int verticalAdjustment(HudDrawCommand command, HudRect bounds) {
 		return command instanceof HudTextCommand ? 0 : Math.max(0, bounds.height() - 8);

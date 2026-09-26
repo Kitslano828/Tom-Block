@@ -140,6 +140,7 @@ public class TomBlock extends JavaPlugin {
 	private org.tomdang.quest.presentation.QuestActorMarkerRefreshService questMarkerRefresh;
 	private org.tomdang.quest.presentation.QuestTrackerHudService questTracker;
 	private GuiBootstrap guiBootstrap;
+	private org.tomdang.hud.progression.ProgressionNotificationHudService progressionNotifications;
 
 
 	@Override
@@ -245,12 +246,14 @@ public class TomBlock extends JavaPlugin {
 		var hudPresenters = new org.tomdang.hud.presentation.HudPresenterRegistry();
 		hudPresenters.register(new org.tomdang.hud.status.PlayerResourceValuesHudPresenter());
 		hudPresenters.register(new org.tomdang.hud.notification.HudNotificationPresenter());
+		hudPresenters.register(new org.tomdang.hud.progression.ProgressionNotificationPresenter());
 		hudPresenters.register(new org.tomdang.hud.dialogue.HudDialoguePresenter());
 		hudPresenters.seal();
 		productionHud = new org.tomdang.hud.presentation.ProductionHudService(hudRuntime, hudPresenters,
 				new org.tomdang.hud.presentation.theme.HudThemeConfigurationLoader().load(getResource("hud-theme.yml")),
 				new org.tomdang.hud.presentation.asset.HudAssetConfigurationLoader().load(getResource("hud-assets.yml")));
 		var hudNotifications = new org.tomdang.hud.notification.HudNotificationService(this, productionHud);
+		progressionNotifications = new org.tomdang.hud.progression.ProgressionNotificationHudService(this, productionHud);
 		playerResourceValuesHud = new org.tomdang.hud.status.PlayerResourceValuesHudService(
 				playerResourceService, productionHud, Bukkit::getCurrentTick);
 		getServer().getPluginManager().registerEvents(
@@ -272,9 +275,9 @@ public class TomBlock extends JavaPlugin {
 			hudRuntime.open(player.getUniqueId());
 			playerResourceValuesHud.refresh(player);
 		}
-		var skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService);
+		var skillPresenter = new org.tomdang.player.skill.SkillProgressPresenter(progressionNotifications);
 		critterBootstrap = new CritterBootstrap(this, playerBootStrap.getDataSource(), gameplayEvents,
-				encounterBootstrap, playerProfileService, playerProfileStorage, playerActionBarService,
+				encounterBootstrap, playerProfileService, playerProfileStorage, progressionNotifications,
 				customItemRegistry, customItemStackFactory, customItemResolver,
 				guiBootstrap.registry(), guiBootstrap.service());
 		CollectionService collectionService = new CollectionService(
@@ -419,7 +422,7 @@ public class TomBlock extends JavaPlugin {
 				miningToolCreator,
 				customItemRegistry,
 				customItemStackFactory,
-				playerActionBarService,
+				progressionNotifications,
 				playerProfileService,
 				playerStatsService,
 				activeAbilityService,
@@ -446,7 +449,7 @@ public class TomBlock extends JavaPlugin {
 				customItemStackFactory,
 				mobBootStrap.getCustomMobResolver(),
 				new org.tomdang.player.skill.SkillProgressionService(),
-				new org.tomdang.player.skill.SkillProgressPresenter(playerActionBarService),
+				new org.tomdang.player.skill.SkillProgressPresenter(progressionNotifications),
 				gameplayEvents
 		);
 
@@ -637,6 +640,7 @@ public class TomBlock extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		if (guiBootstrap != null) guiBootstrap.close();
+		if (progressionNotifications != null) progressionNotifications.close();
 		if (contentModules != null) contentModules.close();
 		if (playerResourceValuesHud != null) playerResourceValuesHud.close();
 		if (hudRuntime != null) hudRuntime.close();

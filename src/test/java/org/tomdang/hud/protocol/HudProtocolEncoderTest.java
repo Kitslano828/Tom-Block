@@ -85,6 +85,20 @@ class HudProtocolEncoderTest {
 		assertEquals(("\uE006\uE00A").repeat(5) + ("\uE007\uE00A").repeat(5), visual.content());
 	}
 
+	@Test void tilesPanelGlyphsIntoAContinuousRequestedWidth() {
+		Map<String, Character> glyphs = new HashMap<>(protocol.glyphs());
+		glyphs.put("bar-joiner", '\uE00A');
+		HudProtocolConfiguration panels = new HudProtocolConfiguration(protocol.version(), protocol.minecraftVersion(),
+				protocol.packId(), protocol.font(), protocol.markerRed(), protocol.actionBarBaselineOffset(),
+				protocol.encodedAscent(), glyphs, protocol.palette(), protocol.barCellAdvance(), protocol.barCellAdvances());
+		HudFrame frame = frame(new HudPanelCommand("progression-row", 96, 9), HudRegion.PROGRESSION,
+				new HudRect(18, 70, 96, 9));
+		Component encoded = new HudProtocolEncoder(panels, new HudLayoutPolicy(Map.of())).encode(frame, HudRegion.PROGRESSION);
+		var visual = descendants(encoded).stream().filter(component -> panels.font().equals(component.style().font()))
+				.map(component -> (net.kyori.adventure.text.TextComponent) component).findFirst().orElseThrow();
+		assertEquals(("\uE003\uE00A").repeat(6), visual.content());
+	}
+
 	@Test void preservesPrecomposedDialogueComponentInsideTheEngineCarrier() {
 		Component dialogue = Component.text("\uE001").font(Key.key("tomblock", "dialogue"));
 		HudFrame frame = frame(new HudComponentCommand(dialogue, 256, 64), HudRegion.DIALOGUE,

@@ -15,6 +15,7 @@ class HudLayoutConfigurationLoaderTest {
 		assertEquals(HudAnchor.TOP_RIGHT, policy.region(HudRegion.QUEST_TRACKER).anchor());
 		assertEquals(4, policy.capacity(HudRegion.STATUS));
 		assertEquals(1, policy.capacity(HudRegion.MAP));
+		assertEquals(HudAnchor.CENTER_LEFT, policy.region(HudRegion.PROGRESSION).anchor());
 	}
 
 	@Test void loadsOptionalStableElementOverrides() {

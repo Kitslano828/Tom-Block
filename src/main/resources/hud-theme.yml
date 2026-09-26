@@ -44,3 +44,4 @@ metrics:
   status-gap: 2
   status-bar-width: 90
   status-value-track-width: 100
+  progression-row-width: 176

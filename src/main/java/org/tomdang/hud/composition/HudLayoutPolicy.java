@@ -44,6 +44,9 @@ public final class HudLayoutPolicy {
 			case NOTIFICATION -> new HudRegionLayout(HudAnchor.TOP_CENTER, 0, 8, 240, 3,
 					org.tomdang.hud.composition.layout.HudAxis.VERTICAL, 2,
 					org.tomdang.hud.composition.layout.HudAlignment.CENTER);
+			case PROGRESSION -> new HudRegionLayout(HudAnchor.CENTER_LEFT, 8, -52, 176, 1,
+					org.tomdang.hud.composition.layout.HudAxis.VERTICAL, 2,
+					org.tomdang.hud.composition.layout.HudAlignment.START);
 			case BOSS -> new HudRegionLayout(HudAnchor.TOP_CENTER, 0, 28, 260, 2,
 					org.tomdang.hud.composition.layout.HudAxis.VERTICAL, 3,
 					org.tomdang.hud.composition.layout.HudAlignment.CENTER);

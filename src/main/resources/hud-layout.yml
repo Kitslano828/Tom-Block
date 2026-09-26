@@ -32,6 +32,15 @@ regions:
     stack: vertical
     gap: 2
     alignment: center
+  progression:
+    anchor: center-left
+    offset-x: 8
+    offset-y: -52
+    max-width: 176
+    capacity: 1
+    stack: vertical
+    gap: 2
+    alignment: start
   boss:
     anchor: top-center
     offset-y: 28
@@ -97,3 +106,10 @@ elements:
     offset-x: 0
     offset-y: -56
     max-width: 240
+  tomblock:progression-feed:
+    region: progression
+    enabled: true
+    anchor: center-left
+    offset-x: 8
+    offset-y: -52
+    max-width: 176
