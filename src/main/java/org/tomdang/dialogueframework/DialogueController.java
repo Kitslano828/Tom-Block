@@ -45,6 +45,7 @@ public class DialogueController {
 
 	public DialogueChoiceSelectionResult selectChoice(Player player, String choiceID) {
 		if (player == null) throw new IllegalArgumentException("Player cannot be null");
+		DialogueSession sessionBeforeSelection = dialogueSessionService.getActiveSession(player.getUniqueId());
 		DialogueChoiceSelectionResult result = dialogueSessionService.selectChoice(player.getUniqueId(), choiceID);
 
 		if (result.getActiveSession() == null) {
@@ -59,6 +60,7 @@ public class DialogueController {
 			DialogueChoiceActionContext actionContext = new DialogueChoiceActionContext(player, choice, result.getDialogueContext());
 			dialogueChoiceActionService.executeAction(choice.getActionID(), actionContext);
 		}
+		if (result.getActiveSession() == null) publishCompletion(player, sessionBeforeSelection);
 		return result;
 	}
 
@@ -66,10 +68,14 @@ public class DialogueController {
 		if (player == null) throw new IllegalArgumentException("Player cannot be null");
 		DialogueSession session = dialogueSessionService.endDialogue(player.getUniqueId());
 		dialoguePresentation.close(player);
+		publishCompletion(player, session);
+		return session;
+	}
+
+	private void publishCompletion(Player player, DialogueSession session) {
 		if (session != null && gameplayEvents != null) gameplayEvents.publish(new DialogueCompleted(
 				player.getUniqueId(), session.getDialogueDefinition().getDialogueID(),
 				session.getDialogueContext().sourceID()));
-		return session;
 	}
 
 }

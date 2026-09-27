@@ -4,5 +4,10 @@ encounter:
   mode: PLAYER
   timeout-seconds: 300
   disconnect-grace-seconds: 60
+  activity:
+    visibility: NEARBY
+    interaction: OWNER
+    contribution: BLOCK
+    rewards: OWNER
   parameters:
     critter: GLIMMERFLY

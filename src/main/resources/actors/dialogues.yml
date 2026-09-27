@@ -3,7 +3,7 @@ dialogues:
     starting-node: WARNING
     nodes:
       WARNING:
-        text: "Easy there. I'm tracking a Glimmerfly just ahead. Stay close, and watch how it moves before you approach it."
+        text: "Hey There. I've set snares around a Mossback, but it keeps choosing the wrong cover. Can you help me guide it there?"
         choices:
           BEGIN_HUNT:
             display-text: "Begin Hunt"
@@ -17,19 +17,28 @@ dialogues:
     starting-node: REMINDER
     nodes:
       REMINDER:
-        text: "Keep your eyes on the Glimmerfly. Study its rhythm, then move when it settles."
+        text: "A Mossback runs away from pressure. Keep the armed snare behind it from where you stand, then move in and make it bolt toward the trap."
+
+  CRITTER_HUNTER_WILL_LESSON:
+    starting-node: RESULT
+    nodes:
+      RESULT:
+        text: "Nice Work! I think you should lead your own hunt. I think I can see a Mossback nearby"
+        choices:
+          CONTINUE:
+            display-text: "How do I lead my own hunt?"
 
   CRITTER_HUNTER_WILL_RETURN:
     starting-node: REPORT
     nodes:
       REPORT:
-        text: "Nicely done. You watched first and acted at the right moment. That's the beginning of a real hunter's instincts."
+        text: "Congrats on the Hunt! Take this Critterdex, record what you learn, and it'll grow with you."
 
   CRITTER_HUNTER_WILL_COMPLETE:
     starting-node: AFTERWARD
     nodes:
       AFTERWARD:
-        text: "There are many more critters beyond this trail. Keep observing them, and your journal will grow with you."
+        text: "There are tons of critters out there, make sure to keep your eyes open!"
 
   BLACKSMITH_TEST_DIALOGUE:
     starting-node: GREETING

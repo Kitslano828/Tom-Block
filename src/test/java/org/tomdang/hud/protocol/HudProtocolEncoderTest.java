@@ -49,10 +49,13 @@ class HudProtocolEncoderTest {
 						&& text.content().equals("QUEST")));
 	}
 
-	@Test void rejectsCharactersOutsideGeneratedAtlas() {
-		HudFrame frame = frame(HudTextCommand.text("not ASCII: ✓"), HudRegion.DEBUG, new HudRect(0, 0, 50, 9));
-		assertThrows(IllegalArgumentException.class,
-				() -> new HudProtocolEncoder(protocol, new HudLayoutPolicy(Map.of())).encode(frame, HudRegion.DEBUG));
+	@Test void normalizesCharactersOutsideGeneratedAtlasWithoutDroppingTheHudFrame() {
+		HudFrame frame = frame(HudTextCommand.text("snared — done ✓"), HudRegion.DEBUG, new HudRect(0, 0, 80, 9));
+		Component encoded = new HudProtocolEncoder(protocol, new HudLayoutPolicy(Map.of()))
+				.encode(frame, HudRegion.DEBUG);
+		var visual = descendants(encoded).stream().filter(component -> protocol.font().equals(component.style().font()))
+				.map(component -> (net.kyori.adventure.text.TextComponent) component).findFirst().orElseThrow();
+		assertEquals("snared - done ?", visual.content());
 	}
 
 	@Test void resetsWrappedTextByItsActualGlyphAdvanceRatherThanItsCappedLayoutWidth() {

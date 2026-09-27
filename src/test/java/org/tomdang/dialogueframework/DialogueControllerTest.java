@@ -7,10 +7,13 @@ import org.tomdang.dialogueframework.action.DialogueChoiceActionContext;
 import org.tomdang.dialogueframework.action.DialogueChoiceActionService;
 import org.tomdang.dialogueframework.context.DialogueContext;
 import org.tomdang.dialogueframework.definition.DialogueChoice;
+import org.tomdang.dialogueframework.definition.DialogueDefinition;
 import org.tomdang.dialogueframework.presentation.DialoguePresentation;
 import org.tomdang.dialogueframework.session.DialogueChoiceSelectionResult;
 import org.tomdang.dialogueframework.session.DialogueSession;
 import org.tomdang.dialogueframework.session.DialogueSessionService;
+import org.tomdang.gameplay.event.GameplayEventBus;
+import org.tomdang.gameplay.event.type.DialogueCompleted;
 
 import java.util.UUID;
 
@@ -101,5 +104,31 @@ public class DialogueControllerTest {
 		assertSame(player, capturedContext.player());
 		assertSame(choice, capturedContext.selectedChoice());
 		assertSame(context, capturedContext.context());
+	}
+
+	@Test
+	void endingChoicePublishesDialogueCompleted() {
+		GameplayEventBus gameplayEvents = mock(GameplayEventBus.class);
+		DialogueController eventController = new DialogueController(
+				dialogueSessionService, dialoguePresentation, dialogueChoiceActionService, gameplayEvents);
+		DialogueChoice choice = mock(DialogueChoice.class);
+		DialogueContext context = mock(DialogueContext.class);
+		DialogueSession session = mock(DialogueSession.class);
+		DialogueDefinition definition = mock(DialogueDefinition.class);
+		UUID uuid = UUID.randomUUID();
+
+		when(player.getUniqueId()).thenReturn(uuid);
+		when(context.sourceID()).thenReturn("CRITTER_HUNTER_WILL");
+		when(session.getDialogueContext()).thenReturn(context);
+		when(session.getDialogueDefinition()).thenReturn(definition);
+		when(definition.getDialogueID()).thenReturn("CRITTER_HUNTER_WILL_LESSON");
+		when(dialogueSessionService.getActiveSession(uuid)).thenReturn(session);
+		when(dialogueSessionService.selectChoice(uuid, "CONTINUE"))
+				.thenReturn(new DialogueChoiceSelectionResult(choice, context, null));
+
+		eventController.selectChoice(player, "CONTINUE");
+
+		verify(gameplayEvents).publish(new DialogueCompleted(
+				uuid, "CRITTER_HUNTER_WILL_LESSON", "CRITTER_HUNTER_WILL"));
 	}
 }

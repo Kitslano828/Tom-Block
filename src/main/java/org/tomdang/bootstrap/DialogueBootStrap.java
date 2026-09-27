@@ -104,7 +104,7 @@ public class DialogueBootStrap {
 				dialoguePaginationService
 		);
 
-		DialogueTextAnimator bukkitDialogueTextAnimator = new BukkitDialogueTextAnimator(
+		BukkitDialogueTextAnimator bukkitDialogueTextAnimator = new BukkitDialogueTextAnimator(
 				instance,
 				dialogueTextAnimationService,
 				dialogueDisplayStateRegistry,
@@ -143,6 +143,9 @@ public class DialogueBootStrap {
 				dialogueThemeRegistry,
 				dialogueHudSkinRegistry
 		);
+		// One and a half seconds begins only after the current page has completely rendered.
+		// The advance service stops at real (multi-option) choices.
+		bukkitDialogueTextAnimator.enableAutomaticAdvance(dialogueAdvanceService, 30);
 
 
 	}

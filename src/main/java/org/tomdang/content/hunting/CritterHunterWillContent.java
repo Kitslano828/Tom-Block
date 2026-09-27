@@ -53,11 +53,13 @@ public final class CritterHunterWillContent implements TomBlockModule {
 		themes.bindSource("CRITTER_HUNTER_WILL", theme.themeID());
 		interactions.registerInteraction("CRITTER_HUNTER_WILL_QUEST",
 				new LookAtPlayerInteraction(actorLookService,
-						new QuestOfferDialogueInteraction("INTRO_TO_HUNTING", "RETURN",
+						new QuestOfferDialogueInteraction("INTRO_TO_HUNTING",
 								interaction("CRITTER_HUNTER_WILL_INTRO"),
 								interaction("CRITTER_HUNTER_WILL_REMINDER"),
-								interaction("CRITTER_HUNTER_WILL_RETURN"),
-								interaction("CRITTER_HUNTER_WILL_COMPLETE"), quests)));
+								interaction("CRITTER_HUNTER_WILL_COMPLETE"),
+								java.util.Map.of(
+										"LEARN_FROM_WILL", interaction("CRITTER_HUNTER_WILL_LESSON"),
+										"RETURN", interaction("CRITTER_HUNTER_WILL_RETURN")), quests)));
 	}
 
 	private ActorDialogueInteraction interaction(String dialogueId) {

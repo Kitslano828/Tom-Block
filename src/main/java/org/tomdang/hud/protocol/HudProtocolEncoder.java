@@ -10,6 +10,7 @@ import org.tomdang.hud.text.TomBlockBitmapTextWidthService;
 import org.tomdang.hud.text.HudComponentAdvanceService;
 import org.tomdang.hud.text.TomBlockHudFontAdvances;
 import org.tomdang.hud.text.TomBlockHudFonts;
+import org.tomdang.hud.text.HudProtocolTextSanitizer;
 import java.util.Set;
 
 /** Encodes a resolved laboratory frame into one zero-advance action-bar carrier. */
@@ -72,8 +73,11 @@ public final class HudProtocolEncoder {
 	}
 
 	private int encodedAdvance(HudDrawCommand command, int layoutWidth) {
-		if (command instanceof HudTextCommand text) return TomBlockHudFonts.profile(text.style().font())
-				.map(profile -> profile.widths().measure(text.text())).orElseGet(() -> textWidths.measure(text.text()));
+		if (command instanceof HudTextCommand text) {
+			String sanitized = HudProtocolTextSanitizer.sanitize(text.text());
+			return TomBlockHudFonts.profile(text.style().font())
+					.map(profile -> profile.widths().measure(sanitized)).orElseGet(() -> textWidths.measure(sanitized));
+		}
 		if (command instanceof HudPanelCommand panel) return Math.max(1, (panel.width() + 15) / 16) * 16;
 		return Math.max(0, layoutWidth);
 	}
@@ -105,9 +109,7 @@ public final class HudProtocolEncoder {
 	}
 
 	private String ascii(String value) {
-		if (value.codePoints().anyMatch(codePoint -> codePoint < 32 || codePoint > 126))
-			throw new IllegalArgumentException("Phase 2 HUD text currently supports printable ASCII only");
-		return value;
+		return HudProtocolTextSanitizer.sanitize(value);
 	}
 	private int relativeX(HudViewport viewport, int x, HudAnchor anchor) {
 		return switch (horizontal(anchor)) { case 0 -> x; case 1 -> x - viewport.width() / 2; default -> x - viewport.width(); };

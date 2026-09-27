@@ -403,6 +403,17 @@ public class TomBlock extends JavaPlugin {
 		contentModules.context().provide(PlatformServices.ENCOUNTERS, encounterBootstrap.runtime());
 		contentModules.context().provide(PlatformServices.ENCOUNTER_DEFINITIONS, encounterBootstrap.definitions());
 		contentModules.context().provide(PlatformServices.ENCOUNTER_BEHAVIORS, encounterBootstrap.behaviors());
+		questBootStrap.rewards().register("GIVE_CUSTOM_ITEM", (context, parameters) -> {
+			String itemId = java.util.Objects.requireNonNull(parameters.get("item"), "Missing item reward");
+			int amount = Integer.parseInt(parameters.getOrDefault("amount", "1"));
+			if (amount < 1) throw new IllegalArgumentException("Quest item reward amount must be positive");
+			var item = customItemRegistry.getCustomItem(itemId);
+			if (item == null) throw new IllegalArgumentException("Unknown quest reward item " + itemId);
+			var player = Bukkit.getPlayer(context.playerId());
+			if (player == null) throw new IllegalStateException("Quest reward player is offline");
+			var overflow = player.getInventory().addItem(customItemStackFactory.createCustomItemStack(item, amount));
+			for (var stack : overflow.values()) player.getWorld().dropItemNaturally(player.getLocation(), stack);
+		});
 		contentModules.start();
 		encounterBootstrap.sealFramework();
 		questBootStrap.sealOrchestration();

@@ -4,13 +4,19 @@ Encounter definitions are content. Store one encounter in each YAML file under
 this directory; nested folders are discovered recursively.
 
 ```yaml
-id: TUTORIAL_GLIMMERFLY
-behavior: GLIMMERFLY_HUNT
-mode: PLAYER
-timeout-seconds: 300
-disconnect-grace-seconds: 60
-parameters:
-  critter: GLIMMERFLY
+encounter:
+  id: TUTORIAL_GLIMMERFLY
+  behavior: GLIMMERFLY_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity:
+    visibility: NEARBY
+    interaction: OWNER
+    contribution: BLOCK
+    rewards: OWNER
+  parameters:
+    critter: GLIMMERFLY
 ```
 
 - `id` is the stable identifier referenced by quests and persisted sessions.
@@ -21,6 +27,10 @@ parameters:
 - `disconnect-grace-seconds` controls how long a suspended encounter can wait
   for its owner to reconnect.
 - `parameters` contains behavior-specific content values.
+- `activity` declares multiplayer authority independently of the behavior.
+  Visibility is `OWNER`, `PARTICIPANTS`, `NEARBY`, or `WORLD`; interaction and
+  rewards are `OWNER`, `PARTICIPANTS`, or `ANYONE`; contribution is `IGNORE`,
+  `BLOCK`, or `CREDIT`. Omitting the section produces a private solo activity.
 
 Quest stages start encounters through the shared action contract:
 

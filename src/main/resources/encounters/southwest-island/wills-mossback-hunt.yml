@@ -1,5 +1,5 @@
 encounter:
-  id: MOSSBACK_FIELD_TEST
+  id: WILLS_MOSSBACK_HUNT
   behavior: GROUND_CRITTER_HUNT
   mode: PLAYER
   timeout-seconds: 300
@@ -13,7 +13,7 @@ encounter:
     critter: MOSSBACK
     model: mossback
     carrier: SILVERFISH
-    spawn-distance: 6.0
+    spawn-distance: 7.0
     model-y-offset: 0.65
     model-yaw-offset: 180.0
     hitbox-width: 1.2
@@ -24,3 +24,5 @@ encounter:
     reckless-alertness: 25
     calm-recovery: 10
     capture-ready-ticks: 20
+    assisted: true
+    preplaced-snare-index: 0

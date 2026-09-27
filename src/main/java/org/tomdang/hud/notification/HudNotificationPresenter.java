@@ -16,7 +16,10 @@ public final class HudNotificationPresenter implements HudPresenter<HudNotificat
 			case ACCENT -> "heading";
 			case MUTED -> "muted";
 		};
+		// Notifications are encoded as one physical action-bar line. Measuring them
+		// as wrapped/capped content centers a short imaginary box while the protocol
+		// still draws the full line, shifting long messages to the right.
 		return new HudContent(new HudPrimitive(new HudTextCommand(model.text(),
-				context.theme().text(HudTextStyleToken.of(token)), context.render().availableWidth(), true)));
+				context.theme().text(HudTextStyleToken.of(token)), 0, false)));
 	}
 }

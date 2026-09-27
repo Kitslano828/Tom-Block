@@ -1,39 +1,56 @@
 quest:
   id: INTRO_TO_HUNTING
   display-name: "A Hunter's First Steps"
-  description: "Help Critter Hunter Will identify and capture a Glimmerfly."
+  description: "Help Will finish a difficult Mossback hunt, then prove you can lead one yourself."
   category: HUNTING
   repeatability: ONCE
   start-policy: MANUAL
   prerequisites: []
-  start-stage: OBSERVE
+  start-stage: ASSIST_WILL
   stages:
-    OBSERVE:
-      display-name: "Study the Glimmerfly"
+    ASSIST_WILL:
+      display-name: "Finish Will's Hunt"
       on-enter:
-        START_TUTORIAL_HUNT:
+        START_ASSISTED_HUNT:
           type: START_ENCOUNTER
           parameters:
-            encounter: TUTORIAL_GLIMMERFLY
+            encounter: WILLS_MOSSBACK_HUNT
       objectives:
-        OBSERVE_GLIMMERFLY:
-          type: OBSERVE_CRITTER
-          target: GLIMMERFLY
+        FINISH_WILLS_HUNT:
+          type: COMPLETE_ENCOUNTER
+          target: WILLS_MOSSBACK_HUNT
           parameters:
-            tracker-title: "OBSERVE THE GLIMMERFLY"
-            tracker-description: "Watch how the nearby Glimmerfly moves before approaching it"
-            tracker-progress: "GLIMMERFLY OBSERVED"
-      next-stage: CAPTURE
-    CAPTURE:
-      display-name: "Make the Capture"
+            tracker-title: "FINISH WILL'S HUNT"
+            tracker-description: "Move opposite Will's armed snare and pressure the Mossback toward it"
+            tracker-progress: "MOSSBACK SAFELY SNARED"
+      next-stage: LEARN_FROM_WILL
+    LEARN_FROM_WILL:
+      display-name: "Learn from Will"
       objectives:
-        CAPTURE_GLIMMERFLY:
-          type: CAPTURE_CRITTER
-          target: GLIMMERFLY
+        HEAR_WILLS_LESSON:
+          type: COMPLETE_DIALOGUE
+          target: CRITTER_HUNTER_WILL_LESSON
           parameters:
-            tracker-title: "CAPTURE THE GLIMMERFLY"
-            tracker-description: "Approach at the right moment and complete the hunt"
-            tracker-progress: "GLIMMERFLY CAPTURED"
+            actor: CRITTER_HUNTER_WILL
+            tracker-title: "SPEAK WITH WILL"
+            tracker-description: "Ask Will how to track, trap, and flush a Mossback"
+            tracker-progress: "HUNTING LESSON COMPLETE"
+      next-stage: SOLO_HUNT
+    SOLO_HUNT:
+      display-name: "Lead Your Own Hunt"
+      on-enter:
+        START_SOLO_HUNT:
+          type: START_ENCOUNTER
+          parameters:
+            encounter: FIRST_SOLO_MOSSBACK_HUNT
+      objectives:
+        COMPLETE_SOLO_HUNT:
+          type: COMPLETE_ENCOUNTER
+          target: FIRST_SOLO_MOSSBACK_HUNT
+          parameters:
+            tracker-title: "LEAD YOUR OWN HUNT"
+            tracker-description: "Read the trail, place a snare, and flush the Mossback into it"
+            tracker-progress: "FIRST SOLO HUNT COMPLETE"
       next-stage: RETURN
     RETURN:
       display-name: "Return to Will"
@@ -44,5 +61,11 @@ quest:
           parameters:
             actor: CRITTER_HUNTER_WILL
             tracker-title: "RETURN TO WILL"
-            tracker-description: "Speak with Will and tell him about your first hunt"
+            tracker-description: "Tell Will how your first solo hunt went"
             tracker-progress: "WILL SPOKEN TO"
+  rewards:
+    CRITTERDEX:
+      type: GIVE_CUSTOM_ITEM
+      parameters:
+        item: CRITTERDEX
+        amount: 1

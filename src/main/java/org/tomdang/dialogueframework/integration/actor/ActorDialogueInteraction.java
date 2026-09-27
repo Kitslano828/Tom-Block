@@ -48,7 +48,18 @@ public class ActorDialogueInteraction implements ActorInteraction {
 		}
 
 		if (instance.getInstanceID().equals(session.getDialogueContext().sourceInstanceID())) {
-			dialogueAdvanceService.advance(player);
+			String activeDialogueID = session.getDialogueDefinition().getDialogueID();
+			if (dialogueID.equals(activeDialogueID)) {
+				dialogueAdvanceService.advance(player);
+				return;
+			}
+			// The actor's quest stage changed while an earlier conversation was
+			// still open. Replace it in this interaction instead of consuming one
+			// click merely to close stale dialogue.
+			dialogueController.endDialogue(player);
+			DialogueContext dialogueContext = DialogueContext.actor(
+					instance.getActorDefinition().getActorID(), instance.getInstanceID());
+			dialogueController.startDialogue(player, dialogueID, dialogueContext);
 		} else {
 			throw new IllegalStateException("Source InstanceID does not match with instanceID");
 		}

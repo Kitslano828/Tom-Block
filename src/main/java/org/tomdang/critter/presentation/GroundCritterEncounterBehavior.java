@@ -50,9 +50,13 @@ import org.tomdang.entityai.runtime.EntityAiRuntime;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.hud.hunting.HuntingHudModel;
 import org.tomdang.hud.hunting.HuntingHudService;
+import org.tomdang.activity.ActivityAccessService;
+import org.tomdang.activity.ActivityInstance;
+import org.tomdang.activity.bukkit.BukkitActivityEntityController;
 
 /** Private encounter presentation for data-defined critters using native ground navigation. */
 public final class GroundCritterEncounterBehavior implements EncounterBehavior, Listener, AutoCloseable {
+    private static final long MINIMUM_GUIDANCE_TICKS = 120;
     private final Plugin plugin;
     private final CritterRegistry definitions;
     private final CritterRuntimeService critters;
@@ -60,6 +64,8 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     private final PlayerActionBarService messages;
     private final HuntingHudService huntingHud;
     private final Supplier<EncounterRuntimeService> encounters;
+    private final ActivityAccessService activityAccess;
+    private final BukkitActivityEntityController activityEntities;
     private final ConfiguredGoalFactory goals = new ConfiguredGoalFactory();
     private final ConfiguredNavigatorFactory navigators = new ConfiguredNavigatorFactory();
     private final Map<UUID, Clue> byClueHitbox = new HashMap<>();
@@ -70,9 +76,10 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     public GroundCritterEncounterBehavior(Plugin plugin, CritterRegistry definitions,
             CritterRuntimeService critters, EntityAiRuntime ai,
             Supplier<EncounterRuntimeService> encounters, PlayerActionBarService messages,
-            HuntingHudService huntingHud) {
+            HuntingHudService huntingHud, ActivityAccessService activityAccess,
+            BukkitActivityEntityController activityEntities) {
         if (plugin == null || definitions == null || critters == null || ai == null || encounters == null
-                || messages == null || huntingHud == null) {
+                || messages == null || huntingHud == null || activityAccess == null || activityEntities == null) {
             throw new IllegalArgumentException("Ground critter behavior dependencies are required");
         }
         this.plugin = plugin;
@@ -82,6 +89,8 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         this.encounters = encounters;
         this.messages = messages;
         this.huntingHud = huntingHud;
+        this.activityAccess = activityAccess;
+        this.activityEntities = activityEntities;
         Bukkit.getPluginManager().registerEvents(this, plugin);
         presentationTask = Bukkit.getScheduler().runTaskTimer(plugin, this::updatePresentations, 1L, 1L);
     }
@@ -158,25 +167,37 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
                 definition.hunting().maximumRelocations(),
                 parseLong(context.definition().parameters().get("capture-ready-ticks"), 20),
                 definition.hunting().captureWindow().toSeconds() * 20);
-        View view = new View(context.session().instanceId(), player.getUniqueId(), critter.instanceId(), critterId,
+        ActivityInstance activity = context.activity();
+        activityEntities.publishControl(hitbox, activity);
+        View view = new View(context.session().instanceId(), activity, critter.instanceId(), critterId,
                 carrier, display, hitbox, brain,
                 parseDouble(context.definition().parameters().get("model-y-offset"), .15),
                 parseDouble(context.definition().parameters().get("model-yaw-offset"), 0),
-                huntRules, new HuntEngine(huntRules), coverPoints);
+                huntRules, new HuntEngine(huntRules), coverPoints,
+                Boolean.parseBoolean(context.definition().parameters().getOrDefault("assisted", "false")));
         byEncounter.put(view.encounterId, view);
         syncDiagnostics(view);
-        spawnClues(view, player, location, cluesRequired);
+        if (view.assisted) {
+            for (int i = 0; i < cluesRequired; i++) view.huntState = view.hunt.inspectClue(view.huntState).state();
+            spawnCoverChoices(view, player);
+            int snareIndex = Math.floorMod(parseInt(
+                    context.definition().parameters().get("preplaced-snare-index"), 0), view.covers.size());
+            armTrap(player, view.covers.get(snareIndex));
+        } else spawnClues(view, player, location, cluesRequired);
         updateHud(view, player, Bukkit.getCurrentTick());
         context.resources().own(() -> remove(view.encounterId));
-        notify(player, Component.text("Follow the disturbed moss and inspect " + cluesRequired
-                + " tracks.", NamedTextColor.GOLD), 60);
+        notify(player, Component.text(view.assisted
+                ? "Will's snares are set. Move opposite the armed snare and pressure the Mossback."
+                : "Follow the disturbed moss and inspect " + cluesRequired + " tracks.",
+                NamedTextColor.GOLD), 80);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void interact(PlayerInteractEntityEvent event) {
         Cover cover = byCoverHitbox.get(event.getRightClicked().getUniqueId());
-        if (cover == null || !cover.view.owner.equals(event.getPlayer().getUniqueId())) return;
+        if (cover == null) return;
         event.setCancelled(true);
+        if (!activityAccess.canInteract(cover.view.activity, event.getPlayer().getUniqueId())) return;
         armTrap(event.getPlayer(), cover);
     }
 
@@ -196,7 +217,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     }
 
     private void tickHunt(View view) {
-        Player player = Bukkit.getPlayer(view.owner);
+        Player player = Bukkit.getPlayer(view.activity.ownerId());
         if (player == null) return;
         long tick = Bukkit.getCurrentTick();
         if (view.huntState.phase() == HuntPhase.TRACKING) inspectVisibleClue(view, player);
@@ -250,11 +271,16 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         view.snare = selected;
         for (Cover cover : new ArrayList<>(view.covers)) {
             byCoverHitbox.remove(cover.hitbox.getUniqueId());
+            activityEntities.unregister(cover.hitbox);
             cover.hitbox.remove();
-            if (cover != selected) cover.marker.remove();
+            if (cover != selected && !view.assisted) {
+                activityEntities.unregister(cover.marker);
+                cover.marker.remove();
+            }
         }
         selected.marker.setItemStack(ItemStack.of(Material.COBWEB));
-        player.showEntity(plugin, view.display);
+        activityEntities.publishVisual(selected.marker, view.activity);
+        activityEntities.publishVisual(view.display, view.activity);
         ai.register(view.brain);
         syncDiagnostics(view);
         notify(player, Component.text("Snare armed. Move opposite it and pressure the Mossback toward it.",
@@ -326,16 +352,24 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             Clue clue = new Clue(view, index, marker, hitbox);
             view.clues.add(clue);
             byClueHitbox.put(hitbox.getUniqueId(), clue);
+            activityEntities.publishControl(marker, view.activity);
+            activityEntities.publishControl(hitbox, view.activity);
+            if (index != 0) {
+                player.hideEntity(plugin, marker);
+                player.hideEntity(plugin, hitbox);
+            }
         }
     }
 
     private void inspectClue(Player player, Clue clue) {
         View view = clue.view;
-        if (!view.owner.equals(player.getUniqueId()) || clue.found
+        if (!activityAccess.canInteract(view.activity, player.getUniqueId()) || clue.found
                 || view.huntState.phase() != HuntPhase.TRACKING) return;
         if (clue.index != view.huntState.cluesFound()) return;
         clue.found = true;
         byClueHitbox.remove(clue.hitbox.getUniqueId());
+        activityEntities.unregister(clue.marker);
+        activityEntities.unregister(clue.hitbox);
         clue.marker.remove();
         clue.hitbox.remove();
         var update = view.hunt.inspectClue(view.huntState);
@@ -378,14 +412,16 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             Cover cover = new Cover(view, location, marker, hitbox);
             view.covers.add(cover);
             byCoverHitbox.put(hitbox.getUniqueId(), cover);
-            player.showEntity(plugin, marker);
-            player.showEntity(plugin, hitbox);
+            activityEntities.publishControl(marker, view.activity);
+            activityEntities.publishControl(hitbox, view.activity);
         }
     }
 
     private void removeCovers(View view) {
         for (Cover cover : view.covers) {
             byCoverHitbox.remove(cover.hitbox.getUniqueId());
+            activityEntities.unregister(cover.marker);
+            activityEntities.unregister(cover.hitbox);
             cover.marker.remove();
             cover.hitbox.remove();
         }
@@ -400,7 +436,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     }
 
     private void notify(Player player, Component message, long duration) {
-        messages.showTemporaryMessage(player, message, duration);
+        messages.showTemporaryMessage(player, message, Math.max(duration, MINIMUM_GUIDANCE_TICKS));
     }
 
     private void syncDiagnostics(View view) {
@@ -503,15 +539,19 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
     private void remove(UUID encounterId) {
         View view = byEncounter.remove(encounterId);
         if (view == null) return;
-        huntingHud.hide(view.owner);
+        huntingHud.hide(view.activity.ownerId());
         removeCovers(view);
         for (Clue clue : view.clues) {
             byClueHitbox.remove(clue.hitbox.getUniqueId());
+            activityEntities.unregister(clue.marker);
+            activityEntities.unregister(clue.hitbox);
             clue.marker.remove();
             clue.hitbox.remove();
         }
         ai.remove(view.carrier.getUniqueId());
         critters.find(view.critterId).ifPresent(value -> critters.escape(view.critterId));
+        activityEntities.unregister(view.display);
+        activityEntities.unregister(view.hitbox);
         view.display.remove();
         view.hitbox.remove();
         view.carrier.remove();
@@ -525,7 +565,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
 
     private static final class View {
         private final UUID encounterId;
-        private final UUID owner;
+        private final ActivityInstance activity;
         private final UUID critterId;
         private final String definitionId;
         private final Mob carrier;
@@ -537,6 +577,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         private final HuntRules huntRules;
         private final HuntEngine hunt;
         private final List<AiVector> coverPoints;
+        private final boolean assisted;
         private final List<Clue> clues = new ArrayList<>();
         private final List<Cover> covers = new ArrayList<>();
         private Cover snare;
@@ -545,12 +586,12 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         private long lastAwarenessTick;
         private long lastHudTick;
 
-        private View(UUID encounterId, UUID owner, UUID critterId, String definitionId, Mob carrier,
+        private View(UUID encounterId, ActivityInstance activity, UUID critterId, String definitionId, Mob carrier,
                 ItemDisplay display, Interaction hitbox, AiBrain brain,
                 double modelYOffset, double modelYawOffset, HuntRules huntRules, HuntEngine hunt,
-                List<AiVector> coverPoints) {
+                List<AiVector> coverPoints, boolean assisted) {
             this.encounterId = encounterId;
-            this.owner = owner;
+            this.activity = activity;
             this.critterId = critterId;
             this.definitionId = definitionId;
             this.carrier = carrier;
@@ -562,6 +603,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             this.huntRules = huntRules;
             this.hunt = hunt;
             this.coverPoints = List.copyOf(coverPoints);
+            this.assisted = assisted;
         }
 
         private HuntRules huntRules() { return huntRules; }

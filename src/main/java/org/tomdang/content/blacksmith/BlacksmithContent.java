@@ -85,7 +85,7 @@ public class BlacksmithContent implements TomBlockModule {
 				"?", dialogueIndicatorFont, TextColor.fromHexString("#FFF1D0"), 12
 		);
 		DialogueHudSkin hudSkin = new DialogueHudSkin("BLACKSMITH_BOX", hudGlyph, 12, 12, dialogueLineFonts,
-				blacksmithFont, 12, 12, TextColor.fromHexString("#D8D8D8"), TextColor.fromHexString("#FFF1D0"),
+				blacksmithFont, 12, 12, TextColor.fromHexString("#FFFFFF"), TextColor.fromHexString("#3F3F3F"),
 				Map.of(
 						DialogueHudIndicatorState.CONTINUE, continueIndicatorStyle,
 						DialogueHudIndicatorState.CHOICE_REQUIRED, choiceIndicatorStyle

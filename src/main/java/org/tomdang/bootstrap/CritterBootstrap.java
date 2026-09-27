@@ -35,6 +35,8 @@ import org.tomdang.player.skill.SkillProgressionService;
 import org.tomdang.player.skill.SkillProgressNotificationSink;
 import org.tomdang.player.playeractionbar.PlayerActionBarService;
 import org.tomdang.hud.hunting.HuntingHudService;
+import org.tomdang.activity.ActivityAccessService;
+import org.tomdang.activity.bukkit.BukkitActivityEntityController;
 
 public final class CritterBootstrap implements AutoCloseable {
     private final CritterRegistry definitions = new CritterRegistry();
@@ -46,6 +48,7 @@ public final class CritterBootstrap implements AutoCloseable {
     private final GlimmerflyEncounterBehavior glimmerfly;
     private final GroundCritterEncounterBehavior groundCritter;
     private final CritterEcologyService ecology = new CritterEcologyService();
+    private final BukkitActivityEntityController activityEntities;
 
     public CritterBootstrap(TomBlock plugin, DataSource dataSource, GameplayEventBus events,
             EncounterBootstrap encounters, PlayerProfileService profiles,
@@ -82,10 +85,13 @@ public final class CritterBootstrap implements AutoCloseable {
         var aiCommand = java.util.Objects.requireNonNull(plugin.getCommand("aidiag"), "Missing aidiag command");
         aiCommand.setExecutor(aiDiagnostics);
         aiCommand.setTabCompleter(aiDiagnostics);
-        glimmerfly = new GlimmerflyEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime);
+        var activityAccess = new ActivityAccessService();
+        activityEntities = new BukkitActivityEntityController(plugin, activityAccess);
+        glimmerfly = new GlimmerflyEncounterBehavior(plugin, definitions, runtime, ai, encounters::runtime,
+                activityAccess, activityEntities);
         encounters.behaviors().register("GLIMMERFLY_HUNT", glimmerfly);
         groundCritter = new GroundCritterEncounterBehavior(plugin, definitions, runtime, ai,
-                encounters::runtime, actionBar, huntingHud);
+                encounters::runtime, actionBar, huntingHud, activityAccess, activityEntities);
         encounters.behaviors().register("GROUND_CRITTER_HUNT", groundCritter);
         var critterTest = new CritterTestCommand(encounters.runtime());
         var critterCommand = java.util.Objects.requireNonNull(plugin.getCommand("crittertest"),
@@ -113,6 +119,7 @@ public final class CritterBootstrap implements AutoCloseable {
     @Override public void close() {
         groundCritter.close();
         glimmerfly.close();
+        activityEntities.close();
         aiDiagnostics.close();
         ai.close();
         progression.close();

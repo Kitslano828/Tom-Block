@@ -14,6 +14,7 @@ public final class QuestOfferDialogueInteraction implements ActorInteraction {
 	private final ActorDialogueInteraction reminder;
 	private final ActorDialogueInteraction handIn;
 	private final ActorDialogueInteraction completed;
+	private final java.util.Map<String, ActorDialogueInteraction> stageDialogues;
 	private final QuestProgressService quests;
 
 	public QuestOfferDialogueInteraction(String questId, String returnStageId,
@@ -26,6 +27,20 @@ public final class QuestOfferDialogueInteraction implements ActorInteraction {
 		this.reminder = java.util.Objects.requireNonNull(reminder);
 		this.handIn = java.util.Objects.requireNonNull(handIn);
 		this.completed = java.util.Objects.requireNonNull(completed);
+		this.stageDialogues = java.util.Map.of(returnStageId, handIn);
+		this.quests = java.util.Objects.requireNonNull(quests);
+	}
+
+	public QuestOfferDialogueInteraction(String questId, ActorDialogueInteraction offer,
+			ActorDialogueInteraction reminder, ActorDialogueInteraction completed,
+			java.util.Map<String, ActorDialogueInteraction> stageDialogues, QuestProgressService quests) {
+		this.questId = require(questId, "questId");
+		this.returnStageId = "__STAGE_ROUTED__";
+		this.offer = java.util.Objects.requireNonNull(offer);
+		this.reminder = java.util.Objects.requireNonNull(reminder);
+		this.handIn = reminder;
+		this.completed = java.util.Objects.requireNonNull(completed);
+		this.stageDialogues = java.util.Map.copyOf(stageDialogues);
 		this.quests = java.util.Objects.requireNonNull(quests);
 	}
 
@@ -34,7 +49,8 @@ public final class QuestOfferDialogueInteraction implements ActorInteraction {
 		if (state.isEmpty()) { offer.interact(context); return; }
 		var progress = state.get();
 		if (progress.status() == QuestStatus.COMPLETED) { completed.interact(context); return; }
-		if (returnStageId.equals(progress.currentStageId())) { handIn.interact(context); return; }
+		ActorDialogueInteraction stageDialogue = stageDialogues.get(progress.currentStageId());
+		if (stageDialogue != null) { stageDialogue.interact(context); return; }
 		reminder.interact(context);
 	}
 

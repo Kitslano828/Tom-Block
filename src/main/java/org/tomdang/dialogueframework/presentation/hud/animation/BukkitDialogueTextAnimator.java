@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.tomdang.TomBlock;
 import org.tomdang.dialogueframework.definition.DialogueNode;
+import org.tomdang.dialogueframework.advance.DialogueAdvanceService;
 import org.tomdang.dialogueframework.presentation.hud.DialogueDisplayState;
 import org.tomdang.dialogueframework.presentation.hud.DialogueDisplayStateRegistry;
 import org.tomdang.dialogueframework.presentation.hud.DialogueTextAnimationService;
@@ -22,6 +23,8 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 	private final int charactersPerStep;
 	private final long periodTicks;
 	private final long keepAlivePeriodTicks;
+	private DialogueAdvanceService dialogueAdvanceService;
+	private long automaticAdvanceDelayTicks;
 
 	private final Map<UUID, BukkitTask> bukkitTaskMap = new HashMap<>();
 	private final Map<UUID, Long> lastRefreshTickMap = new HashMap<>();
@@ -44,6 +47,18 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 		this.keepAlivePeriodTicks = keepAlivePeriodTicks;
 	}
 
+	/**
+	 * Enables hands-free progression after a page has finished rendering. The
+	 * advance service remains the single authority for pages, linear node links,
+	 * real choices, and dialogue completion.
+	 */
+	public void enableAutomaticAdvance(DialogueAdvanceService dialogueAdvanceService, long delayTicks) {
+		if (dialogueAdvanceService == null) throw new IllegalArgumentException("dialogueAdvanceService cannot be null");
+		if (delayTicks <= 0) throw new IllegalArgumentException("delayTicks must be greater than 0");
+		this.dialogueAdvanceService = dialogueAdvanceService;
+		this.automaticAdvanceDelayTicks = delayTicks;
+	}
+
 	@Override
 	public void start(Player player, DialogueSession session) {
 		if (player == null) throw new IllegalArgumentException("Player cannot be null");
@@ -64,6 +79,8 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 
 		lastRefreshTickMap.put(playerUUID, (long) instance.getServer().getCurrentTick());
 
+		long[] fullyRevealedAtTick = {-1L};
+		boolean[] automaticAdvanceAttempted = {false};
 		BukkitTask task = instance.getServer().getScheduler().runTaskTimer(instance, () -> {
 			if (!player.isOnline()) {
 				cancel(playerUUID);
@@ -95,6 +112,13 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 
 			if (currentState.isCurrentPageFullyRevealed()) {
 				long currentTick = instance.getServer().getCurrentTick();
+				if (fullyRevealedAtTick[0] < 0) fullyRevealedAtTick[0] = currentTick;
+				if (dialogueAdvanceService != null && !automaticAdvanceAttempted[0]
+						&& currentTick - fullyRevealedAtTick[0] >= automaticAdvanceDelayTicks) {
+					automaticAdvanceAttempted[0] = true;
+					dialogueAdvanceService.advance(player);
+					return;
+				}
 				long lastRefreshTick = lastRefreshTickMap.getOrDefault(playerUUID, currentTick);
 				if (currentTick - lastRefreshTick >= keepAlivePeriodTicks) {
 					dialogueTextAnimationService.refresh(player, session);
@@ -102,6 +126,9 @@ public class BukkitDialogueTextAnimator implements DialogueTextAnimator {
 				}
 				return;
 			}
+
+			fullyRevealedAtTick[0] = -1L;
+			automaticAdvanceAttempted[0] = false;
 
 			DialogueDisplayState updatedState = dialogueTextAnimationService.revealCharacters(player, session, charactersPerStep);
 			if (updatedState.isCurrentPageFullyRevealed()) {

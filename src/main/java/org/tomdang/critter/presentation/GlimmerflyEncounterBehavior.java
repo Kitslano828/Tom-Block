@@ -35,14 +35,18 @@ import org.tomdang.entityai.configuration.ConfiguredNavigatorFactory;
 import org.tomdang.entityai.core.AiBrain;
 import org.tomdang.entityai.core.AiCapability;
 import org.tomdang.entityai.runtime.EntityAiRuntime;
+import org.tomdang.activity.ActivityAccessService;
+import org.tomdang.activity.ActivityInstance;
+import org.tomdang.activity.bukkit.BukkitActivityEntityController;
 
 /** Private Glimmerfly presentation backed by the shared entity AI runtime. */
 public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Listener, AutoCloseable {
-    private final PluginHandle plugin;
     private final CritterRegistry definitions;
     private final CritterRuntimeService critters;
     private final EntityAiRuntime ai;
     private final Supplier<EncounterRuntimeService> encounters;
+    private final ActivityAccessService activityAccess;
+    private final BukkitActivityEntityController activityEntities;
     private final ConfiguredGoalFactory goals = new ConfiguredGoalFactory();
     private final ConfiguredNavigatorFactory navigators = new ConfiguredNavigatorFactory();
     private final Map<UUID, View> byHitbox = new HashMap<>();
@@ -50,15 +54,18 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
 
     public GlimmerflyEncounterBehavior(org.bukkit.plugin.Plugin plugin, CritterRegistry definitions,
             CritterRuntimeService critters, EntityAiRuntime ai,
-            Supplier<EncounterRuntimeService> encounters) {
-        if (plugin == null || definitions == null || critters == null || ai == null || encounters == null) {
+            Supplier<EncounterRuntimeService> encounters, ActivityAccessService activityAccess,
+            BukkitActivityEntityController activityEntities) {
+        if (plugin == null || definitions == null || critters == null || ai == null || encounters == null
+                || activityAccess == null || activityEntities == null) {
             throw new IllegalArgumentException("Glimmerfly behavior dependencies are required");
         }
-        this.plugin = new PluginHandle(plugin);
         this.definitions = definitions;
         this.critters = critters;
         this.ai = ai;
         this.encounters = encounters;
+        this.activityAccess = activityAccess;
+        this.activityEntities = activityEntities;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -103,10 +110,9 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
             value.setResponsive(true);
             value.setPersistent(false);
         });
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (!online.equals(player)) online.hideEntity(plugin.value, hitbox);
-        }
-        player.showEntity(plugin.value, display);
+        ActivityInstance activity = context.activity();
+        activityEntities.publishVisual(display, activity);
+        activityEntities.publishControl(hitbox, activity);
 
         var critter = critters.spawn(critterId, player.getUniqueId());
         var agent = new DisplayHitboxAiAgent(critter.instanceId(), critterId, display, hitbox,
@@ -116,8 +122,7 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
                 navigators.create(definition.ai()), goals.create(definition.ai()));
         ai.register(brain);
 
-        View view = new View(context.session().instanceId(), player.getUniqueId(), critter.instanceId(),
-                display, hitbox, brain);
+        View view = new View(context.session().instanceId(), activity, critter.instanceId(), display, hitbox, brain);
         byEncounter.put(view.encounterId, view);
         byHitbox.put(hitbox.getUniqueId(), view);
         context.resources().own(() -> remove(view.encounterId));
@@ -128,8 +133,9 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
     @EventHandler(ignoreCancelled = true)
     public void interact(PlayerInteractEntityEvent event) {
         View view = byHitbox.get(event.getRightClicked().getUniqueId());
-        if (view == null || !view.owner.equals(event.getPlayer().getUniqueId())) return;
+        if (view == null) return;
         event.setCancelled(true);
+        if (!activityAccess.canInteract(view.activity, event.getPlayer().getUniqueId())) return;
         var instance = critters.find(view.critterId).orElse(null);
         if (instance == null) return;
         if (instance.state() != CritterState.SETTLED) {
@@ -152,6 +158,8 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
         byHitbox.remove(view.hitbox.getUniqueId());
         ai.remove(view.critterId);
         critters.find(view.critterId).ifPresent(value -> critters.escape(view.critterId));
+        activityEntities.unregister(view.display);
+        activityEntities.unregister(view.hitbox);
         view.display.remove();
         view.hitbox.remove();
     }
@@ -161,7 +169,6 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
         HandlerList.unregisterAll(this);
     }
 
-    private record View(UUID encounterId, UUID owner, UUID critterId, ItemDisplay display,
+    private record View(UUID encounterId, ActivityInstance activity, UUID critterId, ItemDisplay display,
                         Interaction hitbox, AiBrain brain) {}
-    private record PluginHandle(org.bukkit.plugin.Plugin value) {}
 }

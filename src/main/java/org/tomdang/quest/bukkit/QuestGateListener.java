@@ -51,8 +51,8 @@ public final class QuestGateListener implements Listener {
 		if (to == null || sameBlock(event.getFrom(), to)) return;
 		if (event.getPlayer().getGameMode() == GameMode.SPECTATOR) return;
 		for (QuestGateDefinition gate : gates.all()) {
-			if (!gate.world().equals(to.getWorld().getName()) || quests.isCompleted(
-					event.getPlayer().getUniqueId(), gate.questId()) || !isBlockedSide(gate, to)) continue;
+			if (!gate.world().equals(to.getWorld().getName()) || quests.progress(
+					event.getPlayer().getUniqueId(), gate.questId()).isPresent() || !isBlockedSide(gate, to)) continue;
 			event.getPlayer().addPotionEffect(new PotionEffect(
 					PotionEffectType.BLINDNESS, gate.blinkTicks(), 0, false, false, false));
 			event.setTo(returnLocation(gate, to));
