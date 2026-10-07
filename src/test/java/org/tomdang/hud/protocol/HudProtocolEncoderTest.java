@@ -2,6 +2,7 @@ package org.tomdang.hud.protocol;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.ShadowColor;
 import org.junit.jupiter.api.Test;
 import org.tomdang.hud.composition.*;
 import org.tomdang.hud.composition.draw.*;
@@ -35,16 +36,27 @@ class HudProtocolEncoderTest {
 		Component encoded = new HudProtocolEncoder(colored, new HudLayoutPolicy(Map.of())).encode(frame, HudRegion.STATUS);
 		Component visual = descendants(encoded).stream().filter(component -> colored.font().equals(component.style().font())).findFirst().orElseThrow();
 		assertEquals(16 + 7 + 9, visual.color().green()); // bottom-center anchor + palette slot one
+		assertEquals(ShadowColor.none(), visual.style().shadowColor());
+	}
+
+	@Test void suppressesShadowWhenTheTextStyleDoesNotRequestOne() {
+		HudFrame frame = frame(new HudTextCommand("PLAIN", new HudTextStyle("plain", 0xFFFFFF, false, false), 40, false),
+				HudRegion.DEBUG, new HudRect(0, 0, 40, 9));
+		Component encoded = new HudProtocolEncoder(protocol, new HudLayoutPolicy(Map.of())).encode(frame, HudRegion.DEBUG);
+		Component visual = descendants(encoded).stream().filter(component -> protocol.font().equals(component.style().font()))
+				.findFirst().orElseThrow();
+		assertEquals(ShadowColor.none(), visual.style().shadowColor());
 	}
 
 	@Test void encodesTextWithTheFontSelectedByItsStyle() {
-		HudTextStyle qrafty = new HudTextStyle("quest-title", 0xFFFFFF, false, true, TomBlockHudFonts.QRAFTY);
-		HudFrame frame = frame(new HudTextCommand("QUEST", qrafty, 180, false), HudRegion.QUEST_TRACKER,
+		Key selectedFont = Key.key("tomblock", "example");
+		HudTextStyle style = new HudTextStyle("quest-title", 0xFFFFFF, false, true, selectedFont);
+		HudFrame frame = frame(new HudTextCommand("QUEST", style, 180, false), HudRegion.QUEST_TRACKER,
 				new HudRect(260, 8, 52, 12));
 		Component encoded = new HudProtocolEncoder(protocol, new HudLayoutPolicy(Map.of()))
 				.encode(frame, HudRegion.QUEST_TRACKER);
 		assertTrue(descendants(encoded).stream().anyMatch(component ->
-				TomBlockHudFonts.QRAFTY.equals(component.style().font())
+				selectedFont.equals(component.style().font())
 						&& component instanceof net.kyori.adventure.text.TextComponent text
 						&& text.content().equals("QUEST")));
 	}

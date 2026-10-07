@@ -35,6 +35,10 @@ public class NmsActorNameplateLineFactory {
 		textDisplay.setPos(x, finalY, z);
 
 		textDisplay.setText(PaperAdventure.asVanilla(linePlacement.line().getText()));
+		org.bukkit.entity.TextDisplay bukkitDisplay =
+				(org.bukkit.entity.TextDisplay) textDisplay.getBukkitEntity();
+		bukkitDisplay.setBackgroundColor(org.bukkit.Color.fromARGB(0));
+		bukkitDisplay.setShadowed(true);
 
 		textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
 

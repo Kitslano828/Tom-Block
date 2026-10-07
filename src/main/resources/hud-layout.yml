@@ -41,10 +41,19 @@ regions:
     stack: vertical
     gap: 2
     alignment: start
-  hunting:
+  calendar:
     anchor: top-left
     offset-x: 8
     offset-y: 8
+    max-width: 150
+    capacity: 1
+    stack: vertical
+    gap: 1
+    alignment: start
+  hunting:
+    anchor: top-left
+    offset-x: 8
+    offset-y: 32
     max-width: 170
     capacity: 1
     stack: vertical
@@ -92,6 +101,8 @@ elements:
     enabled: true
     anchor: bottom-center
     offset-x: 0
+    # Values sit one vanilla text line above the native bars. The icon's internal
+    # +14 translation places its center on the native bar row.
     offset-y: -34
     max-width: 202
   tomblock:dialogue:
@@ -127,5 +138,12 @@ elements:
     enabled: true
     anchor: top-left
     offset-x: 8
-    offset-y: 8
+    offset-y: 32
     max-width: 170
+  tomblock:calendar:
+    region: calendar
+    enabled: true
+    anchor: top-left
+    offset-x: 8
+    offset-y: 8
+    max-width: 150

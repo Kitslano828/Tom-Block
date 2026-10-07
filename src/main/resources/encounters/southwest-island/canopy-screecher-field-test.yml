@@ -1,0 +1,11 @@
+encounter:
+  id: CANOPY_SCREECHER_FIELD_TEST
+  behavior: VARIED_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity: {visibility: NEARBY, interaction: OWNER, contribution: BLOCK, rewards: OWNER}
+  parameters:
+    critter: CANOPY_SCREECHER
+    mechanic: CANOPY_ECHO
+    model: minecraft:feather

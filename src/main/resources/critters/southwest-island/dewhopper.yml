@@ -1,0 +1,38 @@
+critter:
+  id: DEWHOPPER
+  name: Dewhopper
+  family: RIPPLEKIN
+  rarity: UNCOMMON
+  journal-icon: SLIME_BALL
+  journal-description: "A spring-legged waterside critter that escapes in long, measured bounds. Ripples and bent reeds often reveal its next landing place before it arrives."
+  habitats: [STREAM_BANK, POND_EDGE]
+  temperaments: [DOCILE, SKITTISH]
+  relations: []
+  presentation: ITEM_DISPLAY_GROUND
+  movement:
+    modes: [GROUND, HOPPING, AMPHIBIOUS]
+    wander-radius: 8.0
+    preferred-height: 0.0
+    speed: 1.05
+    rest-duration-seconds: 2
+    relocation-distance: 7.0
+  hunting:
+    archetypes: [OBSERVE, TRACK, PURSUE]
+    awareness-radius: 7.0
+    capture-window-seconds: 3
+    maximum-relocations: 5
+    outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: NATIVE_GROUND
+    goals:
+      FLEE: {type: FLEE_FROM_PLAYER, priority: 100, trigger-distance: 5.0, minimum-player-speed: 0.08, distance: 7.0, speed: 1.5, territory-radius: 16.0, rest-seconds: 1}
+      SEEK_COVER: {type: SEEK_COVER, priority: 90, speed: 1.15, arrival-radius: 0.9, territory-radius: 16.0}
+      RETURN_HOME: {type: RETURN_HOME, priority: 80, trigger-distance: 13.0, arrival-radius: 1.0, speed: 1.0}
+      SETTLE: {type: SETTLE, priority: 70}
+      WANDER: {type: WANDER, priority: 30, radius: 8.0, preferred-height: 0.0, speed: 0.9, rest-seconds: 2}
+      REST: {type: REST, priority: 20}
+      IDLE: {type: IDLE, priority: 0}
+  rewards:
+    hunting-xp: 32
+    materials:
+      DEW_SAC: {minimum: 1, maximum: 2, chance: 1.0}

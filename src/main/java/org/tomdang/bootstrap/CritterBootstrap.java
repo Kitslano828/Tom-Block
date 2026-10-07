@@ -13,6 +13,7 @@ import org.tomdang.critter.journal.InMemoryCritterJournalRepository;
 import org.tomdang.critter.journal.PostgresCritterJournalRepository;
 import org.tomdang.critter.presentation.GlimmerflyEncounterBehavior;
 import org.tomdang.critter.presentation.GroundCritterEncounterBehavior;
+import org.tomdang.critter.presentation.VariedCritterEncounterBehavior;
 import org.tomdang.critter.progression.CritterProgressionService;
 import org.tomdang.critter.presentation.critterdex.CritterdexCommand;
 import org.tomdang.critter.presentation.critterdex.CritterdexDetailScreen;
@@ -47,6 +48,7 @@ public final class CritterBootstrap implements AutoCloseable {
     private final AiDiagnosticsCommand aiDiagnostics;
     private final GlimmerflyEncounterBehavior glimmerfly;
     private final GroundCritterEncounterBehavior groundCritter;
+    private final VariedCritterEncounterBehavior variedCritter;
     private final CritterEcologyService ecology = new CritterEcologyService();
     private final BukkitActivityEntityController activityEntities;
 
@@ -93,6 +95,9 @@ public final class CritterBootstrap implements AutoCloseable {
         groundCritter = new GroundCritterEncounterBehavior(plugin, definitions, runtime, ai,
                 encounters::runtime, actionBar, huntingHud, activityAccess, activityEntities);
         encounters.behaviors().register("GROUND_CRITTER_HUNT", groundCritter);
+        variedCritter = new VariedCritterEncounterBehavior(plugin, definitions, runtime,
+                encounters::runtime, activityAccess, activityEntities);
+        encounters.behaviors().register("VARIED_CRITTER_HUNT", variedCritter);
         var critterTest = new CritterTestCommand(encounters.runtime());
         var critterCommand = java.util.Objects.requireNonNull(plugin.getCommand("crittertest"),
                 "Missing crittertest command");
@@ -117,6 +122,7 @@ public final class CritterBootstrap implements AutoCloseable {
     }
 
     @Override public void close() {
+        variedCritter.close();
         groundCritter.close();
         glimmerfly.close();
         activityEntities.close();

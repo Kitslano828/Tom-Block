@@ -7,7 +7,9 @@ import org.tomdang.hud.composition.HudViewport;
 import org.tomdang.hud.composition.draw.HudTextCommand;
 import org.tomdang.hud.composition.layout.HudNode;
 import org.tomdang.hud.composition.layout.HudPrimitive;
+import org.tomdang.hud.composition.layout.HudPadding;
 import org.tomdang.hud.composition.layout.HudStack;
+import org.tomdang.hud.composition.layout.HudOverlay;
 import org.tomdang.hud.composition.HudAnchor;
 import org.tomdang.hud.composition.HudCompositor;
 import org.tomdang.hud.composition.HudElementLayout;
@@ -45,12 +47,12 @@ class TrackedQuestHudElementTest {
 		QuestProgress progress = QuestProgress.start(player, "HUNT", "RETURN", Instant.EPOCH);
 		TrackedQuestHudElement element = new TrackedQuestHudElement(quest, progress);
 		var full = element.render(new HudRenderContext(player, 1, HudPresentationMode.FULL, HudViewport.DEFAULT, 180));
-		assertTrue(texts(full.root()).contains("RETURN TO WILL"));
+		assertTrue(faceTexts(full.root()).contains("RETURN TO WILL"));
 		assertTrue(texts(full.root()).stream().noneMatch(value -> value.endsWith(":")));
-		assertTrue(texts(full.root()).contains("X WILL SPOKEN TO"));
+		assertTrue(texts(full.root()).contains("x WILL SPOKEN TO"));
 
 		var compact = element.render(new HudRenderContext(player, 1, HudPresentationMode.COMPACT, HudViewport.DEFAULT, 180));
-		assertEquals(List.of("FIRST STEPS", "TRACKED QUEST"), texts(compact.root()));
+		assertEquals(List.of("FIRST STEPS", "TRACKED QUEST"), faceTexts(compact.root()).stream().distinct().toList());
 	}
 
 	@Test void configuredTrackerIsPinnedInsideTheTopRightMargin() {
@@ -76,22 +78,30 @@ class TrackedQuestHudElementTest {
 		assertTrue(texts(snapshot.content().root()).stream()
 				.noneMatch("Watch how the nearby Glimmerfly moves before approaching it."::equals));
 		assertTrue(textCommands(snapshot.content().root()).stream().noneMatch(HudTextCommand::wrap));
+		assertEquals(TomBlockHudFonts.VANILLA, textCommands(snapshot.content().root()).getFirst().style().font());
 		assertTrue(textCommands(snapshot.content().root()).stream()
-				.noneMatch(command -> TomBlockHudFonts.QRAFTY.equals(command.style().font())));
-		assertEquals(TomBlockHudFonts.QUEST_TITLE, textCommands(snapshot.content().root()).getFirst().style().font());
-		assertTrue(textCommands(snapshot.content().root()).stream()
-				.anyMatch(command -> TomBlockHudFonts.QUEST_BODY.equals(command.style().font())));
+				.allMatch(command -> TomBlockHudFonts.VANILLA.equals(command.style().font())));
 	}
 
 	private List<String> texts(HudNode node) {
 		if (node instanceof HudPrimitive primitive && primitive.command() instanceof HudTextCommand text) return List.of(text.text());
+		if (node instanceof HudPadding padding) return texts(padding.child());
 		if (node instanceof HudStack stack) return stack.children().stream().flatMap(child -> texts(child).stream()).toList();
+		if (node instanceof HudOverlay overlay) return overlay.children().stream().flatMap(child -> texts(child).stream()).toList();
 		return List.of();
+	}
+
+	private List<String> faceTexts(HudNode node) {
+		return textCommands(node).stream().filter(text -> !text.style().styleId().endsWith("-edge"))
+				.map(HudTextCommand::text).toList();
 	}
 
 	private List<HudTextCommand> textCommands(HudNode node) {
 		if (node instanceof HudPrimitive primitive && primitive.command() instanceof HudTextCommand text) return List.of(text);
+		if (node instanceof HudPadding padding) return textCommands(padding.child());
 		if (node instanceof HudStack stack) return stack.children().stream()
+				.flatMap(child -> textCommands(child).stream()).toList();
+		if (node instanceof HudOverlay overlay) return overlay.children().stream()
 				.flatMap(child -> textCommands(child).stream()).toList();
 		return List.of();
 	}

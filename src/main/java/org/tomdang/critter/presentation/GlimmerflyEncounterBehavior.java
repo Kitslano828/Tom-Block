@@ -95,7 +95,12 @@ public final class GlimmerflyEncounterBehavior implements EncounterBehavior, Lis
         ItemDisplay display = world.spawn(location, ItemDisplay.class, value -> {
             ItemStack model = ItemStack.of(Material.PAPER);
             var metadata = model.getItemMeta();
-            metadata.setItemModel(new NamespacedKey("tomblock", "glimmerfly"));
+            String modelId = context.definition().parameters().getOrDefault("model",
+                    critterId.toLowerCase(java.util.Locale.ROOT));
+            NamespacedKey modelKey = NamespacedKey.fromString(
+                    modelId.contains(":") ? modelId : "tomblock:" + modelId);
+            if (modelKey == null) throw new IllegalArgumentException("Invalid critter model " + modelId);
+            metadata.setItemModel(modelKey);
             model.setItemMeta(metadata);
             value.setItemStack(model);
             value.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);

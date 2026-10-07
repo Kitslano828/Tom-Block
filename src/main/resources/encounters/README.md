@@ -60,3 +60,17 @@ from the player's position. Reaching the snared cover completes the hunt;
 reaching another cover consumes a relocation. Exhausting relocations fails the
 encounter without publishing a capture, while success continues through the
 standard critter event pipeline.
+
+`VARIED_CRITTER_HUNT` supplies compact species-specific field mechanics. Set
+`parameters.critter` and one of the following `parameters.mechanic` values:
+
+- `GLIMMER_TIMING`: follow the moving flash and interact during its landing window.
+- `BRAMBLE_BAIT`: place bait, withdraw and crouch until the animal feeds.
+- `DEW_INTERCEPT`: read ripple telegraphs and intercept the predicted landing.
+- `BURROW_EXITS`: seal two false exits and capture the animal at the live exit.
+- `CANOPY_ECHO`: locate the true perch from three directional calls.
+- `SPORE_SEQUENCE`: repeat the pulsing mushroom sequence to reveal the critter.
+
+These mechanics still complete through `CritterRuntimeService`, so observation,
+capture, Critterdex discovery, Hunting XP and material rewards use the same
+authoritative progression pipeline as the Mossback hunt.

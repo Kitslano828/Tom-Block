@@ -45,6 +45,42 @@ items:
     rarity: COMMON
     category: MATERIAL
 
+  BRAMBLE_BRISTLE:
+    material: BROWN_DYE
+    display-name: "Bramble Bristle"
+    rarity: COMMON
+    category: MATERIAL
+
+  DEW_SAC:
+    material: SLIME_BALL
+    display-name: "Dew Sac"
+    rarity: UNCOMMON
+    category: MATERIAL
+
+  BURROW_CLAW:
+    material: FLINT
+    display-name: "Burrow Claw"
+    rarity: UNCOMMON
+    category: MATERIAL
+
+  ECHO_FEATHER:
+    material: FEATHER
+    display-name: "Echo Feather"
+    rarity: RARE
+    category: MATERIAL
+
+  SPORE_POUCH:
+    material: BROWN_MUSHROOM
+    display-name: "Spore Pouch"
+    rarity: UNCOMMON
+    category: MATERIAL
+
+  PRISMATIC_SPORES:
+    material: GLOW_LICHEN
+    display-name: "Prismatic Spores"
+    rarity: RARE
+    category: MATERIAL
+
   COBBLESTONE:
     material: COBBLESTONE
     display-name: "Cobblestone"

@@ -1,0 +1,37 @@
+critter:
+  id: CANOPY_SCREECHER
+  name: Canopy Screecher
+  family: ECHOFEATHER
+  rarity: RARE
+  journal-icon: FEATHER
+  journal-description: "A watchful canopy bird whose warning cry sends nearby wildlife into hiding. It changes perches often, but quiet hunters can read the direction of its echo."
+  habitats: [HIGH_CANOPY, FOREST_EDGE]
+  temperaments: [TERRITORIAL, SOCIAL, SKITTISH]
+  relations: []
+  presentation: PLACEHOLDER
+  movement:
+    modes: [FLYING, HOVERING]
+    wander-radius: 10.0
+    preferred-height: 5.0
+    speed: 1.15
+    rest-duration-seconds: 3
+    relocation-distance: 9.0
+  hunting:
+    archetypes: [OBSERVE, TRACK, PURSUE]
+    awareness-radius: 9.0
+    capture-window-seconds: 2
+    maximum-relocations: 5
+    outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: DIRECT_FLIGHT
+    goals:
+      FLEE: {type: FLEE_FROM_PLAYER, priority: 100, trigger-distance: 7.0, minimum-player-speed: 0.06, distance: 9.0, speed: 1.7, territory-radius: 20.0, rest-seconds: 2}
+      SETTLE: {type: SETTLE, priority: 90}
+      INVESTIGATE: {type: INVESTIGATE_PLAYER, priority: 70, trigger-distance: 11.0, stop-distance: 4.0, speed: 0.75, territory-radius: 12.0}
+      WANDER: {type: WANDER, priority: 30, radius: 10.0, preferred-height: 5.0, speed: 1.15, rest-seconds: 3}
+      REST: {type: REST, priority: 20}
+      IDLE: {type: IDLE, priority: 0}
+  rewards:
+    hunting-xp: 55
+    materials:
+      ECHO_FEATHER: {minimum: 1, maximum: 1, chance: 1.0}

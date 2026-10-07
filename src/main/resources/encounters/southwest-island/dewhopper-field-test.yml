@@ -1,0 +1,22 @@
+encounter:
+  id: DEWHOPPER_FIELD_TEST
+  behavior: VARIED_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity: {visibility: NEARBY, interaction: OWNER, contribution: BLOCK, rewards: OWNER}
+  parameters:
+    critter: DEWHOPPER
+    mechanic: DEW_INTERCEPT
+    model: minecraft:slime_ball
+    carrier: RABBIT
+    spawn-distance: 7.0
+    model-y-offset: 0.6
+    hitbox-width: 0.9
+    hitbox-height: 0.9
+    cover-offsets: "-8,4;8,4;-7,-5;7,-5;0,9"
+    clues-required: 4
+    maximum-alertness: 100
+    reckless-alertness: 22
+    calm-recovery: 10
+    capture-ready-ticks: 18

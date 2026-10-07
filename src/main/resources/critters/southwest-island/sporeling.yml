@@ -1,0 +1,39 @@
+critter:
+  id: SPORELING
+  name: Sporeling
+  family: MYCELIAN
+  rarity: UNCOMMON
+  journal-icon: RED_MUSHROOM
+  journal-description: "A tiny root-legged mimic found only among red and brown mushroom patches. A still cap may be a Sporeling waiting for careless footsteps before it scatters spores and bolts."
+  habitats: [RED_MUSHROOM_PATCH, BROWN_MUSHROOM_PATCH]
+  temperaments: [DOCILE, ELUSIVE, NOCTURNAL]
+  relations: []
+  presentation: ITEM_DISPLAY_GROUND
+  movement:
+    modes: [GROUND, BURROWING]
+    wander-radius: 4.0
+    preferred-height: 0.0
+    speed: 0.7
+    rest-duration-seconds: 5
+    relocation-distance: 4.0
+  hunting:
+    archetypes: [OBSERVE, LURE, TRACK, CALM]
+    awareness-radius: 4.5
+    capture-window-seconds: 4
+    maximum-relocations: 3
+    outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: NATIVE_GROUND
+    goals:
+      FLEE: {type: FLEE_FROM_PLAYER, priority: 100, trigger-distance: 3.5, minimum-player-speed: 0.06, distance: 4.0, speed: 1.15, territory-radius: 9.0, rest-seconds: 2}
+      SEEK_COVER: {type: SEEK_COVER, priority: 90, speed: 0.9, arrival-radius: 0.6, territory-radius: 10.0}
+      RETURN_HOME: {type: RETURN_HOME, priority: 80, trigger-distance: 7.0, arrival-radius: 0.8, speed: 0.7}
+      SETTLE: {type: SETTLE, priority: 70}
+      WANDER: {type: WANDER, priority: 30, radius: 4.0, preferred-height: 0.0, speed: 0.6, rest-seconds: 5}
+      REST: {type: REST, priority: 20}
+      IDLE: {type: IDLE, priority: 0}
+  rewards:
+    hunting-xp: 38
+    materials:
+      SPORE_POUCH: {minimum: 1, maximum: 2, chance: 1.0}
+      PRISMATIC_SPORES: {minimum: 1, maximum: 1, chance: 0.08}

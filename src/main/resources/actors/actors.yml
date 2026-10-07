@@ -9,15 +9,16 @@ actors:
     collision-policy: PASS_THROUGH
     nameplate:
       lines:
-        status:
-          role: STATUS
-          text: "CRITTER HUNTER"
-          color: "#D9A441"
-          bold: true
         name:
           role: NAME
-          text: "Will"
+          text: "Critter Hunter Will"
+          color: "#55FF55"
           visible-while-moving: true
+        interaction:
+          role: INTERACTION
+          text: "CLICK"
+          color: "#FFFF55"
+          bold: true
 
   PACKET_SMITH:
     display-name: "Blacksmith"

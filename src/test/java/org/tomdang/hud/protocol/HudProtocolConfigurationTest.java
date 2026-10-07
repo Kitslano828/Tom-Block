@@ -20,7 +20,8 @@ class HudProtocolConfigurationTest {
 		HudProtocolConfiguration protocol = HudProtocolConfiguration.load(
 				getClass().getClassLoader().getResourceAsStream("hud-protocol.properties"));
 		for (int rgb : new int[]{0xFFFFFF, 0xFF4055, 0x00E6C3, 0xF2AE32, 0xAAAAAA,
-				0xFFAA00, 0xFF5555, 0xFFFF55, 0x55FF55, 0x00AAAA, 0x555555})
+				0xFFAA00, 0xFF5555, 0xFFFF55, 0x55FF55, 0x00AAAA, 0x555555,
+				0xFCA800, 0xCE3303, 0xECBE74, 0xFC5454, 0xA8A8A8})
 			assertDoesNotThrow(() -> protocol.requirePalette(rgb));
 	}
 	private HudProtocolConfiguration load(String first, String second) {

@@ -28,17 +28,18 @@ class HudOwnershipArchitectureTest {
 					.forEach(path -> inspect(path, List.of("DisplaySlot.SIDEBAR"), violations));
 		}
 		assertTrue(violations.isEmpty(), "Visible sidebar writes bypass the engine: " + violations);
-		assertFalse(Files.readString(Path.of("src/main/java/org/tomdang/TomBlock.java")).contains("new MapTestService"),
+		assertFalse(Files.readString(Path.of("src/main/java/org/tomdang/bootstrap/TomBlockApplication.java"))
+				.contains("new MapTestService"),
 				"The isolated scoreboard experiment must not be wired into the production plugin");
 	}
 
 	@Test void nativePlayerResourcesAreNotRegisteredAsCustomHudElements() throws Exception {
-		String bootstrap = Files.readString(Path.of("src/main/java/org/tomdang/TomBlock.java"));
-		assertFalse(bootstrap.contains("new org.tomdang.hud.status.HealthHudPresenter"));
-		assertFalse(bootstrap.contains("new org.tomdang.hud.status.EnergyHudPresenter"));
-		assertFalse(bootstrap.contains("new org.tomdang.hud.status.PlayerStatusHudService"));
-		assertTrue(bootstrap.contains("new org.tomdang.hud.notification.HudNotificationPresenter"));
-		assertTrue(bootstrap.contains("new org.tomdang.hud.dialogue.HudDialoguePresenter"));
+		String bootstrap = Files.readString(Path.of("src/main/java/org/tomdang/bootstrap/HudBootstrap.java"));
+		assertFalse(bootstrap.contains("new HealthHudPresenter"));
+		assertFalse(bootstrap.contains("new EnergyHudPresenter"));
+		assertFalse(bootstrap.contains("new PlayerStatusHudService"));
+		assertTrue(bootstrap.contains("new HudNotificationPresenter"));
+		assertTrue(bootstrap.contains("new HudDialoguePresenter"));
 	}
 
 	private void inspect(Path path, List<String> forbidden, List<String> violations) {

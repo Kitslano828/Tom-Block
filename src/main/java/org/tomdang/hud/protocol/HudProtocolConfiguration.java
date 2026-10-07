@@ -20,7 +20,7 @@ public record HudProtocolConfiguration(String version, String minecraftVersion, 
 		barCellAdvances = Map.copyOf(barCellAdvances);
 		if (barCellAdvances.values().stream().anyMatch(advance -> advance == null || advance <= 0))
 			throw new IllegalArgumentException("HUD style bar advances are invalid");
-		if (!palette.containsKey(0xFFFFFF) || palette.values().stream().anyMatch(index -> index < 0 || index > 15)
+		if (!palette.containsKey(0xFFFFFF) || palette.values().stream().anyMatch(index -> index < 0 || index > 16)
 				|| new HashSet<>(palette.values()).size() != palette.size())
 			throw new IllegalArgumentException("HUD protocol palette is invalid");
 	}

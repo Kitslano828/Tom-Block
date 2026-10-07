@@ -1,0 +1,22 @@
+encounter:
+  id: BRAMBLEHOG_FIELD_TEST
+  behavior: VARIED_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity: {visibility: NEARBY, interaction: OWNER, contribution: BLOCK, rewards: OWNER}
+  parameters:
+    critter: BRAMBLEHOG
+    mechanic: BRAMBLE_BAIT
+    model: minecraft:sweet_berries
+    carrier: SILVERFISH
+    spawn-distance: 6.0
+    model-y-offset: 0.55
+    hitbox-width: 1.0
+    hitbox-height: 0.8
+    cover-offsets: "-6,4;6,4;-6,-4;6,-4;0,8"
+    clues-required: 3
+    maximum-alertness: 100
+    reckless-alertness: 28
+    calm-recovery: 9
+    capture-ready-ticks: 24

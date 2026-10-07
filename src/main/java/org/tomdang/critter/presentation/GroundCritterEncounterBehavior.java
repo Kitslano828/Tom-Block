@@ -133,7 +133,10 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             var metadata = model.getItemMeta();
             String modelId = context.definition().parameters().getOrDefault("model",
                     critterId.toLowerCase(Locale.ROOT));
-            metadata.setItemModel(new NamespacedKey("tomblock", modelId));
+            NamespacedKey modelKey = NamespacedKey.fromString(
+                    modelId.contains(":") ? modelId : "tomblock:" + modelId);
+            if (modelKey == null) throw new IllegalArgumentException("Invalid critter model " + modelId);
+            metadata.setItemModel(modelKey);
             model.setItemMeta(metadata);
             value.setItemStack(model);
             value.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
@@ -187,8 +190,8 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         updateHud(view, player, Bukkit.getCurrentTick());
         context.resources().own(() -> remove(view.encounterId));
         notify(player, Component.text(view.assisted
-                ? "Will's snares are set. Move opposite the armed snare and pressure the Mossback."
-                : "Follow the disturbed moss and inspect " + cluesRequired + " tracks.",
+                ? "Will's snares are set. Move opposite the armed snare and pressure the " + name(view) + "."
+                : "Follow the disturbed trail and inspect " + cluesRequired + " tracks.",
                 NamedTextColor.GOLD), 80);
     }
 
@@ -245,7 +248,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         if (update.transition() == HuntTransition.FLUSH_READY) {
             startFlush(view, player);
         } else if (reckless && previous < 50 && view.huntState.alertness() >= 50) {
-            notify(player, Component.text("Pressure rising—keep the snare behind the Mossback.",
+            notify(player, Component.text("Pressure rising—keep the snare behind the " + name(view) + ".",
                     NamedTextColor.YELLOW), 35);
         }
     }
@@ -283,7 +286,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         activityEntities.publishVisual(view.display, view.activity);
         ai.register(view.brain);
         syncDiagnostics(view);
-        notify(player, Component.text("Snare armed. Move opposite it and pressure the Mossback toward it.",
+        notify(player, Component.text("Snare armed. Move opposite it and pressure the " + name(view) + " toward it.",
                 NamedTextColor.GREEN), 60);
     }
 
@@ -293,7 +296,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         view.brain.memory().flag("seek-cover", true);
         Location location = player.getLocation();
         view.brain.memory().put("threat-position", new AiVector(location.getX(), location.getY(), location.getZ()));
-        notify(player, Component.text("The Mossback bolts for cover!", NamedTextColor.GOLD), 35);
+        notify(player, Component.text("The " + name(view) + " bolts for cover!", NamedTextColor.GOLD), 35);
     }
 
     private void resolveFlush(View view, Player player) {
@@ -304,7 +307,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
             critters.observe(view.critterId);
             critters.capture(view.critterId, grade);
             encounters.get().complete(view.encounterId);
-            notify(player, Component.text("Mossback safely snared and released — " + grade.name() + " hunt!",
+            notify(player, Component.text(name(view) + " safely snared and released — " + grade.name() + " hunt!",
                     NamedTextColor.GREEN), 60);
             return;
         }
@@ -314,7 +317,7 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         view.flushActive = false;
         removeCovers(view);
         if (update.transition() == HuntTransition.ESCAPED) {
-            escape(view, player, "The Mossback evaded too many snares and escaped.");
+            escape(view, player, "The " + name(view) + " evaded too many snares and escaped.");
             return;
         }
         spawnCoverChoices(view, player);
@@ -562,6 +565,8 @@ public final class GroundCritterEncounterBehavior implements EncounterBehavior, 
         for (UUID id : new ArrayList<>(byEncounter.keySet())) remove(id);
         HandlerList.unregisterAll(this);
     }
+
+    private String name(View view) { return definitions.require(view.definitionId).name(); }
 
     private static final class View {
         private final UUID encounterId;

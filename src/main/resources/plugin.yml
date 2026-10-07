@@ -93,7 +93,7 @@ commands:
     permission: tomblock.quest
   hudlab:
     description: Toggles the isolated TomBlock HUD protocol laboratory
-    usage: /hudlab
+    usage: /hudlab <protocol|off>
     permission: tomblock.admin.hudlab
   aidiag:
     description: Inspects and visualizes registered TomBlock entity AI agents
@@ -101,12 +101,16 @@ commands:
     permission: tomblock.admin.aidiag
   crittertest:
     description: Starts an isolated TomBlock critter field test
-    usage: /crittertest <mossback|stop>
+    usage: /crittertest <mossback|glimmerfly|bramblehog|dewhopper|burrowtail|screecher|sporeling|stop>
     permission: tomblock.admin.crittertest
   critterdex:
     description: Opens your Critterdex species collection
     usage: /critterdex
     permission: tomblock.critterdex
+  calendar:
+    description: Shows or administrates the global island calendar
+    usage: /calendar [show|pause|resume|speed|set]
+    permission: tomblock.calendar
 
 permissions:
   tomblock.collections:
@@ -150,4 +154,10 @@ permissions:
     default: op
   tomblock.admin.crittertest:
     description: Allows isolated critter encounter testing
+    default: op
+  tomblock.calendar:
+    description: Allows viewing global island time and date
+    default: true
+  tomblock.admin.calendar:
+    description: Allows changing, pausing, and accelerating global island time
     default: op

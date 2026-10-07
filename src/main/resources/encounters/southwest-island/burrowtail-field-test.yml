@@ -1,0 +1,22 @@
+encounter:
+  id: BURROWTAIL_FIELD_TEST
+  behavior: VARIED_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity: {visibility: NEARBY, interaction: OWNER, contribution: BLOCK, rewards: OWNER}
+  parameters:
+    critter: BURROWTAIL
+    mechanic: BURROW_EXITS
+    model: minecraft:flint
+    carrier: SILVERFISH
+    spawn-distance: 6.0
+    model-y-offset: 0.5
+    hitbox-width: 0.9
+    hitbox-height: 0.75
+    cover-offsets: "-7,5;7,5;-5,-7;5,-7;0,9"
+    clues-required: 4
+    maximum-alertness: 100
+    reckless-alertness: 24
+    calm-recovery: 11
+    capture-ready-ticks: 22

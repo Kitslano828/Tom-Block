@@ -1,6 +1,6 @@
 encounter:
   id: TUTORIAL_GLIMMERFLY
-  behavior: GLIMMERFLY_HUNT
+  behavior: VARIED_CRITTER_HUNT
   mode: PLAYER
   timeout-seconds: 300
   disconnect-grace-seconds: 60
@@ -11,3 +11,4 @@ encounter:
     rewards: OWNER
   parameters:
     critter: GLIMMERFLY
+    mechanic: GLIMMER_TIMING

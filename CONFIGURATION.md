@@ -17,6 +17,36 @@ server copies are not overwritten by a new JAR.
 | Progression counters | `counter-definitions.yml` | JAR, synchronized into PostgreSQL |
 | Database connection | `database.yml` | server directory; password comes from the environment |
 | Private foraging trees | `foraging-trees.yml` | runtime server data |
+| Global calendar definition | `world-calendar.yml` | JAR template; requires rebuild/restart |
+| Global calendar state | `world-calendar-state.properties` | runtime server data; written atomically |
+
+## Global world calendar
+
+`world-calendar.yml` defines the authoritative calendar shared by every world
+registered through `IslandContextService`. The default cycle lasts 30 real
+minutes: 20 minutes from sunrise to sunset and 10 minutes from sunset back to
+sunrise. Months contain 28 days and carry an explicit season.
+
+Minecraft daylight progression is disabled in managed island worlds. The
+calendar projects its solar time into Minecraft ticks once per second, and a
+newly loaded private island is synchronized immediately. Calendar progression
+uses elapsed wall-clock time rather than server ticks, so lag does not cause
+drift and normal offline time advances the date. Pausing the calendar also
+pauses offline progression.
+
+The current anchor, speed, and pause state are stored in
+`plugins/TomBlock/world-calendar-state.properties`. Do not copy an old state
+file between independent servers unless they are intended to share the same
+date. Players can inspect time with `/calendar`; operators can use
+`/calendar pause`, `/calendar resume`, `/calendar speed <multiplier>`, and
+`/calendar set <year> <month> <day> <hour> <minute>`.
+
+Gameplay consumers receive immutable `WorldTimeSnapshot` values. Reusable
+`TemporalCondition` predicates support month, season, and day-period filters,
+and `WorldTimeEventBus` publishes time advancement, new-day, new-month, and
+season-change events. Stat rules, critter ecology, NPC schedules, farming, and
+future systems should consume these APIs rather than reading a Bukkit world's
+time directly.
 | Plugin declaration | `plugin.yml` | JAR |
 
 Regions may set `display-name` for player-facing text (for example, `Mushroom Island`). The YAML key remains the stable internal ID used by mob spawning, stat caps, and other references. When `display-name` is omitted, it defaults to the ID. Existing server-side `plugins/TomBlock/regions.yml` files are not overwritten by a plugin build; add new display names there explicitly when deploying.

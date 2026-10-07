@@ -12,6 +12,7 @@ import org.tomdang.hud.composition.layout.HudAlignment;
 import org.tomdang.hud.composition.layout.HudNode;
 import org.tomdang.hud.composition.layout.HudPrimitive;
 import org.tomdang.hud.composition.layout.HudStack;
+import org.tomdang.hud.composition.layout.HudTextEffects;
 import org.tomdang.quest.definition.QuestDefinition;
 import org.tomdang.quest.definition.QuestObjectiveDefinition;
 import org.tomdang.quest.progress.QuestProgress;
@@ -44,22 +45,22 @@ public final class TrackedQuestHudElement implements HudElement {
 				.filter(value -> progress.amount(stage.id(), value.id()) < value.requiredAmount())
 				.findFirst().orElse(stage.objectives().getLast());
 		List<HudNode> heading = new ArrayList<>();
-		wrapped(heading, quest.displayName().toUpperCase(Locale.ROOT), "quest-title", 0xFFAA00, true, context.availableWidth());
-		heading.add(text("TRACKED QUEST", "quest-subtitle", 0xFF5555, false, context.availableWidth(), false));
+		wrapped(heading, quest.displayName().toUpperCase(Locale.ROOT), "quest-title", 0xFCA800, true, context.availableWidth());
+		heading.add(text("TRACKED QUEST", "quest-subtitle", 0xCE3303, false, context.availableWidth(), false));
 		if (context.mode() == HudPresentationMode.COMPACT)
 			return new HudContent(HudStack.vertical(0, HudAlignment.END, heading));
 		List<HudNode> objectiveRows = new ArrayList<>();
 		wrapped(objectiveRows, objective.parameters().getOrDefault("tracker-title",
-				stage.displayName().toUpperCase(Locale.ROOT)), "quest-objective", 0xFFAA00, false, context.availableWidth());
+				stage.displayName().toUpperCase(Locale.ROOT)), "quest-objective", 0xFCA800, false, context.availableWidth());
 		wrapped(objectiveRows, objective.parameters().getOrDefault("tracker-description", readable(objective.id())),
-				"quest-description", 0xFFFF55, false, context.availableWidth());
+				"quest-description", 0xECBE74, false, context.availableWidth());
 		long amount = progress.amount(stage.id(), objective.id());
 		boolean done = amount >= objective.requiredAmount();
 		String label = objective.parameters().getOrDefault("tracker-progress", readable(objective.id()).toUpperCase(Locale.ROOT));
 		String count = objective.requiredAmount() > 1 ? " " + amount + "/" + objective.requiredAmount() : "";
-		wrapped(objectiveRows, (done ? "V " : "X ") + label + count, "quest-progress",
-				done ? 0x55FF55 : 0xFF5555, false, context.availableWidth());
-		HudNode guidance = text("Type /quest for guidance!", "quest-guidance", 0xAAAAAA, false,
+		wrapped(objectiveRows, (done ? "V " : "x ") + label + count, "quest-progress",
+				done ? 0x55FF55 : 0xFC5454, false, context.availableWidth());
+		HudNode guidance = text("Type /quest for guidance!", "quest-guidance", 0xA8A8A8, false,
 				context.availableWidth(), false);
 		return new HudContent(HudStack.vertical(3, HudAlignment.END, List.of(
 				HudStack.vertical(0, HudAlignment.END, heading),
@@ -67,8 +68,8 @@ public final class TrackedQuestHudElement implements HudElement {
 	}
 
 	private static HudNode text(String value, String style, int color, boolean bold, int width, boolean wrap) {
-		return new HudPrimitive(new HudTextCommand(value,
-				new HudTextStyle(style, color, bold, true, font(style)), width, wrap));
+		return HudTextEffects.edged(new HudTextCommand(value,
+				new HudTextStyle(style, color, bold, false, font(style)), width, wrap));
 	}
 
 	private void wrapped(List<HudNode> rows, String value, String style, int color, boolean bold, int width) {
@@ -79,11 +80,8 @@ public final class TrackedQuestHudElement implements HudElement {
 
 	private static net.kyori.adventure.key.Key font(String style) {
 		return switch (style) {
-			case "quest-title" -> TomBlockHudFonts.QUEST_TITLE;
-			case "quest-subtitle" -> TomBlockHudFonts.QUEST_SUBTITLE;
-			case "quest-objective" -> TomBlockHudFonts.QUEST_OBJECTIVE;
-			case "quest-description", "quest-progress" -> TomBlockHudFonts.QUEST_BODY;
-			case "quest-guidance" -> TomBlockHudFonts.QUEST_GUIDANCE;
+			case "quest-title", "quest-subtitle", "quest-objective", "quest-description",
+					"quest-progress", "quest-guidance" -> TomBlockHudFonts.VANILLA;
 			default -> throw new IllegalArgumentException("Unknown quest text style " + style);
 		};
 	}

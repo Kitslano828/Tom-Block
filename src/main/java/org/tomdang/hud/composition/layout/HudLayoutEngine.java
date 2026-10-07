@@ -18,6 +18,7 @@ public final class HudLayoutEngine {
 				HudSize child = measure(padding.child());
 				yield new HudSize(child.width() + padding.insets().horizontal(), child.height() + padding.insets().vertical());
 			}
+			case HudTranslate translated -> measure(translated.child());
 			case HudClip clip -> new HudSize(clip.width(), clip.height());
 			case HudOverlay overlay -> overlay.children().stream().map(this::measure)
 					.reduce(HudSize.ZERO, (a, b) -> new HudSize(Math.max(a.width(), b.width()), Math.max(a.height(), b.height())));
@@ -79,6 +80,8 @@ public final class HudLayoutEngine {
 			}
 			case HudPadding padding -> place(padding.child(), x + padding.insets().left(),
 					y + padding.insets().top(), clip, owner, z, output);
+			case HudTranslate translated -> place(translated.child(), x + translated.x(),
+					y + translated.y(), clip, owner, z, output);
 			case HudClip clipping -> {
 				HudRect ownClip = new HudRect(x, y, clipping.width(), clipping.height());
 				place(clipping.child(), x, y, intersect(clip, ownClip), owner, z, output);

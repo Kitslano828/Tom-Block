@@ -44,4 +44,9 @@ metrics:
   status-gap: 2
   status-bar-width: 90
   status-value-track-width: 100
+  # Places the resource symbols on the native bar row while values remain above it.
+  # Gap between each native bar endpoint and its outside icon.
+  status-icon-offset-x: 1
+  # Align the icon centers with Minecraft's native resource bars at GUI scale 3.
+  status-icon-offset-y: 14
   progression-row-width: 176

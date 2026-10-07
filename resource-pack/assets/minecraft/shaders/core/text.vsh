@@ -34,13 +34,19 @@ vec4 hudColor(int encodedGreen) {
     if (palette == 8) return vec4(0.33333333, 1.00000000, 0.33333333, 1.0);
     if (palette == 9) return vec4(0.00000000, 0.66666667, 0.66666667, 1.0);
     if (palette == 10) return vec4(0.33333333, 0.33333333, 0.33333333, 1.0);
+    if (palette == 11) return vec4(0.00000000, 0.00000000, 0.00000000, 1.0);
+    if (palette == 12) return vec4(0.98823529, 0.65882353, 0.00000000, 1.0);
+    if (palette == 13) return vec4(0.80784314, 0.20000000, 0.01176471, 1.0);
+    if (palette == 14) return vec4(0.92549020, 0.74509804, 0.45490196, 1.0);
+    if (palette == 15) return vec4(0.98823529, 0.32941176, 0.32941176, 1.0);
+    if (palette == 16) return vec4(0.65882353, 0.65882353, 0.65882353, 1.0);
     return vec4(1.0);
 }
 
 void main() {
     vec3 hudPosition = Position;
     ivec3 marker = ivec3(round(Color.rgb * 255.0));
-    bool tomblockHud = marker.r == 250 && marker.g >= 16 && marker.g <= 159;
+    bool tomblockHud = marker.r == 250 && marker.g >= 16 && marker.g <= 168;
     if (tomblockHud) {
         vec2 screen = vec2(2.0 / ProjMat[0][0], -2.0 / ProjMat[1][1]);
 		int encoded = marker.g - 16;

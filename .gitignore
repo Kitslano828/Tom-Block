@@ -35,6 +35,7 @@ build/
 !**/src/test/**/build/
 /output/
 /tmp/
+/logs/
 
 ### VS Code ###
 .vscode/

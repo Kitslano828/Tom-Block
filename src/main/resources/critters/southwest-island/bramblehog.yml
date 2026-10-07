@@ -1,0 +1,38 @@
+critter:
+  id: BRAMBLEHOG
+  name: Bramblehog
+  family: THORNBACK
+  rarity: COMMON
+  journal-icon: SWEET_BERRIES
+  journal-description: "A stubborn thicket-dweller that lowers its thorny crest before a short defensive charge. Patient hunters wait for it to tire before closing in."
+  habitats: [DENSE_BRUSH, FOREST_EDGE]
+  temperaments: [TERRITORIAL, SOLITARY]
+  relations: []
+  presentation: ITEM_DISPLAY_GROUND
+  movement:
+    modes: [GROUND]
+    wander-radius: 6.0
+    preferred-height: 0.0
+    speed: 0.9
+    rest-duration-seconds: 2
+    relocation-distance: 5.0
+  hunting:
+    archetypes: [OBSERVE, PURSUE, FLUSH]
+    awareness-radius: 6.0
+    capture-window-seconds: 3
+    maximum-relocations: 4
+    outcome: CAPTURED_AND_RELEASED
+  ai:
+    navigator: NATIVE_GROUND
+    goals:
+      FLEE: {type: FLEE_FROM_PLAYER, priority: 100, trigger-distance: 4.0, minimum-player-speed: 0.09, distance: 5.0, speed: 1.35, territory-radius: 12.0, rest-seconds: 1}
+      SEEK_COVER: {type: SEEK_COVER, priority: 90, speed: 1.0, arrival-radius: 0.8, territory-radius: 14.0}
+      RETURN_HOME: {type: RETURN_HOME, priority: 80, trigger-distance: 10.0, arrival-radius: 1.0, speed: 0.9}
+      SETTLE: {type: SETTLE, priority: 70}
+      WANDER: {type: WANDER, priority: 30, radius: 6.0, preferred-height: 0.0, speed: 0.8, rest-seconds: 2}
+      REST: {type: REST, priority: 20}
+      IDLE: {type: IDLE, priority: 0}
+  rewards:
+    hunting-xp: 24
+    materials:
+      BRAMBLE_BRISTLE: {minimum: 1, maximum: 2, chance: 1.0}

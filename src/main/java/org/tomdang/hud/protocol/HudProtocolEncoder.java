@@ -64,6 +64,8 @@ public final class HudProtocolEncoder {
 		if (payload.length() > MAX_TEXT_LENGTH) throw new IllegalArgumentException("HUD command exceeds protocol payload limit");
 		var font = positioned.command() instanceof HudTextCommand text && text.style().font() != null
 				? text.style().font() : protocol.font();
+		// A normal text shadow is a separate client render pass, which the HUD shader would
+		// decode as another command. Keep protocol-carried text to one shadow-free pass.
 		Component visual = Component.text(payload).font(font).color(marker).shadowColor(ShadowColor.none());
 		// Logical layout width may be capped for wrapping. The action-bar carrier still advances
 		// by every encoded glyph, so reset by the actual payload advance or later elements drift.

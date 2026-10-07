@@ -1,0 +1,22 @@
+encounter:
+  id: SPORELING_FIELD_TEST
+  behavior: VARIED_CRITTER_HUNT
+  mode: PLAYER
+  timeout-seconds: 300
+  disconnect-grace-seconds: 60
+  activity: {visibility: NEARBY, interaction: OWNER, contribution: BLOCK, rewards: OWNER}
+  parameters:
+    critter: SPORELING
+    mechanic: SPORE_SEQUENCE
+    model: minecraft:red_mushroom
+    carrier: SILVERFISH
+    spawn-distance: 5.0
+    model-y-offset: 0.5
+    hitbox-width: 0.8
+    hitbox-height: 0.75
+    cover-offsets: "-4,3;4,3;-4,-3;4,-3;0,6"
+    clues-required: 3
+    maximum-alertness: 100
+    reckless-alertness: 32
+    calm-recovery: 12
+    capture-ready-ticks: 28

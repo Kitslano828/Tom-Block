@@ -1,0 +1,19 @@
+calendar:
+  real-seconds-per-day: 1800
+  daylight-real-seconds: 1200
+  days-per-month: 28
+  months:
+    - {name: January, season: WINTER}
+    - {name: February, season: WINTER}
+    - {name: March, season: SPRING}
+    - {name: April, season: SPRING}
+    - {name: May, season: SPRING}
+    - {name: June, season: SUMMER}
+    - {name: July, season: SUMMER}
+    - {name: August, season: SUMMER}
+    - {name: September, season: AUTUMN}
+    - {name: October, season: AUTUMN}
+    - {name: November, season: AUTUMN}
+    - {name: December, season: WINTER}
+  initial-date: {year: 1, month: 1, day: 1, hour: 6, minute: 0}
+  synchronization-interval-ticks: 20

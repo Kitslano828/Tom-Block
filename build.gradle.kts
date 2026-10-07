@@ -147,11 +147,6 @@ val generateMonocraftHudAssets by tasks.registering(Exec::class) {
         "resource-pack/assets/tomblock/textures/font/status_health_cell_empty.png",
         "resource-pack/assets/tomblock/textures/font/status_energy_cell_empty.png"
 		,"src/main/resources/hud-font-advances.properties"
-		,"resource-pack/assets/tomblock/font/quest_title.json"
-		,"resource-pack/assets/tomblock/font/quest_subtitle.json"
-		,"resource-pack/assets/tomblock/font/quest_objective.json"
-		,"resource-pack/assets/tomblock/font/quest_body.json"
-		,"resource-pack/assets/tomblock/font/quest_guidance.json"
     )
     outputs.dirs(
         "resource-pack/assets/minecraft/textures/gui/sprites/hud/heart"
@@ -169,27 +164,7 @@ val generateMonocraftHudAssets by tasks.registering(Exec::class) {
 	)
 }
 
-val generateQraftyHudFont by tasks.registering(Exec::class) {
-    group = "build"
-    description = "Rasterizes Qrafty into a deterministic TomBlock bitmap font and metric table."
-    val java25 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) }
-    commandLine(
-        java25.get().executablePath.asFile.absolutePath,
-        "scripts/GenerateQraftyHudFont.java",
-        "resource-pack/source-assets/fonts/qrafty.otf",
-        "resource-pack/assets/tomblock/textures/font/qrafty.png",
-        "resource-pack/assets/tomblock/font/qrafty.json",
-        "src/main/resources/hud-font-qrafty-advances.properties"
-    )
-    inputs.files("scripts/GenerateQraftyHudFont.java", "resource-pack/source-assets/fonts/qrafty.otf")
-    outputs.files(
-        "resource-pack/assets/tomblock/textures/font/qrafty.png",
-        "resource-pack/assets/tomblock/font/qrafty.json",
-        "src/main/resources/hud-font-qrafty-advances.properties"
-    )
-}
-
-tasks.processResources { dependsOn(generateMonocraftHudAssets, generateQraftyHudFont) }
+tasks.processResources { dependsOn(generateMonocraftHudAssets) }
 
 val generateHudProtocolAssets by tasks.registering(Exec::class) {
     group = "build"
@@ -250,7 +225,7 @@ val validateHudProtocol by tasks.registering {
 val validateResourcePackFonts by tasks.registering {
     group = "verification"
     description = "Rejects malformed HUD font atlases before a resource pack can be packaged."
-    dependsOn(generateMonocraftHudAssets, generateQraftyHudFont, validateHudProtocol)
+    dependsOn(generateMonocraftHudAssets, validateHudProtocol)
 
     doLast {
         val specifications = mapOf(
@@ -287,20 +262,6 @@ val validateResourcePackFonts by tasks.registering {
         if (file("resource-pack/assets/minecraft/font/default.json").exists()) {
             throw GradleException("TomBlock must not globally replace Minecraft's default font")
         }
-		val qraftySource = file("resource-pack/source-assets/fonts/qrafty.otf")
-		val qraftyDefinition = file("resource-pack/assets/tomblock/font/qrafty.json")
-		val qraftyAtlas = javax.imageio.ImageIO.read(
-			file("resource-pack/assets/tomblock/textures/font/qrafty.png"))
-			?: throw GradleException("Cannot read generated Qrafty atlas")
-		if (!qraftySource.isFile || qraftyDefinition.readText().let {
-				!it.contains("tomblock:font/qrafty.png") || !it.contains("\"type\":\"space\"") }) {
-			throw GradleException("Qrafty source, bitmap definition, or space advance is missing")
-		}
-		if (qraftyAtlas.width != 128 || qraftyAtlas.height != 48)
-			throw GradleException("Qrafty atlas must be 128x48; found ${qraftyAtlas.width}x${qraftyAtlas.height}")
-		val qraftyMetrics = file("src/main/resources/hud-font-qrafty-advances.properties")
-		if (!qraftyMetrics.isFile || qraftyMetrics.readLines().count { it.matches(Regex("[0-9A-F]{4}=\\d+")) } != 95)
-			throw GradleException("Qrafty must provide exact advances for all 95 printable ASCII glyphs")
 		listOf("status_health_cell.png", "status_energy_cell.png").forEach { name ->
 			val image = javax.imageio.ImageIO.read(textureDirectory.resolve(name))
 				?: throw GradleException("Cannot read $name")
@@ -332,7 +293,8 @@ val validateResourcePackFonts by tasks.registering {
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, generateHudProtocolAssets, validateResourcePackFonts)
+    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets,
+        generateHudProtocolAssets, validateResourcePackFonts)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**", "licenses/**")
     }

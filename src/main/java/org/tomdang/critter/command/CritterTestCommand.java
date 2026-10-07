@@ -16,6 +16,14 @@ import org.tomdang.encounter.runtime.EncounterRuntimeService;
 
 /** Starts isolated critter encounters without coupling test content to a quest. */
 public final class CritterTestCommand implements CommandExecutor, TabCompleter {
+    private static final java.util.Map<String, String> FIELD_TESTS = java.util.Map.of(
+            "mossback", "MOSSBACK_FIELD_TEST",
+            "glimmerfly", "TUTORIAL_GLIMMERFLY",
+            "bramblehog", "BRAMBLEHOG_FIELD_TEST",
+            "dewhopper", "DEWHOPPER_FIELD_TEST",
+            "burrowtail", "BURROWTAIL_FIELD_TEST",
+            "screecher", "CANOPY_SCREECHER_FIELD_TEST",
+            "sporeling", "SPORELING_FIELD_TEST");
     private final EncounterRuntimeService encounters;
 
     public CritterTestCommand(EncounterRuntimeService encounters) {
@@ -37,7 +45,7 @@ public final class CritterTestCommand implements CommandExecutor, TabCompleter {
         if (operation.equals("stop")) {
             var active = encounters.findFor(player.getUniqueId());
             if (active.isEmpty()) player.sendMessage(Component.text("No encounter is active.", NamedTextColor.GRAY));
-            else if (!active.get().definitionId().equals("MOSSBACK_FIELD_TEST")) {
+            else if (!FIELD_TESTS.containsValue(active.get().definitionId())) {
                 player.sendMessage(Component.text(
                         "Your active encounter belongs to gameplay and cannot be stopped by this test command.",
                         NamedTextColor.RED));
@@ -48,10 +56,7 @@ public final class CritterTestCommand implements CommandExecutor, TabCompleter {
             }
             return true;
         }
-        String encounterId = switch (operation) {
-            case "mossback" -> "MOSSBACK_FIELD_TEST";
-            default -> null;
-        };
+        String encounterId = FIELD_TESTS.get(operation);
         if (encounterId == null) {
             usage(player);
             return true;
@@ -67,14 +72,14 @@ public final class CritterTestCommand implements CommandExecutor, TabCompleter {
     }
 
     private void usage(Player player) {
-        player.sendMessage(Component.text("Usage: /crittertest <mossback|stop>", NamedTextColor.RED));
+        player.sendMessage(Component.text("Usage: /crittertest <mossback|glimmerfly|bramblehog|dewhopper|burrowtail|screecher|sporeling|stop>", NamedTextColor.RED));
     }
 
     @Override public @Nullable List<String> onTabComplete(@NotNull CommandSender sender,
             @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length != 1) return List.of();
         String prefix = args[0].toLowerCase(Locale.ROOT);
-        return List.of("mossback", "stop").stream()
+        return java.util.stream.Stream.concat(FIELD_TESTS.keySet().stream().sorted(), java.util.stream.Stream.of("stop"))
                 .filter(value -> value.startsWith(prefix)).toList();
     }
 }

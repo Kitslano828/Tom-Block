@@ -9,6 +9,8 @@ public final class StatusHudTokens {
 	public static final HudMetricToken GAP = HudMetricToken.of("status-gap");
 	public static final HudMetricToken BAR_WIDTH = HudMetricToken.of("status-bar-width");
 	public static final HudMetricToken VALUE_TRACK_WIDTH = HudMetricToken.of("status-value-track-width");
+	public static final HudMetricToken ICON_OFFSET_Y = HudMetricToken.of("status-icon-offset-y");
+	public static final HudMetricToken ICON_OFFSET_X = HudMetricToken.of("status-icon-offset-x");
 	public static final HudAssetId HEART = HudAssetId.of("tomblock", "status-heart");
 	public static final HudAssetId ENERGY = HudAssetId.of("tomblock", "status-energy");
 	public static final HudAssetId HEALTH_BAR = HudAssetId.of("tomblock", "status-health-bar");
