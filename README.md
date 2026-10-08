@@ -10,7 +10,13 @@ I am developing TomBlock as a long-term gameplay-programming and technical-desig
 
 TomBlock began as a way to learn Java through Minecraft, then grew into a larger study of game systems, server architecture, persistence, user interface design, and content production under vanilla-client constraints.
 
-The current focus is building cohesive playable slices and using them to test whether the underlying systems produce clear, enjoyable decisions. The hunting prototype is one example: quests introduce the activity, critters respond to different environmental conditions, progression is recorded in the Critterdex, and the global calendar can influence future spawning and stat rules.
+The current focus is building cohesive playable slices and using them to test whether the underlying systems produce clear, enjoyable decisions. The hunting prototype is one example: quests introduce the activity, critters respond to different environmental conditions, progression is recorded in the Critterdex, and the global calendar can influence spawning and stat rules.
+
+## Current Playable Slice
+
+The Southwest Island currently introduces hunting through Critter Hunter Will. The introductory Mossback encounter teaches the player to read a critter's behavior, position a trap, and use the environment to complete a capture. Other island critters vary the interaction rather than repeating that exact sequence, and successful discoveries are recorded in the Critterdex.
+
+The same island also exercises shared project systems including quest tracking, NPC nameplates and dialogue, region-aware content, the custom HUD, persistent player state, and synchronized world time.
 
 ## Current Features
 
@@ -44,9 +50,9 @@ The current focus is building cohesive playable slices and using them to test wh
 - Region-aware minimap HUD and exported-world map items
 - Resource-pack-driven HUD elements for health, energy, time, and calendar state
 - A synchronized global calendar and daylight cycle shared across public islands
-- JUnit and Mockito tests for selected systems
+- A JUnit and Mockito suite covering framework rules and system integration boundaries
 
-## Example Gameplay Path
+## Example System Composition
 
 The current Blacksmith demonstration connects several frameworks:
 
@@ -59,6 +65,15 @@ The current Blacksmith demonstration connects several frameworks:
 7. A registered dialogue action opens the custom forge menu.
 
 This path demonstrates how the actor, dialogue, action, and crafting systems work together without directly depending on one another.
+
+## Architectural Approach
+
+- Framework code owns reusable rules and lifecycle behavior; `content` composes those capabilities into game features.
+- YAML definitions hold content data that should be editable without changing framework code. Loaders validate complete definition sets before registration begins.
+- Bootstrap classes are the composition root: they construct dependencies and connect systems without turning the plugin's main class into a service locator.
+- Gameplay state that must survive restarts is persisted through PostgreSQL repositories and versioned Flyway migrations.
+- The server remains authoritative for combat, progression, encounters, island rules, and calendar state. The resource pack is presentation-only.
+- Tests focus on deterministic domain behavior and boundaries where independently reusable systems communicate.
 
 ## Demonstration
 
@@ -120,3 +135,9 @@ TomBlock currently targets:
 - Paper 26.2
 - Gradle
 - Paperweight user development tooling
+
+Run the complete verification suite with:
+
+```powershell
+.\gradlew.bat clean test
+```
