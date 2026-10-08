@@ -17,8 +17,8 @@ public final class CalendarHudPresenter implements HudPresenter<CalendarHudModel
     @Override public HudContent present(CalendarHudModel model, HudPresentationContext context) {
         String month = model.monthName().length() <= 3 ? model.monthName().toUpperCase(Locale.ROOT)
                 : model.monthName().substring(0, 3).toUpperCase(Locale.ROOT);
-        var date = text(model.season() + "  ·  " + month + " " + model.day(), "heading", context);
-        var time = text(model.period() + "  ·  %02d:%02d".formatted(model.hour(), model.minute()), "muted", context);
+        var date = text(model.season() + "  |  " + month + " " + model.day(), "heading", context);
+        var time = text(model.period() + "  |  %02d:%02d".formatted(model.hour(), model.minute()), "muted", context);
         return new HudContent(new HudStack(HudAxis.VERTICAL, 1, HudAlignment.START, List.of(date, time)));
     }
     private static HudPrimitive text(String value, String style, HudPresentationContext context) {

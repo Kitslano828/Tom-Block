@@ -36,6 +36,7 @@ build/
 /output/
 /tmp/
 /logs/
+/.codex-staging/
 
 ### VS Code ###
 .vscode/

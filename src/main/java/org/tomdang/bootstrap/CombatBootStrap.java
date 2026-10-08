@@ -130,7 +130,6 @@ public class CombatBootStrap {
 				new ComboTimingCalculator(comboTimingConfiguration),
 				Bukkit::getCurrentTick
 		);
-		playerCombatHitPublisher.register(consecutiveChargedHitTracker);
 		ComboRequirement divansDrillTestRequirement = new ComboRequirement(
 				3,
 				Optional.of(CombatWeightClass.HEAVY),

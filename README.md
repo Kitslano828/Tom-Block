@@ -2,17 +2,15 @@
 
 For a categorized index of YAML files and their loading behavior, see [CONFIGURATION.md](CONFIGURATION.md).
 
-TomBlock is an in-development Minecraft Paper MMORPG plugin written in Java. The goal is to build reusable systems for custom combat, abilities, items, crafting, NPCs, dialogue, mining, player progression, and eventually a complete multiplayer gameplay experience.
+TomBlock is an in-development, server-side Minecraft MMORPG built with Java and Paper. It uses a mandatory resource pack for its visual identity while allowing players to connect without installing client mods.
 
-This is my first substantial programming project and is currently being developed as both a game project and a way for me to learn programming while making something fun in a game I enjoy.
+I am developing TomBlock as a long-term gameplay-programming and technical-design project. Its architecture separates reusable frameworks from concrete game content so that mechanics can be composed into playable systems instead of being tied to individual quests or locations.
 
 ## Why I Am Building It
 
-TomBlock is a rewrite of an earlier project with the same name. The previous version was largely created through AI-generated code that I did not properly understand.
+TomBlock began as a way to learn Java through Minecraft, then grew into a larger study of game systems, server architecture, persistence, user interface design, and content production under vanilla-client constraints.
 
-For this version, I started over and made a deliberate effort to write, test, and understand the implementation. I still use AI for guidance, unfamiliar syntax, debugging, and code review, but I implement the systems myself and work to understand why each component exists and how it communicates with the rest of the project. I am working on this project alongside learning to program.
-
-One of my current goals is to become more independent in planning features and making architectural decisions.
+The current focus is building cohesive playable slices and using them to test whether the underlying systems produce clear, enjoyable decisions. The hunting prototype is one example: quests introduce the activity, critters respond to different environmental conditions, progression is recorded in the Critterdex, and the global calendar can influence future spawning and stat rules.
 
 ## Current Features
 
@@ -23,6 +21,8 @@ One of my current goals is to become more independent in planning features and m
 - Ability energy costs and cooldowns
 - Automatic ability lore rendering
 - Custom mobs, health, drops, and respawning
+- Hunting encounters, traps, environment-specific critters, and Critterdex progression
+- Quest state, objectives, guidance, and tracked-quest HUD presentation
 - Custom mining blocks, fortune, regeneration, and Mining Spread
 - Shaped custom crafting recipes
 - Custom forge inventory
@@ -42,6 +42,8 @@ One of my current goals is to become more independent in planning features and m
   configurable milestone rewards and durability-based connected-tree harvesting
 - Registered renewable foraging trees with sequential breaking and regeneration
 - Region-aware minimap HUD and exported-world map items
+- Resource-pack-driven HUD elements for health, energy, time, and calendar state
+- A synchronized global calendar and daylight cycle shared across public islands
 - JUnit and Mockito tests for selected systems
 
 ## Example Gameplay Path
@@ -77,6 +79,11 @@ The project is divided into several major areas:
 - `actorframework` – actor definitions, instances, presentations, interactions, movement, and visibility
 - `playernpc` – packet-based player NPC creation, lifecycle, visibility, and interaction
 - `dialogueframework` – dialogue definitions, sessions, presentation, choices, and actions
+- `critter` and `encounter` – critter spawning, traps, capture rules, and Critterdex progression
+- `quest` – quest definitions, objectives, progress, guidance, and presentation
+- `worldtime` – global game time, calendar state, daylight synchronization, and modifiers
+- `hud` – player-facing overlays and resource-pack-backed presentation
+- `island` – managed island definitions, lifecycle, access, travel, and block policy
 - `player` – profiles, statistics, resources, action bars, and persistence
 - `bootstrap` – dependency construction and framework composition
 - `content` – concrete game content built using the frameworks

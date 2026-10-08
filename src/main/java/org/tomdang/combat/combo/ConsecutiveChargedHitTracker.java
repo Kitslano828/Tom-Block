@@ -23,29 +23,7 @@ public class ConsecutiveChargedHitTracker implements PlayerCombatHitObserver {
 
 	@Override
 	public void onHit(PlayerCombatHitContext context) {
-		if (context == null) throw new IllegalArgumentException("context cannot be null");
-		UUID playerId = context.attacker().getUniqueId();
-		if (!context.fullyCharged()) {
-			clear(playerId);
-			return;
-		}
-
-		long now = currentTick.getAsLong();
-		if (now < 0) throw new IllegalStateException("current tick cannot be negative");
-		UUID targetId = context.target().getUniqueId();
-		ChargedHitComboProgress previous = progressByPlayer.get(playerId);
-		int completedHits = continuesCombo(previous, targetId, now)
-				? Math.addExact(previous.completedHits(), 1)
-				: 1;
-
-		Optional<String> itemId = context.item().map(item -> item.getId());
-		progressByPlayer.put(playerId, new ChargedHitComboProgress(
-				targetId,
-				completedHits,
-				now,
-				context.readiness().effectiveRecoveryTicks(),
-				itemId
-		));
+		recordHit(context);
 	}
 
 	public Optional<ChargedHitComboProgress> getProgress(UUID playerId) {
@@ -73,5 +51,33 @@ public class ConsecutiveChargedHitTracker implements PlayerCombatHitObserver {
 		long maximumGapTicks = timingCalculator.calculate(
 				previous.completedHits(), previous.effectiveRecoveryTicks()).maximumGapTicks();
 		return elapsedTicks <= maximumGapTicks;
+	}
+
+	public Optional<ChargedHitComboProgress> recordHit(PlayerCombatHitContext context) {
+		if (context == null) throw new IllegalArgumentException("context cannot be null");
+		UUID playerId = context.attacker().getUniqueId();
+		if (!context.fullyCharged()) {
+			clear(playerId);
+			return Optional.empty();
+		}
+
+		long now = currentTick.getAsLong();
+		if (now < 0) throw new IllegalStateException("current tick cannot be negative");
+		UUID targetId = context.target().getUniqueId();
+		ChargedHitComboProgress previous = progressByPlayer.get(playerId);
+		int completedHits = continuesCombo(previous, targetId, now)
+				? Math.addExact(previous.completedHits(), 1)
+				: 1;
+
+		Optional<String> itemId = context.item().map(item -> item.getId());
+		ChargedHitComboProgress updatedProgress = new ChargedHitComboProgress(
+				targetId,
+				completedHits,
+				now,
+				context.readiness().effectiveRecoveryTicks(),
+				itemId
+		);
+		progressByPlayer.put(playerId, updatedProgress);
+		return Optional.of(updatedProgress);
 	}
 }

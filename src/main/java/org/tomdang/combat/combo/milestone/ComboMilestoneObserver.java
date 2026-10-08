@@ -37,7 +37,7 @@ public class ComboMilestoneObserver implements PlayerCombatHitObserver {
 	public void onHit(PlayerCombatHitContext context) {
 		if (context == null) throw new IllegalArgumentException("context cannot be null");
 		UUID playerId = context.attacker().getUniqueId();
-		Optional<ChargedHitComboProgress> progress = tracker.getProgress(playerId);
+		Optional<ChargedHitComboProgress> progress = tracker.recordHit(context);
 		if (progress.isEmpty()) return;
 
 		ChargedHitComboProgress current = progress.orElseThrow();

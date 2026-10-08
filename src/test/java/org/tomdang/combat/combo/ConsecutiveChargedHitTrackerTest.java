@@ -25,11 +25,13 @@ class ConsecutiveChargedHitTrackerTest {
 	void firstFullyChargedHitStartsComboAndSubsequentHitContinuesIt() {
 		UUID playerId = UUID.randomUUID();
 		UUID targetId = UUID.randomUUID();
-		tracker.onHit(context(playerId, targetId, true, 40));
+		ChargedHitComboProgress firstHit = tracker.recordHit(
+				context(playerId, targetId, true, 40)).orElseThrow();
 		tick.set(160);
-		tracker.onHit(context(playerId, targetId, true, 40));
+		ChargedHitComboProgress progress = tracker.recordHit(
+				context(playerId, targetId, true, 40)).orElseThrow();
 
-		ChargedHitComboProgress progress = tracker.getProgress(playerId).orElseThrow();
+		assertEquals(1, firstHit.completedHits());
 		assertEquals(2, progress.completedHits());
 		assertEquals(targetId, progress.targetId());
 		assertEquals(160, progress.lastHitTick());
@@ -64,8 +66,10 @@ class ConsecutiveChargedHitTrackerTest {
 		UUID playerId = UUID.randomUUID();
 		UUID targetId = UUID.randomUUID();
 		tracker.onHit(context(playerId, targetId, true, 40));
-		tracker.onHit(context(playerId, targetId, false, 40));
+		Optional<ChargedHitComboProgress> result = tracker.recordHit(
+				context(playerId, targetId, false, 40));
 
+		assertFalse(result.isPresent());
 		assertFalse(tracker.getProgress(playerId).isPresent());
 	}
 

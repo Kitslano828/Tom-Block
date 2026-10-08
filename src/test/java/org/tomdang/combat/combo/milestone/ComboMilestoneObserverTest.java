@@ -88,7 +88,7 @@ class ComboMilestoneObserverTest {
 		ChargedHitComboProgress progress = new ChargedHitComboProgress(
 				targetId, completedHits, 100, 40, Optional.of("SUPER_PICKAXE"));
 		ConsecutiveChargedHitTracker tracker = mock(ConsecutiveChargedHitTracker.class);
-		when(tracker.getProgress(playerId)).thenReturn(Optional.of(progress));
+		when(tracker.recordHit(context)).thenReturn(Optional.of(progress));
 		ComboRequirement requirement = ComboRequirement.hits(3);
 		ComboRequirementEvaluator evaluator = mock(ComboRequirementEvaluator.class);
 		when(evaluator.evaluate(requirement, context, Optional.of(progress)))
