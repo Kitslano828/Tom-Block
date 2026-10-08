@@ -75,11 +75,11 @@ This path demonstrates how the actor, dialogue, action, and crafting systems wor
 - The server remains authoritative for combat, progression, encounters, island rules, and calendar state. The resource pack is presentation-only.
 - Tests focus on deterministic domain behavior and boundaries where independently reusable systems communicate.
 
-## Demonstration
+## Earlier Development Demo
 
-A three-minute demonstration of the current project is available here:
+A three-minute demonstration of an earlier TomBlock build is available here. It predates the current hunting prototype, HUD, island systems, persistence work, and several architectural revisions, but remains as a record of the project's development:
 
-[Watch the TomBlock demonstration](https://www.youtube.com/watch?v=oZo07PBEBMk)
+[Watch the earlier TomBlock demonstration](https://www.youtube.com/watch?v=oZo07PBEBMk)
 
 ## Project Structure
 
