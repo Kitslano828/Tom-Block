@@ -75,11 +75,13 @@ This path demonstrates how the actor, dialogue, action, and crafting systems wor
 - The server remains authoritative for combat, progression, encounters, island rules, and calendar state. The resource pack is presentation-only.
 - Tests focus on deterministic domain behavior and boundaries where independently reusable systems communicate.
 
-## Earlier Development Demo
+## Gameplay Demonstration
 
-A three-minute demonstration of an earlier TomBlock build is available here. It predates the current hunting prototype, HUD, island systems, persistence work, and several architectural revisions, but remains as a record of the project's development:
+The current demonstration covers the hunting gameplay slice, including Critter Hunter Will's introductory quest, catching critters, and recording discoveries in the Critterdex. It also shows custom textures and interface systems such as dialogue boxes, health and energy indicators, quest objectives, the synchronized date and time display, and the skills and statistics menus.
 
-[Watch the earlier TomBlock demonstration](https://www.youtube.com/watch?v=oZo07PBEBMk)
+[Watch the current TomBlock gameplay demonstration](https://youtu.be/ZgGIYm82aPM)
+
+Some implemented skills are not shown because they are not required by this gameplay slice. An [earlier three-minute demonstration](https://www.youtube.com/watch?v=oZo07PBEBMk) remains available as a record of the project's development.
 
 ## Project Structure
 
