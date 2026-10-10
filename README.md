@@ -4,7 +4,7 @@ For a categorized index of YAML files and their loading behavior, see [CONFIGURA
 
 TomBlock is an in-development, server-side Minecraft MMORPG built with Java and Paper. It uses a mandatory resource pack for its visual identity while allowing players to connect without installing client mods.
 
-I am developing TomBlock as a long-term gameplay-programming and technical-design project. Its architecture separates reusable frameworks from concrete game content so that mechanics can be composed into playable systems instead of being tied to individual quests or locations.
+I am developing TomBlock as a long-term gameplay-programming and fun project. Its architecture separates reusable frameworks from concrete game content so that mechanics can be composed into playable systems instead of being tied to individual quests or locations.
 
 ## Why I Am Building It
 
