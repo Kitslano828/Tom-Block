@@ -123,8 +123,7 @@ val validateResourcePackFonts by tasks.registering {
             "dialogue_line_2.json" to "dialogue_lines_ascii.png",
             "dialogue_line_3.json" to "dialogue_lines_ascii.png",
             "dialogue_speaker.json" to "dialogue_speaker_ascii.png",
-            "dialogue_indicator.json" to "dialogue_speaker_ascii.png",
-            "status_text.json" to "vanilla_ascii.png"
+            "dialogue_indicator.json" to "dialogue_speaker_ascii.png"
         )
         val fontDirectory = file("resource-pack/assets/tomblock/font")
         val textureDirectory = file("resource-pack/assets/tomblock/textures/font")
