@@ -83,119 +83,9 @@ val copyPluginToServer by tasks.registering(Copy::class) {
 val resourcePackArchiveName = "TomBlock-Resource-Pack.zip"
 val localServerDirectory = file("C:/Users/tomda/Desktop/26.2")
 
-val generateVillageMapHudAssets by tasks.registering(Exec::class) {
-    group = "build"
-    description = "Regenerates the village map HUD textures from the calibrated world PNG."
-    val java25 = javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(25))
-    }
-    commandLine(
-        java25.get().executablePath.asFile.absolutePath,
-        "scripts/GenerateVillageMapHudAssets.java",
-        "src/main/resources/maps/world.png",
-        "resource-pack/assets/tomblock/textures/font"
-    )
-    inputs.file("src/main/resources/maps/world.png")
-    inputs.file("scripts/GenerateVillageMapHudAssets.java")
-    outputs.files(
-        "resource-pack/assets/tomblock/textures/font/village_map.png",
-        "resource-pack/assets/tomblock/textures/font/village_markers.png",
-        "resource-pack/assets/tomblock/font/village_map.json",
-        "resource-pack/assets/tomblock/font/village_markers.json",
-        "resource-pack/assets/tomblock/textures/font/village_follow_map.png",
-        "resource-pack/assets/tomblock/textures/font/village_follow_markers.png",
-        "resource-pack/assets/tomblock/font/village_follow_map.json",
-        "resource-pack/assets/tomblock/font/village_follow_markers.json",
-        "resource-pack/assets/tomblock/font/village_follow_map_small.json",
-        "resource-pack/assets/tomblock/font/village_follow_markers_small.json",
-        "resource-pack/assets/tomblock/textures/font/hud_follow_map.png",
-        "resource-pack/assets/tomblock/textures/font/hud_follow_markers.png",
-        "resource-pack/assets/tomblock/font/hud_follow_map.json",
-        "resource-pack/assets/tomblock/font/hud_follow_markers.json",
-        "resource-pack/assets/tomblock/textures/font/hud_world_map.png",
-        "resource-pack/assets/tomblock/font/hud_world_map.json",
-        "resource-pack/assets/tomblock/textures/font/hud_centered_map.png",
-        "resource-pack/assets/tomblock/font/hud_centered_map.json",
-        "resource-pack/assets/tomblock/textures/font/hud_centered_markers.png",
-        "resource-pack/assets/tomblock/font/hud_centered_markers.json"
-    )
-}
-
-val generateMonocraftHudAssets by tasks.registering(Exec::class) {
-    group = "build"
-    description = "Generates vanilla-font dialogue positioning and HUD assets."
-    val java25 = javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(25))
-    }
-    commandLine(
-        java25.get().executablePath.asFile.absolutePath,
-        "scripts/GenerateMonocraftHudAssets.java",
-        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
-        "resource-pack/assets/tomblock/textures/font",
-        "src/main/resources/hud-font-advances.properties"
-    )
-    inputs.files(
-        "scripts/GenerateMonocraftHudAssets.java",
-        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
-        "resource-pack/assets/tomblock/textures/font/status_health_cell.png",
-        "resource-pack/assets/tomblock/textures/font/status_energy_cell.png"
-    )
-    outputs.files(
-        "resource-pack/assets/tomblock/textures/font/dialogue_ascii.png",
-        "resource-pack/assets/tomblock/textures/font/dialogue_lines_ascii.png",
-        "resource-pack/assets/tomblock/textures/font/dialogue_speaker_ascii.png",
-        "resource-pack/assets/tomblock/textures/font/status_health_cell_empty.png",
-        "resource-pack/assets/tomblock/textures/font/status_energy_cell_empty.png"
-		,"src/main/resources/hud-font-advances.properties"
-    )
-    outputs.dirs(
-        "resource-pack/assets/minecraft/textures/gui/sprites/hud/heart"
-    )
-	outputs.files(
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_empty.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_empty_hunger.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_full.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_full_hunger.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_half.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/food_half_hunger.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_empty.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_half.png",
-		"resource-pack/assets/minecraft/textures/gui/sprites/hud/armor_full.png"
-	)
-}
-
-tasks.processResources { dependsOn(generateMonocraftHudAssets) }
-
-val generateHudProtocolAssets by tasks.registering(Exec::class) {
-    group = "build"
-    description = "Generates the versioned TomBlock HUD 0.1 laboratory font, sprite atlas, manifest, and 26.2 shader."
-    dependsOn(generateMonocraftHudAssets)
-    val java25 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) }
-    commandLine(
-        java25.get().executablePath.asFile.absolutePath,
-        "scripts/GenerateHudProtocolAssets.java",
-        "src/main/resources/hud-protocol.properties",
-        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png",
-        "resource-pack"
-    )
-    inputs.files(
-        "scripts/GenerateHudProtocolAssets.java",
-        "src/main/resources/hud-protocol.properties",
-        "resource-pack/assets/tomblock/textures/font/vanilla_ascii.png"
-    )
-    outputs.files(
-        "resource-pack/assets/tomblock/hud/protocol.properties",
-        "resource-pack/assets/tomblock/font/hud_protocol.json",
-        "resource-pack/assets/tomblock/textures/font/hud_protocol.png",
-		"resource-pack/assets/tomblock/textures/font/hud_ascii.png",
-        "resource-pack/assets/minecraft/shaders/core/text.vsh"
-    )
-}
-
 val validateHudProtocol by tasks.registering {
     group = "verification"
     description = "Rejects mismatched or incomplete generated HUD protocol assets."
-    dependsOn(generateHudProtocolAssets)
     doLast {
         val source = Properties().apply {
             file("src/main/resources/hud-protocol.properties").inputStream().use { load(it) }
@@ -225,7 +115,7 @@ val validateHudProtocol by tasks.registering {
 val validateResourcePackFonts by tasks.registering {
     group = "verification"
     description = "Rejects malformed HUD font atlases before a resource pack can be packaged."
-    dependsOn(generateMonocraftHudAssets, validateHudProtocol)
+    dependsOn(validateHudProtocol)
 
     doLast {
         val specifications = mapOf(
@@ -293,8 +183,7 @@ val validateResourcePackFonts by tasks.registering {
 val packageResourcePack by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages the TomBlock resource pack for client download."
-    dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets,
-        generateHudProtocolAssets, validateResourcePackFonts)
+    dependsOn(validateResourcePackFonts)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**", "licenses/**")
     }
@@ -305,7 +194,7 @@ val packageResourcePack by tasks.registering(Zip::class) {
 val packageMapHudExperiment by tasks.registering(Zip::class) {
     group = "build"
     description = "Packages an opt-in 26.2 map HUD pack that filters dark GUI rectangles."
-	dependsOn(generateVillageMapHudAssets, generateMonocraftHudAssets, generateHudProtocolAssets)
+	dependsOn(validateResourcePackFonts)
     from(layout.projectDirectory.dir("resource-pack")) {
         include("pack.mcmeta", "assets/**", "licenses/**")
     }
